@@ -4,8 +4,6 @@
 
 NeoBox is a sleek, modern, and powerful web app that consolidates dozens of everyday tools into one unified platform. Whether you're a student, professional, or just someone who loves productivity, NeoBox is your companion for staying organized, focused, and efficient.
 
-![NeoBox Screenshot](https://your-screenshot-link.com/)
-
 ---
 
 ## 🎓 CS50 Final Project
