@@ -537,25 +537,25 @@ AVAILABLE_LANGUAGES = [
 ]
 
 TOOLS = [
-    {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "login_required": False},
-    {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "login_required": False},
-    {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "login_required": False},
-    {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "login_required": False},
-    {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "login_required": True},
-    {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "login_required": False},
-    {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "login_required": False},
-    {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "login_required": False},
-    {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "login_required": True},
-    {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "login_required": False},
-    {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "login_required": False},
-    {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "login_required": False},
-    {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "login_required": False},
-    {"name": "AI Prompt", "icon": "bi-robot", "url": "ai-prompt", "login_required": False},
-    {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "login_required": False},
-    {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "login_required": False},
-    {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "login_required": False},
-    {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "login_required": False},
-    {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "login_required": False},
+    {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "login_required": False, "description": "Simple arithmetic calculator."},
+    {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "login_required": False, "description": "Advanced calculator for scientific functions."},
+    {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "login_required": False, "description": "Convert between various units of measurement."},
+    {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "login_required": False, "description": "Convert currencies using real-time rates."},
+    {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "login_required": True, "description": "Manage your personal tasks and to-dos."},
+    {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "login_required": False, "description": "Convert files between different formats."},
+    {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "login_required": False, "description": "Translate text between languages."},
+    {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "login_required": False, "description": "Quickly search using your favorite search engines."},
+    {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "login_required": True, "description": "Write and save personal notes."},
+    {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "login_required": False, "description": "Boost productivity with Pomodoro sessions."},
+    {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "login_required": False, "description": "View current times in cities worldwide."},
+    {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "login_required": False, "description": "Set a countdown timer for any task."},
+    {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "login_required": False, "description": "Track elapsed time with a stopwatch."},
+    {"name": "AI Prompt", "icon": "bi-robot", "url": "ai-prompt", "login_required": False, "description": "Get instant responses from a demo AI."},
+    {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "login_required": False, "description": "Find similar images on the web."},
+    {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "login_required": False, "description": "Shorten long URLs for easy sharing."},
+    {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "login_required": False, "description": "Explore elements and their properties."},
+    {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "login_required": False, "description": "View metadata of uploaded images."},
+    {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "login_required": False, "description": "Create custom redirects for your URLs."},
 
     # Current tools
 ]
@@ -1376,7 +1376,20 @@ def periodic_table():
     with open("static/data/elements.json", encoding="utf-8") as f:
         data = json.load(f)
     elements = data["elements"]  # <-- Only the list, not the whole dict
-    return render_template("tools/periodic_table.html", elements=elements)
+    category_colors = {
+        "alkali metal": "#ffb74d",
+        "alkaline earth metal": "#ffd54f",
+        "transition metal": "#90caf9",
+        "post-transition metal": "#b0bec5",
+        "metalloid": "#a5d6a7",
+        "nonmetal": "#fff176",
+        "noble gas": "#ce93d8",
+        "halogen": "#f06292",
+        "lanthanide": "#80cbc4",
+        "actinide": "#bcaaa4",
+        "unknown": "#eeeeee"
+    }
+    return render_template("tools/periodic_table.html", elements=elements, category_colors=category_colors)
 
 @app.route("/tools/image-metadata", methods=["GET", "POST"])
 def image_metadata():

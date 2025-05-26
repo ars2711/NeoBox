@@ -1,4 +1,4 @@
-# NeoBox
+# 📦NeoBox
 
 > Your all-in-one productivity toolkit — Swiss Army Knife for the web. Built as a CS50 Final Project.
 

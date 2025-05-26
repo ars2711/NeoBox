@@ -18,8 +18,11 @@
           <div class="card-body">
             <i class="bi {{ tool.icon }}" style="font-size:2rem;"></i>
             <h5 class="card-title mt-2">{{ tool.name }}</h5>
+            {% if tool.description %}
+              <div class="small text-muted mb-2">{{ tool.description }}</div>
+            {% endif %}
             {% if tool.login_required and not logged_in %}
-            <div class="small text-muted">Login required</div>
+              <div class="small text-muted">Login required</div>
             {% endif %}
           </div>
         </div>

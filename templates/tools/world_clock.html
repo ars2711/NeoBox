@@ -23,23 +23,28 @@ main %}
     maxZoom: 6,
   }).addTo(map);
 
+  let lastMarker = null;
+
   function showTime(lat, lng) {
-    fetch(`https://worldtimeapi.org/api/timezone/Etc/GMT`)
-      .then(() =>
-        fetch(
-          `https://api.bigdatacloud.net/data/timezone-by-location?latitude=${lat}&longitude=${lng}&key={{ bigdatacloud_api_key }}`
-        )
-      )
+    fetch(
+      `https://api.bigdatacloud.net/data/timezone-by-location?latitude=${lat}&longitude=${lng}&key={{ bigdatacloud_api_key }}`
+    )
       .then((r) => r.json())
       .then((data) => {
-        let tz = data.timezone || "Etc/GMT";
+        let tz = data.timezone || data.localTimeZone || "Etc/GMT";
+        if (!tz) tz = "Etc/GMT";
         fetch(`https://worldtimeapi.org/api/timezone/${tz}`)
           .then((r2) => r2.json())
           .then((tzdata) => {
             let dt = new Date(tzdata.datetime);
-            document.getElementById("clockInfo").innerHTML = `<h5>${
-              data.timezone || "Unknown"
-            }</h5><div style="font-size:2em;">${dt.toLocaleTimeString()}</div>`;
+            document.getElementById(
+              "clockInfo"
+            ).innerHTML = `<h5>${tz}</h5><div style="font-size:2em;">${dt.toLocaleTimeString()}</div>`;
+          })
+          .catch(() => {
+            document.getElementById(
+              "clockInfo"
+            ).innerHTML = `<div class="text-danger">Could not fetch time for this timezone.</div>`;
           });
       })
       .catch(() => {
@@ -50,8 +55,9 @@ main %}
   }
 
   map.on("click", function (e) {
+    if (lastMarker) map.removeLayer(lastMarker);
+    lastMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
     showTime(e.latlng.lat, e.latlng.lng);
-    L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
   });
 
   // Optionally, highlight user's current location/time

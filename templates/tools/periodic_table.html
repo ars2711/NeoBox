@@ -4,18 +4,117 @@ endblock %} {% block main %}
   <h2 class="text-center mb-4">
     <i class="bi-tablet"></i> Interactive Periodic Table
   </h2>
-  <div class="d-flex justify-content-center">
-    <div class="periodic-table mb-4">
-      {% for el in elements %} {% if el.symbol and el.number %}
-      <div
-        class="element-cell"
-        data-element="{{ el|tojson }}"
-        style="grid-column: {{ el.group }}; grid-row: {{ el.period }};"
+  <!-- Category/Block Filter Controls -->
+  <div class="mb-3 text-center">
+    <div class="d-inline-flex flex-wrap justify-content-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary" data-filter="all">
+        All
+      </button>
+      {% set categories = elements | map(attribute='category') | select | unique
+      | list %} {% for cat in categories %}
+      <button
+        class="btn btn-sm"
+        style="background: {{ category_colors[cat] or '#eee' }}; color: #222;"
+        data-filter="{{ cat|e }}"
       >
-        <div class="element-number">{{ el.number }}</div>
-        <div class="element-symbol">{{ el.symbol }}</div>
+        {{ cat|title }}
+      </button>
+      {% endfor %}
+      <button class="btn btn-sm btn-outline-info" data-filter-block="s">
+        s-block
+      </button>
+      <button class="btn btn-sm btn-outline-info" data-filter-block="p">
+        p-block
+      </button>
+      <button class="btn btn-sm btn-outline-info" data-filter-block="d">
+        d-block
+      </button>
+      <button class="btn btn-sm btn-outline-info" data-filter-block="f">
+        f-block
+      </button>
+    </div>
+  </div>
+  <div class="d-flex justify-content-center">
+    <div>
+      <!-- Main Periodic Table Grid -->
+      <div class="periodic-table mb-2" style="position: relative">
+        {% for el in elements %} {% if el.symbol and el.number and el.period <=
+        7 and el.group %}
+        <div
+          class="element-cell"
+          data-element='{{ el|tojson|safe }}'
+          data-category="{{ el.category|e }}"
+          data-block="{{ el.block|e }}"
+          style="grid-column: {{ el.group }}; grid-row: {{ el.period }}; background: {{ category_colors[el.category] or '#f8f9fa' }};"
+          title="{{ el.name }}"
+        >
+          <div class="element-number">{{ el.number }}</div>
+          <div class="element-symbol">{{ el.symbol }}</div>
+        </div>
+        {% endif %} {% endfor %}
       </div>
-      {% endif %} {% endfor %}
+      <!-- Lanthanides Label -->
+      <div
+        style="
+          text-align: center;
+          color: #888;
+          font-size: 0.9em;
+          margin-left: 96px;
+        "
+      >
+        Lanthanides
+      </div>
+      <!-- Lanthanides Row -->
+      <div
+        class="periodic-table mb-1"
+        style="grid-template-columns: repeat(15, 48px); margin-left: 96px"
+      >
+        {% for el in elements %} {% if el.symbol and el.number and el.period ==
+        6 and el.group == 3 and el.block == "f" %}
+        <div
+          class="element-cell"
+          data-element="{{ el|tojson|safe }}"
+          data-category="{{ el.category|e }}"
+          data-block="{{ el.block|e }}"
+          style="background: {{ category_colors[el.category] or '#f8f9fa' }};"
+          title="{{ el.name }}"
+        >
+          <div class="element-number">{{ el.number }}</div>
+          <div class="element-symbol">{{ el.symbol }}</div>
+        </div>
+        {% endif %} {% endfor %}
+      </div>
+      <!-- Actinides Label -->
+      <div
+        style="
+          text-align: center;
+          color: #888;
+          font-size: 0.9em;
+          margin-left: 96px;
+        "
+      >
+        Actinides
+      </div>
+      <!-- Actinides Row -->
+      <div
+        class="periodic-table mb-3"
+        style="grid-template-columns: repeat(15, 48px); margin-left: 96px"
+      >
+        {% for el in elements %} {% if el.symbol and el.number and el.period ==
+        7 and el.group == 3 and el.block == "f" %}
+        <div
+          class="element-cell"
+          data-element="{{ el|tojson|safe }}"
+          data-category="{{ el.category|e }}"
+          data-block="{{ el.block|e }}"
+          style="background: {{ category_colors[el.category] or '#f8f9fa' }};"
+          title="{{ el.name }}"
+        >
+          <div class="element-number">{{ el.number }}</div>
+          <div class="element-symbol">{{ el.symbol }}</div>
+        </div>
+        {% endif %} {% endfor %}
+      </div>
     </div>
   </div>
   <div class="alert alert-info text-center">
@@ -28,22 +127,214 @@ endblock %} {% block main %}
 <div id="element-modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">&times;</span>
-    <h4 id="modal-symbol"></h4>
-    <div id="modal-name"></div>
-    <div id="modal-atomic"></div>
-    <div id="modal-category"></div>
-    <div id="modal-summary"></div>
-    <div class="atom-visual" id="atom-visual"></div>
-    <table class="table table-bordered table-sm mt-2">
-      <tbody id="modal-table"></tbody>
-    </table>
+    <div class="modal-header">
+      <h3 id="modal-symbol"></h3>
+      <div id="modal-name" class="ms-3"></div>
+    </div>
+    <div id="modal-category" class="mb-2"></div>
+    <div id="modal-summary" class="mb-3"></div>
+    <div class="row g-3">
+      <div class="col-md-5 text-center">
+        <div id="modal-img"></div>
+        <div class="atom-visual" id="atom-visual"></div>
+      </div>
+      <div class="col-md-7">
+        <div class="modal-table-wrapper">
+          <table class="table table-bordered table-sm">
+            <tbody id="modal-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+<style>
+  .periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, 48px);
+    gap: 4px;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  .element-cell {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    transition: background 0.2s, box-shadow 0.2s;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    opacity: 1;
+  }
+  .element-cell.inactive {
+    opacity: 0.2;
+    filter: grayscale(0.7);
+  }
+  .element-cell:hover {
+    background: #e3f2fd !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+  }
+  .element-symbol {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #212529;
+    line-height: 1;
+  }
+  .element-number {
+    font-size: 0.8em;
+    color: #888;
+    line-height: 1;
+  }
+  #element-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  #element-modal.active {
+    display: flex !important;
+  }
+  #element-modal .modal-content {
+    background: #fff;
+    margin: 2vw auto;
+    padding: 2rem 2rem 1rem 2rem;
+    border-radius: 1rem;
+    max-width: 900px;
+    width: 95vw;
+    max-height: 95vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  }
+  #element-modal .close {
+    position: absolute;
+    right: 1.5rem;
+    top: 1.2rem;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+  }
+  #element-modal .modal-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  #modal-symbol {
+    font-size: 2.2rem;
+    font-weight: bold;
+  }
+  #modal-name {
+    font-size: 1.2rem;
+    color: #666;
+  }
+  #modal-category {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #444;
+  }
+  #modal-summary {
+    font-size: 1rem;
+    color: #333;
+  }
+  #modal-img img {
+    max-width: 120px;
+    max-height: 120px;
+    display: block;
+    margin: 0 auto 10px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  #modal-img a {
+    display: block;
+    text-align: center;
+    font-size: 0.95em;
+    margin-bottom: 5px;
+    word-break: break-all;
+  }
+  .atom-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+    min-height: 120px;
+  }
+  .modal-table-wrapper {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  @media (max-width: 700px) {
+    #element-modal .modal-content {
+      max-width: 99vw;
+      padding: 1rem 0.5rem;
+    }
+    .row.g-3 {
+      flex-direction: column;
+    }
+  }
+</style>
 <script>
+  // Category color mapping (should match your categories)
+  const categoryColors = {
+    "alkali metal": "#ffb74d",
+    "alkaline earth metal": "#ffd54f",
+    "transition metal": "#90caf9",
+    "post-transition metal": "#b0bec5",
+    metalloid: "#a5d6a7",
+    nonmetal: "#fff176",
+    "noble gas": "#ce93d8",
+    halogen: "#f06292",
+    lanthanide: "#80cbc4",
+    actinide: "#bcaaa4",
+    unknown: "#eeeeee",
+  };
+
+  // Filter logic
   document.addEventListener("DOMContentLoaded", function () {
+    // Filtering by category
+    document.querySelectorAll("[data-filter]").forEach((btn) => {
+      btn.onclick = function () {
+        const cat = this.getAttribute("data-filter");
+        document.querySelectorAll(".element-cell").forEach((cell) => {
+          if (cat === "all" || cell.dataset.category === cat) {
+            cell.classList.remove("inactive");
+          } else {
+            cell.classList.add("inactive");
+          }
+        });
+      };
+    });
+    // Filtering by block
+    document.querySelectorAll("[data-filter-block]").forEach((btn) => {
+      btn.onclick = function () {
+        const block = this.getAttribute("data-filter-block");
+        document.querySelectorAll(".element-cell").forEach((cell) => {
+          if (cell.dataset.block === block) {
+            cell.classList.remove("inactive");
+          } else {
+            cell.classList.add("inactive");
+          }
+        });
+      };
+    });
+
+    // Modal logic
     function closeModal() {
-      document.getElementById("element-modal").style.display = "none";
+      document.getElementById("element-modal").classList.remove("active");
     }
     window.closeModal = closeModal;
 
@@ -51,81 +342,60 @@ endblock %} {% block main %}
       cell.onclick = function () {
         const el = JSON.parse(this.dataset.element);
         if (!el.symbol || !el.number) return;
-        document.getElementById(
-          "modal-symbol"
-        ).innerText = `${el.symbol} (${el.name})`;
-        document.getElementById(
-          "modal-name"
-        ).innerHTML = `<b>Atomic Number:</b> ${el.number}`;
-        document.getElementById(
-          "modal-atomic"
-        ).innerHTML = `<b>Atomic Mass:</b> ${el.atomic_mass}`;
-        document.getElementById(
-          "modal-category"
-        ).innerHTML = `<b>Category:</b> ${el.category}`;
-        document.getElementById("modal-summary").innerHTML = el.summary
-          ? `<b>Summary:</b> ${el.summary}`
-          : "";
+        document.getElementById("modal-symbol").innerText = `${el.symbol} (${el.name})`;
+        document.getElementById("modal-name").innerHTML = `<b>Atomic Number:</b> ${el.number} &nbsp; <b>Atomic Mass:</b> ${el.atomic_mass ?? ""}`;
+        document.getElementById("modal-category").innerHTML = `<b>Category:</b> ${el.category ?? "Unknown"}`;
+        document.getElementById("modal-summary").innerHTML = el.summary ? `<b>Summary:</b> ${el.summary}` : "";
+
+        // Images and links
+        let imgHtml = "";
+        if (el.bohr_model_image) {
+          imgHtml += `<img src="${el.bohr_model_image}" alt="${el.name} Bohr Model">`;
+        }
+        if (el.image && el.image.attribution) {
+          imgHtml += `<img src="${el.image.url}" alt="${el.name}" style="max-width: 120px; max-height: 120px;">`;
+        }
+
+        let linksHtml = `<div class="d-flex flex-wrap justify-content-center gap-2">`;
+        if (el.bohr_model_3d) {
+          linksHtml += `<a href="${el.bohr_model_3d}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-arrow-down"></i> 3D Model (.glb)</a>`;
+        }
+        if (el.source) {
+          linksHtml += `<a href="${el.source}" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-wikipedia"></i> Wikipedia</a>`;
+        }
+        linksHtml += `</div>`;
+        imgHtml += linksHtml;
+        document.getElementById("modal-img").innerHTML = imgHtml;
+
         // Table of properties
         let table = "";
         for (const [k, v] of Object.entries(el)) {
           if (
             [
-              "symbol",
-              "name",
-              "number",
-              "category",
-              "summary",
-              "atomic_mass",
-              "protons",
-              "neutrons",
-              "electrons",
+              "symbol", "name", "number", "category", "summary", "atomic_mass",
+              "protons", "neutrons", "electrons", "block", "group", "period",
+              "image", "spectral_img", "source", "bohr_model_image", "bohr_model_3d"
             ].includes(k)
-          )
-            continue;
-          table += `<tr><th>${k
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase())}</th><td>${v}</td></tr>`;
+          ) continue;
+          let value = Array.isArray(v) ? v.join(", ") : v;
+          if (value === null || value === undefined) value = "";
+          table += `<tr><th>${k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</th><td>${value}</td></tr>`;
         }
         document.getElementById("modal-table").innerHTML = table;
-        // Atom visualization
-        let protons = el.protons || el.number,
-          neutrons = el.neutrons || el.number,
-          electrons = el.electrons || el.number;
-        let nucleus = "";
-        for (let i = 0; i < protons; i++)
-          nucleus += '<div class="atom-proton"></div>';
-        for (let i = 0; i < neutrons; i++)
-          nucleus += '<div class="atom-neutron"></div>';
-        let electrons_html = "";
-        let shells = [2, 8, 18, 32, 32, 18, 8]; // up to 7 shells
-        let e = electrons,
-          shell_r = 40;
-        for (let s = 0; s < shells.length && e > 0; s++) {
-          let n = Math.min(shells[s], e);
-          for (let i = 0; i < n; i++) {
-            let angle = (2 * Math.PI * i) / n;
-            let x = Math.cos(angle) * shell_r * (s + 1);
-            let y = Math.sin(angle) * shell_r * (s + 1);
-            electrons_html += `<div class="atom-electron" style="left:${
-              50 + x
-            }%;top:${50 + y}%;"></div>`;
-          }
-          e -= n;
-        }
-        document.getElementById(
-          "atom-visual"
-        ).innerHTML = `<div style="position:relative;width:200px;height:200px;">
-      <div class="atom-nucleus" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">${nucleus}</div>
-      <div class="atom-electrons" style="position:absolute;left:0;top:0;width:100%;height:100%;">${electrons_html}</div>
-    </div>`;
-        document.getElementById("element-modal").style.display = "block";
+
+        document.getElementById("element-modal").classList.add("active");
       };
     });
-    window.onclick = function (event) {
-      if (event.target == document.getElementById("element-modal"))
-        closeModal();
-    };
+    // Close modal when clicking outside modal-content
+    document
+      .getElementById("element-modal")
+      .addEventListener("click", function (e) {
+        if (e.target === this) closeModal();
+      });
+    // Optional: close on ESC key
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeModal();
+    });
   });
 </script>
 {% endblock %}
