@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Tools{% endblock %}
+{% block main %}
+<div class="container mt-1">
+  <h1>Tools</h1>
+  <div class="mb-4">
+    <input type="text" id="toolSearch" class="form-control" placeholder="Search tools..." style="max-width:300px;display:inline-block;">
+  </div>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="toolsGrid">
+    {% for tool in tools %}
+    <div class="col tool-card fade-in" data-name="{{ tool.name|lower }}">
+      {% if not tool.login_required or logged_in %}
+      <a href="tools/{{ tool.url }}" class="text-decoration-none">
+      {% else %}
+      <a href="/login" class="text-decoration-none" title="Login required">
+      {% endif %}
+        <div class="card h-100 text-center shadow-sm {% if tool.login_required and not logged_in %}opacity-50{% endif %}">
+          <div class="card-body">
+            <i class="bi {{ tool.icon }}" style="font-size:2rem;"></i>
+            <h5 class="card-title mt-2">{{ tool.name }}</h5>
+            {% if tool.login_required and not logged_in %}
+            <div class="small text-muted">Login required</div>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  <h2 class="mt-5">Upcoming Tools</h2>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    {% for tool in upcoming_tools %}
+    <div class="col">
+      <div class="card h-100 text-center shadow-sm opacity-50" style="pointer-events: none; cursor: not-allowed;">
+        <div class="card-body">
+          <i class="bi {{ tool.icon }}" style="font-size:2rem; color: #888;"></i>
+          <h5 class="card-title mt-2">{{ tool.name }}</h5>
+          <div class="small text-muted">{{ tool.soon }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

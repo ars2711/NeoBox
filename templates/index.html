@@ -1,0 +1,86 @@
+{% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block
+main %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8">
+      <h1 class="mb-3">
+        Welcome, {{ g.user.username if g.user else 'User' }}!
+      </h1>
+      <div class="mb-4">
+        <strong>Daily Quote:</strong>
+        <blockquote class="blockquote">
+          <p>
+            {{ daily_quote or "Stay positive, work hard, make it happen." }}
+          </p>
+        </blockquote>
+        <strong>Daily Question:</strong>
+        <blockquote class="blockquote">
+          <p>
+            {{ daily_question or "What is one thing you want to accomplish
+            today?" }}
+          </p>
+        </blockquote>
+      </div>
+      <h4>Frequent Tools</h4>
+      <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+        {% for tool in frequent_tools %}
+        <div class="col">
+          <a href="{{ tool.url }}" class="text-decoration-none">
+            <div class="card h-100 text-center shadow-sm">
+              <div class="card-body">
+                <i class="bi {{ tool.icon }}" style="font-size: 2rem"></i>
+                <h6 class="card-title mt-2">{{ tool.name }}</h6>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+      <h4>Quick Links</h4>
+      <ul class="list-inline">
+        <li class="list-inline-item">
+          <a href="/profile" class="btn btn-outline-primary btn-sm">Profile</a>
+        </li>
+        <li class="list-inline-item">
+          <a href="/settings" class="btn btn-outline-secondary btn-sm"
+            >Settings</a
+          >
+        </li>
+        <li class="list-inline-item">
+          <a href="/feedback" class="btn btn-outline-success btn-sm"
+            >Feedback</a
+          >
+        </li>
+        <li class="list-inline-item">
+          <a href="/tools" class="btn btn-outline-info btn-sm">All Tools</a>
+        </li>
+        {% if g.user and g.user.is_admin %}
+        <li class="list-inline-item">
+          <a href="/admin" class="btn btn-outline-danger btn-sm">Admin Panel</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+    <div class="col-md-4">
+      <h5>Notifications</h5>
+      <ul class="list-group mb-3">
+        {% for note in notifications[:5] %}
+        <li
+          class="list-group-item {% if not note.read %}list-group-item-warning{% endif %}"
+        >
+          {{ note.message }}
+          <span class="text-muted small float-end"
+            >{{ note.created_at.strftime('%b %d, %H:%M') }}</span
+          >
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No notifications</li>
+        {% endfor %}
+      </ul>
+      <a href="/notifications" class="btn btn-link btn-sm"
+        >View all notifications</a
+      >
+    </div>
+  </div>
+</div>
+{% endblock %}

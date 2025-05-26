@@ -1,0 +1,40 @@
+{% extends "layout.html" %} {% block title %}Reverse Image Search{% endblock %}
+{% block main %}
+<div class="container mt-4">
+  <h2>Reverse Image Search</h2>
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-2">
+      <label>Paste Image URL:</label>
+      <input
+        type="url"
+        name="image_url"
+        class="form-control"
+        placeholder="https://example.com/image.jpg"
+        value="{{ image_url }}"
+        required
+      />
+    </div>
+    <div class="mb-2">
+      <label>Or Upload Image:</label>
+      <input type="file" name="image_file" accept="image/*" />
+    </div>
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+  {% if error %}
+  <div class="alert alert-danger mt-2">{{ error }}</div>
+  {% endif %} {% if upload_url %}
+  <h5>Search on:</h5>
+  <ul>
+    {% for engine in engines %}
+    <li>
+      <a href="{{ engine.url }}{{ upload_url | urlencode }}" target="_blank">
+        <i class="{{ engine.icon }}"></i> {{ engine.name }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if upload_url.startswith('data:image') %}
+  <img src="{{ upload_url }}" style="max-width: 300px" />
+  {% endif %} {% endif %}
+</div>
+{% endblock %}

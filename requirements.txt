@@ -1,0 +1,7 @@
+Flask
+Flask-Session
+pytz
+requests
+Pillow
+PyPDF2
+googletrans==4.0.0-rc1

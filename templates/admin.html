@@ -1,0 +1,68 @@
+{% extends "layout.html" %} {% block title %}Admin Panel{% endblock %} {% block
+main %}
+<h2>Admin Panel</h2>
+<h4>Users</h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Admin</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.id }}</td>
+      <td>{{ user.username }}</td>
+      <td>{{ user.email }}</td>
+      <td>{% if user.is_admin %}✔️{% else %}❌{% endif %}</td>
+      <td>
+        {% if not user.is_admin %}
+        <a href="/admin/promote/{{ user.id }}" class="btn btn-sm btn-success"
+          >Promote</a
+        >
+        {% else %}
+        <a href="/admin/demote/{{ user.id }}" class="btn btn-sm btn-warning"
+          >Demote</a
+        >
+        {% endif %}
+        <a
+          href="/admin/delete/{{ user.id }}"
+          class="btn btn-sm btn-danger"
+          onclick="return confirm('Delete user?');"
+          >Delete</a
+        >
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h4>Feedback</h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Email</th>
+      <th>Rating</th>
+      <th>Message</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fb in feedbacks %}
+    <tr>
+      <td>{{ fb.id }}</td>
+      <td>{{ fb.user_id or 'Anon' }}</td>
+      <td>{{ fb.email or '' }}</td>
+      <td>{{ fb.rating }}</td>
+      <td>{{ fb.message }}</td>
+      <td>{{ fb.created_at.strftime('%Y-%m-%d') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,56 @@
+# Urdu translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-05-19 21:52+0300\n"
+"PO-Revision-Date: 2025-05-19 16:06+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ur\n"
+"Language-Team: ur <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: templates/landing.html:1
+msgid "Welcome to NeoBox"
+msgstr "نیوبوکس میں خوش آمدید"
+
+#: templates/landing.html:4
+msgid "Welcome to NeoBox!"
+msgstr "!نیوبوکس میں خوش آمدید"
+
+#: templates/landing.html:6
+msgid "Your all-in-one productivity and utility web app."
+msgstr "آپ کی ہمہ جہت پیداواری صلاحیت اور یوٹیلیٹی ویب ایپ۔"
+
+#: templates/landing.html:9
+msgid "Explore Tools"
+msgstr "ٹولز دریافت کریں۔"
+
+#: templates/landing.html:12
+msgid "Already have an account?"
+msgstr "پہلے سے ہی اکاؤنٹ ہے؟"
+
+#: templates/landing.html:13
+msgid "Log in"
+msgstr "لاگ ان کریں۔"
+
+#: templates/landing.html:14
+msgid "or"
+msgstr "یا"
+
+#: templates/landing.html:15
+msgid "Register"
+msgstr "رجسٹر کریں۔"
+
+#: templates/landing.html:17
+msgid "Unique visitors:"
+msgstr "منفرد زائرین:"
+

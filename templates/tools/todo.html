@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block title %}To-Do List{% endblock %} {% block
+main %}
+<div class="container mt-4">
+  <h2>To-Do List</h2>
+  <form method="post" class="mb-3">
+    <input
+      type="text"
+      name="task"
+      class="form-control"
+      placeholder="Add a new task"
+      required
+    />
+    <button type="submit" class="btn btn-primary mt-2">Add</button>
+  </form>
+  <ul class="list-group">
+    {% for todo in todos %}
+    <li class="list-group-item">{{ todo }}</li>
+    {% else %}
+    <li class="list-group-item text-muted">No tasks yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

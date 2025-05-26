@@ -1,0 +1,31 @@
+{% extends "layout.html" %} {% block title %}Feedback{% endblock %} {% block
+main %}
+<h2>Feedback/Suggestions</h2>
+<p class="lead">
+  We value your feedback and suggestions. Please fill out the form below to help
+  us improve our services.
+</p>
+
+<form method="post" class="text-start" style="max-width: 400px; margin: 0 auto">
+  <div class="mb-3">
+    <label class="form-label">Your Email</label>
+    <input name="email" type="email" class="form-control" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Rating</label>
+    <select name="rating" class="form-select" required>
+      <option value="">Select</option>
+      <option value="5">Excellent</option>
+      <option value="4">Good</option>
+      <option value="3">Average</option>
+      <option value="2">Poor</option>
+      <option value="1">Terrible</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Feedback</label>
+    <textarea name="message" class="form-control" rows="5" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

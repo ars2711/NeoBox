@@ -1,0 +1,22 @@
+{% extends "layout.html" %} {% block title %}AI Prompt{% endblock %} {% block
+content %}
+<div class="container mt-4">
+  <h2><i class="bi-robot"></i> AI Prompt</h2>
+  <form method="post" class="mb-3">
+    <label for="prompt" class="form-label">Enter your prompt:</label>
+    <textarea class="form-control" id="prompt" name="prompt" rows="3" required>
+{{ prompt }}</textarea
+    >
+    <button class="btn btn-primary mt-2" type="submit">Ask AI</button>
+  </form>
+  {% if result %}
+  <div class="alert alert-info"><b>AI:</b> {{ result }}</div>
+  {% endif %}
+  <div class="alert alert-secondary mt-4">
+    <small
+      >This is a demo AI. For real AI, connect to an API like OpenAI or
+      Gemini.</small
+    >
+  </div>
+</div>
+{% endblock %}

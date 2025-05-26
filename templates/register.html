@@ -1,0 +1,88 @@
+{% extends "layout.html" %} {% block title %} Register {% endblock %} {% block
+main %}
+<h1 class="mt-4">Register</h1>
+<p class="lead">Create a new account by filling out the form below.</p>
+<form
+  action="/register"
+  method="post"
+  class="text-start"
+  style="max-width: 400px; margin: 0 auto"
+>
+  <div class="mb-3">
+    <label for="username" class="form-label">Username</label>
+    <input
+      id="username"
+      autocomplete="off"
+      autofocus
+      class="form-control"
+      name="username"
+      placeholder="e.g. johndoe"
+      type="text"
+    />
+  </div>
+  <div class="mb-3">
+    <label for="email" class="form-label">Email</label>
+    <input
+      id="email"
+      name="email"
+      type="email"
+      class="form-control"
+      placeholder="e.g. johndoe@gmail.com"
+      required
+    />
+  </div>
+  <div class="mb-3">
+    <label for="phone" class="form-label">Phone Number</label>
+    <input
+      id="phone"
+      name="phone"
+      type="tel"
+      class="form-control"
+      placeholder="e.g. +1234567890"
+      title="Please enter a valid phone number."
+    />
+  </div>
+  <div class="mb-3">
+    <label for="dob" class="form-label">Date of Birth</label>
+    <input id="dob" name="dob" type="date" class="form-control" />
+  </div>
+  <div class="mb-3">
+    <label for="gender" class="form-label">Gender</label>
+    <select id="gender" name="gender" class="form-select">
+      <option value="">Prefer not to say</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password</label>
+    <input
+      id="password"
+      class="form-control"
+      name="password"
+      autocomplete="new-password"
+      placeholder="At least 8 characters"
+      type="password"
+    />
+  </div>
+  <div class="mb-3">
+    <label for="confirmation" class="form-label">Confirm Password</label>
+    <input
+      id="confirmation"
+      class="form-control"
+      name="confirmation"
+      autocomplete="new-password"
+      placeholder="Re-enter your password"
+      type="password"
+    />
+  </div>
+  <button class="btn btn-primary" type="submit">Register</button>
+</form>
+<!--
+<a href="{{ url_for('google.login') }}" class="btn btn-danger mt-3">
+  <i class="bi bi-google"></i> Sign up with Google
+</a>
+-->
+<p class="mt-3">Already have an account? <a href="/login">Log in here</a>.</p>
+{% endblock %}

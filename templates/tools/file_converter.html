@@ -1,0 +1,150 @@
+{% extends "layout.html" %} {% block title %}File Converter{% endblock %} {%
+block main %}
+<div class="container mt-4">
+  <h2>File Converter</h2>
+  <!-- Category Tabs OUTSIDE the form -->
+  <ul class="nav nav-tabs mb-3">
+    {% for key, cat in categories.items() %}
+    <li class="nav-item">
+      <a
+        class="nav-link {% if selected_category == key %}active{% endif %}"
+        href="{{ url_for('file_converter', category=key) }}"
+      >
+        {{ cat.label }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  <form id="convert-form" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="category" value="{{ selected_category }}" />
+    <div class="mb-3">
+      <div
+        id="drop-area"
+        class="border border-2 border-primary rounded p-4 text-center mb-2"
+        style="background: #f8f9fa"
+      >
+        <p class="mb-2">Drag & drop files here or click to select</p>
+        <input
+          type="file"
+          id="fileElem"
+          name="files"
+          class="form-control d-none"
+          multiple
+          required
+          accept="{% for ext in categories[selected_category].exts %}.{{ ext }}{% if not loop.last %},{% endif %}{% endfor %}"
+        />
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          onclick="document.getElementById('fileElem').click();"
+        >
+          Choose Files
+        </button>
+        <div id="file-list" class="mt-2 small text-muted"></div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label>Convert to:</label>
+      <select name="target_format" class="form-select" required>
+        {% for ext in categories[selected_category].exts %}
+        <option value="{{ ext }}">{{ ext|upper }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Convert</button>
+  </form>
+  {% if result %}
+  <div class="alert alert-info mt-3 p-3">
+    <div class="d-flex flex-column gap-2">
+      {% if zip_url %}
+      <a href="{{ zip_url }}" class="btn btn-success mb-2">
+        <i class="bi bi-file-earmark-zip"></i> Download All as ZIP
+      </a>
+      {% endif %} {% for entry in result %} {% if entry.type == "success" %}
+      <div
+        class="alert alert-success py-2 px-3 mb-0 d-flex align-items-center gap-2"
+        style="border-radius: 0.5rem"
+      >
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <a
+          href="{{ url_for('download_file', zip_id=zip_url.split('/')[-1], filename=entry.file) }}"
+          download
+          class="fw-bold text-success"
+          style="text-decoration: underline"
+        >
+          {{ entry.file.split('/')[-1] }}
+        </a>
+        <span class="ms-2 small text-muted">(converted)</span>
+      </div>
+      {% else %}
+      <div
+        class="alert alert-danger py-2 px-3 mb-0 d-flex align-items-center gap-2"
+        style="border-radius: 0.5rem"
+      >
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ entry.msg }}
+      </div>
+      {% endif %} {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+<script>
+  // Drag and drop logic
+  const dropArea = document.getElementById("drop-area");
+  const fileElem = document.getElementById("fileElem");
+  const fileList = document.getElementById("file-list");
+  dropArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropArea.classList.add("bg-primary", "text-white");
+  });
+  dropArea.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    dropArea.classList.remove("bg-primary", "text-white");
+  });
+  dropArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropArea.classList.remove("bg-primary", "text-white");
+    fileElem.files = e.dataTransfer.files;
+    updateFileList();
+  });
+  fileElem.addEventListener("change", updateFileList);
+  function updateFileList() {
+    let names = [];
+    for (let i = 0; i < fileElem.files.length; i++) {
+      names.push(fileElem.files[i].name);
+    }
+    fileList.textContent = names.join(", ");
+  }
+  function convertImages() {
+    const files = document.getElementById("fileElem").files;
+    const format = document.getElementById("targetFormat").value;
+    const downloads = document.getElementById("downloads");
+    downloads.innerHTML = "";
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          canvas.getContext("2d").drawImage(img, 0, 0);
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = file.name.replace(/\.\w+$/, "") + "." + format;
+            a.textContent = "Download " + a.download;
+            downloads.appendChild(a);
+            downloads.appendChild(document.createElement("br"));
+          }, "image/" + format);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+{% endblock %}

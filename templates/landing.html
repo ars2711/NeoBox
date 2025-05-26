@@ -1,0 +1,268 @@
+{% extends "layout.html" %} {% block title %}{{ _("Welcome to NeoBox") }}{%endblock %} {% block main %}
+<div class="container py-5">
+  <!-- Hero Section -->
+  <div class="row align-items-center mb-5">
+    <div class="col-md-6 text-center text-md-start">
+      <img
+        src="/static/neobox-logo.png"
+        alt="NeoBox Logo"
+        style="width: 90px; height: 90px"
+        class="mb-3"
+      />
+      <h1 class="display-4 fw-bold">
+        <span id="typewriter"></span><span class="blinking-cursor">|</span>
+      </h1>
+      <script>
+        const text = "Welcome to NeoBox!";
+        let i = 0;
+        const speed = 80;
+        function typeWriter() {
+          if (i < text.length) {
+            document.getElementById("typewriter").innerHTML += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+          }
+        }
+        window.onload = typeWriter;
+      </script>
+      <p class="lead mb-4">
+        {{ _("Your all-in-one productivity and utility web app.") }}
+      </p>
+      <a class="btn btn-primary btn-lg me-2" href="/tools"
+        >{{ _("Explore Tools") }}</a
+      >
+      <a class="btn btn-outline-secondary btn-lg" href="/register"
+        >{{ _("Get Started") }}</a
+      >
+      <div class="mt-3">
+        <span class="text-muted"
+          >{{ _("Unique visitors:") }} {{ visitor_count }}</span
+        >
+      </div>
+      <div id="dailyQuote" class="mt-4 fst-italic text-muted small"></div>
+      <script>
+        const quotes = [
+          "Productivity is never an accident.",
+          "Small steps every day make big results.",
+          "You don’t need more time, you just need to decide.",
+          "Focus on being productive, not busy."
+        ];
+        document.getElementById("dailyQuote").innerText =
+          quotes[Math.floor(Math.random() * quotes.length)];
+      </script>
+    </div>
+    <div class="col-md-6 text-center">
+      <img
+        id="random-illustration"
+        src="/static/media/undraw_website_27ju.svg"
+        alt="Productivity Illustration"
+        class="img-fluid"
+        style="max-height: 300px"
+      />
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <div class="row mb-5" data-aos="fade-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="fw-semibold mb-3">{{ _("About NeoBox") }}</h2>
+      <p class="fs-5">
+        {{ _("NeoBox is your digital Swiss Army knife. Access calculators,
+        converters, note-taking, reminders, and dozens of other tools—all in one
+        place. No ads, no clutter, just pure productivity. Built for students,
+        professionals, and anyone who wants to get more done, faster.") }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Features Grid -->
+  <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+    <div class="col">
+      <div class="card h-100 text-center shadow-sm" data-aos="zoom-in" data-aos-delay="100">
+        <div class="card-body">
+          <i class="bi bi-calculator display-5 text-primary"></i>
+          <h5 class="card-title mt-3">{{ _("Smart Tools") }}</h5>
+          <p class="card-text">
+            {{ _("From calculators to converters, find everything you need in
+            one place.") }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 text-center shadow-sm" data-aos="zoom-in" data-aos-delay="200">
+        <div class="card-body">
+          <i class="bi bi-cloud-arrow-down display-5 text-success"></i>
+          <h5 class="card-title mt-3">{{ _("Cloud Sync") }}</h5>
+          <p class="card-text">
+            {{ _("Access your notes and settings anywhere, anytime, on any
+            device.") }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 text-center shadow-sm" data-aos="zoom-in" data-aos-delay="300">
+        <div class="card-body">
+          <i class="bi bi-shield-check display-5 text-info"></i>
+          <h5 class="card-title mt-3">{{ _("Privacy First") }}</h5>
+          <p class="card-text">
+            {{ _("Your data is yours. We never sell or share your information.") }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials Section -->
+  <div class="row mb-5" data-aos="fade-up">
+    <div class="col-lg-8 mx-auto">
+      <h3 class="fw-semibold mb-4 text-center">
+        {{ _("What Our Users Say") }}
+      </h3>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <p class="card-text">
+                "{{ _("NeoBox has made my daily workflow so much easier. All my
+                tools in one place!") }}"
+              </p>
+              <div class="text-end text-muted small">
+                — {{ _("Sara, Student") }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <p class="card-text">
+                "{{ _("I love the clean interface and the variety of utilities.
+                Highly recommended!") }}"
+              </p>
+              <div class="text-end text-muted small">
+                — {{ _("Alex, Developer") }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="row mb-5" data-aos="fade-up">
+    <div class="col-lg-8 mx-auto">
+      <h3 class="fw-semibold mb-4 text-center">
+        {{ _("Frequently Asked Questions") }}
+      </h3>
+      <div class="accordion" id="faqAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faqCollapse1"
+            >
+              {{ _("Is NeoBox free to use?") }}
+            </button>
+          </h2>
+          <div
+            id="faqCollapse1"
+            class="accordion-collapse collapse"
+            data-bs-parent="#faqAccordion"
+          >
+            <div class="accordion-body">
+              {{ _("Yes! NeoBox is completely free for everyone.") }}
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq2">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faqCollapse2"
+            >
+              {{ _("Do I need to create an account?") }}
+            </button>
+          </h2>
+          <div
+            id="faqCollapse2"
+            class="accordion-collapse collapse"
+            data-bs-parent="#faqAccordion"
+          >
+            <div class="accordion-body">
+              {{ _("You can use many tools without an account, but registering
+              unlocks more features and personalization.") }}
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq3">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faqCollapse3"
+            >
+              {{ _("Is my data safe?") }}
+            </button>
+          </h2>
+          <div
+            id="faqCollapse3"
+            class="accordion-collapse collapse"
+            data-bs-parent="#faqAccordion"
+          >
+            <div class="accordion-body">
+              {{ _("Absolutely. Your data is encrypted and never shared with
+              third parties.") }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call to Action & Links -->
+  <div class="row mb-4" data-aos="zoom-in">
+    <div class="col text-center">
+      <a href="/login" class="btn btn-outline-primary btn-lg me-2"
+        >{{ _("Log In") }}</a
+      >
+      <a href="/register" class="btn btn-outline-success btn-lg me-2"
+        >{{ _("Register") }}</a
+      >
+      <a href="/feedback" class="btn btn-outline-warning btn-lg"
+        >{{ _("Give Feedback") }}</a
+      >
+    </div>
+  </div>
+</div>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init();
+  const illustrations = [
+    "/static/media/undraw_collaborative-writing_ir40.svg",
+    "/static/media/undraw_dev-productivity_5wps.svg",
+    "/static/media/undraw_exams_d2tf.svg",
+    "/static/media/undraw_feeling-proud_tdos.svg",
+    "/static/media/undraw_in-the-office_e7pg.svg",
+    "/static/media/undraw_open-source_g069.svg",
+    "/static/media/undraw_personal-website_kz7a.svg",
+    "/static/media/undraw_professor_d7zn.svg",
+    "/static/media/undraw_read-notes_7itt.svg",
+    "/static/media/undraw_remotely_p27a.svg",
+    "/static/media/undraw_website_27ju.svg",
+    "/static/media/undraw_workspace_s6wf.svg",
+    // Add more image paths as needed
+  ];
+  document.getElementById("random-illustration").src =
+    illustrations[Math.floor(Math.random() * illustrations.length)];
+</script>
+  {% endblock %}
+</div>

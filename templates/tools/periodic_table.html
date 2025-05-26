@@ -1,0 +1,131 @@
+{% extends "layout.html" %} {% block title %}Interactive Periodic Table{%
+endblock %} {% block main %}
+<div class="container mt-4">
+  <h2 class="text-center mb-4">
+    <i class="bi-tablet"></i> Interactive Periodic Table
+  </h2>
+  <div class="d-flex justify-content-center">
+    <div class="periodic-table mb-4">
+      {% for el in elements %} {% if el.symbol and el.number %}
+      <div
+        class="element-cell"
+        data-element="{{ el|tojson }}"
+        style="grid-column: {{ el.group }}; grid-row: {{ el.period }};"
+      >
+        <div class="element-number">{{ el.number }}</div>
+        <div class="element-symbol">{{ el.symbol }}</div>
+      </div>
+      {% endif %} {% endfor %}
+    </div>
+  </div>
+  <div class="alert alert-info text-center">
+    Click any element to see detailed info and a simple atomic structure
+    visualization.
+  </div>
+</div>
+
+<!-- Modal for element details -->
+<div id="element-modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h4 id="modal-symbol"></h4>
+    <div id="modal-name"></div>
+    <div id="modal-atomic"></div>
+    <div id="modal-category"></div>
+    <div id="modal-summary"></div>
+    <div class="atom-visual" id="atom-visual"></div>
+    <table class="table table-bordered table-sm mt-2">
+      <tbody id="modal-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    function closeModal() {
+      document.getElementById("element-modal").style.display = "none";
+    }
+    window.closeModal = closeModal;
+
+    document.querySelectorAll(".element-cell").forEach((cell) => {
+      cell.onclick = function () {
+        const el = JSON.parse(this.dataset.element);
+        if (!el.symbol || !el.number) return;
+        document.getElementById(
+          "modal-symbol"
+        ).innerText = `${el.symbol} (${el.name})`;
+        document.getElementById(
+          "modal-name"
+        ).innerHTML = `<b>Atomic Number:</b> ${el.number}`;
+        document.getElementById(
+          "modal-atomic"
+        ).innerHTML = `<b>Atomic Mass:</b> ${el.atomic_mass}`;
+        document.getElementById(
+          "modal-category"
+        ).innerHTML = `<b>Category:</b> ${el.category}`;
+        document.getElementById("modal-summary").innerHTML = el.summary
+          ? `<b>Summary:</b> ${el.summary}`
+          : "";
+        // Table of properties
+        let table = "";
+        for (const [k, v] of Object.entries(el)) {
+          if (
+            [
+              "symbol",
+              "name",
+              "number",
+              "category",
+              "summary",
+              "atomic_mass",
+              "protons",
+              "neutrons",
+              "electrons",
+            ].includes(k)
+          )
+            continue;
+          table += `<tr><th>${k
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase())}</th><td>${v}</td></tr>`;
+        }
+        document.getElementById("modal-table").innerHTML = table;
+        // Atom visualization
+        let protons = el.protons || el.number,
+          neutrons = el.neutrons || el.number,
+          electrons = el.electrons || el.number;
+        let nucleus = "";
+        for (let i = 0; i < protons; i++)
+          nucleus += '<div class="atom-proton"></div>';
+        for (let i = 0; i < neutrons; i++)
+          nucleus += '<div class="atom-neutron"></div>';
+        let electrons_html = "";
+        let shells = [2, 8, 18, 32, 32, 18, 8]; // up to 7 shells
+        let e = electrons,
+          shell_r = 40;
+        for (let s = 0; s < shells.length && e > 0; s++) {
+          let n = Math.min(shells[s], e);
+          for (let i = 0; i < n; i++) {
+            let angle = (2 * Math.PI * i) / n;
+            let x = Math.cos(angle) * shell_r * (s + 1);
+            let y = Math.sin(angle) * shell_r * (s + 1);
+            electrons_html += `<div class="atom-electron" style="left:${
+              50 + x
+            }%;top:${50 + y}%;"></div>`;
+          }
+          e -= n;
+        }
+        document.getElementById(
+          "atom-visual"
+        ).innerHTML = `<div style="position:relative;width:200px;height:200px;">
+      <div class="atom-nucleus" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">${nucleus}</div>
+      <div class="atom-electrons" style="position:absolute;left:0;top:0;width:100%;height:100%;">${electrons_html}</div>
+    </div>`;
+        document.getElementById("element-modal").style.display = "block";
+      };
+    });
+    window.onclick = function (event) {
+      if (event.target == document.getElementById("element-modal"))
+        closeModal();
+    };
+  });
+</script>
+{% endblock %}

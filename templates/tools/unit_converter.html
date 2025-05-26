@@ -1,0 +1,45 @@
+{% extends "/layout.html" %}
+{% block title %}Unit Converter{% endblock %}
+{% block main %}
+<div class="container py-4" style="max-width: 500px">
+  <h2 class="mb-4 text-center">Unit Converter</h2>
+  <form method="post" class="mb-3" id="unitForm">
+    <div class="mb-2">
+      <label for="category" class="form-label">Category</label>
+      <select name="category" id="category" class="form-select" onchange="this.form.submit()">
+        {% for cat in categories %}
+        <option value="{{ cat }}" {% if category==cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-2">
+      <input type="number" step="any" name="value" class="form-control" placeholder="Value" required value="{{ value or '' }}">
+    </div>
+    <div class="row mb-2">
+      <div class="col">
+        <select name="from_unit" class="form-select" required>
+          {% for code, name in categories[category].units.items() %}
+          <option value="{{ code }}" {% if from_unit==code %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col text-center align-self-center">
+        <span>→</span>
+      </div>
+      <div class="col">
+        <select name="to_unit" class="form-select" required>
+          {% for code, name in categories[category].units.items() %}
+          <option value="{{ code }}" {% if to_unit==code %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Convert</button>
+  </form>
+  {% if result is not none %}
+    <div class="alert alert-info text-center">
+      Result: {{ result }}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

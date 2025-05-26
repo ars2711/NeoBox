@@ -1,0 +1,183 @@
+{% extends "/layout.html" %} {% block title %}Calculator{% endblock %} {% block
+main %}
+<div class="container py-4" style="max-width: 400px">
+  <h2 class="mb-4 text-center">Calculator</h2>
+  <div class="card shadow">
+    <div class="card-body">
+      <div
+        id="calc-display"
+        class="form-control mb-3 text-end fs-3"
+        style="height: 60px; background: #f8f9fa"
+        readonly
+      >
+        0
+      </div>
+      <div class="row g-2">
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('7')">
+            7
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('8')">
+            8
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('9')">
+            9
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="press('/')">
+            ÷
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('4')">
+            4
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('5')">
+            5
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('6')">
+            6
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="press('*')">
+            ×
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('1')">
+            1
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('2')">
+            2
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('3')">
+            3
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="press('-')">
+            −
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('0')">
+            0
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-light w-100 py-3" onclick="press('.')">
+            .
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-danger w-100 py-3" onclick="clearDisplay()">
+            C
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="press('+')">
+            +
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-6">
+          <button class="btn btn-secondary w-100 py-3" onclick="backspace()">
+            ⌫
+          </button>
+        </div>
+        <div class="col-6">
+          <button class="btn btn-success w-100 py-3" onclick="calculate()">
+            =
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  let display = document.getElementById("calc-display");
+  let current = "";
+  let resultShown = false;
+
+  function press(val) {
+    if (resultShown && "0123456789.".includes(val)) {
+      current = "";
+      resultShown = false;
+    }
+    current += val;
+    display.textContent = current;
+  }
+
+  function clearDisplay() {
+    current = "";
+    display.textContent = "0";
+    resultShown = false;
+  }
+
+  function backspace() {
+    current = current.slice(0, -1);
+    display.textContent = current || "0";
+  }
+
+  function calculate() {
+    try {
+      // Only allow numbers and operators
+      if (/^[\d+\-*/.]+$/.test(current)) {
+        let res = eval(current.replace(/÷/g, "/").replace(/×/g, "*"));
+        display.textContent = res;
+        current = res.toString();
+        resultShown = true;
+      } else {
+        display.textContent = "Error";
+        current = "";
+        resultShown = true;
+      }
+    } catch {
+      display.textContent = "Error";
+      current = "";
+      resultShown = true;
+    }
+  }
+
+  // Keyboard support
+  document.addEventListener("keydown", function (e) {
+    if (e.key >= "0" && e.key <= "9") {
+      press(e.key);
+    } else if (["+", "-", "*", "/"].includes(e.key)) {
+      press(e.key);
+    } else if (e.key === "Enter" || e.key === "=") {
+      calculate();
+      e.preventDefault();
+    } else if (e.key === "Backspace") {
+      backspace();
+      e.preventDefault();
+    } else if (e.key === "Escape" || e.key === "c" || e.key === "C") {
+      clearDisplay();
+      e.preventDefault();
+    } else if (e.key === ".") {
+      press(".");
+    }
+  });
+</script>
+{% endblock %}

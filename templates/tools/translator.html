@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block title %}Text Translator{% endblock %}
+{% block main %}
+<div class="container mt-4">
+  <h2>Text Translator</h2>
+  <form method="post">
+    <div class="mb-3">
+      <textarea name="text" class="form-control" rows="3" placeholder="Enter text to translate" required>{{ text }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label>Translate to:</label>
+      <select name="dest" class="form-select">
+        {% for code, lang in languages %}
+          <option value="{{ code }}" {% if dest == code %}selected{% endif %}>{{ lang }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Translate</button>
+  </form>
+  {% if result %}
+    <div class="alert alert-info mt-3">
+      <strong>Translation:</strong> {{ result }}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "layout.html" %} {% block title %}Custom URL Shortener{% endblock %}
+{% block main %}
+<div class="container mt-4">
+  <h2>Custom URL Shortener</h2>
+  <form method="post" class="mb-3">
+    <input
+      type="url"
+      name="original"
+      class="form-control mb-2"
+      placeholder="Paste your long URL"
+      required
+    />
+    <input
+      type="text"
+      name="custom"
+      class="form-control mb-2"
+      placeholder="Custom short code (e.g. mylink)"
+      required
+    />
+    <button type="submit" class="btn btn-primary">Shorten</button>
+  </form>
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %} {% if short_url %}
+  <div class="alert alert-success">
+    Short URL: <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

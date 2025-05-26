@@ -1,0 +1,54 @@
+{% extends "layout.html" %} {% block title %}Custom URL Redirects{% endblock %}
+{% block main %}
+<div class="container mt-4">
+  <h2>Custom URL Redirects</h2>
+  <div class="alert alert-info">
+    <b>Custom URL Redirects:</b> Create your own short path (e.g.
+    <code>/go/myproject</code>) that redirects to any URL you want. Useful for
+    sharing long links!
+  </div>
+  <form method="post">
+    <div class="mb-2">
+      <label>Short Path (no spaces):</label>
+      <input
+        type="text"
+        name="path"
+        class="form-control"
+        placeholder="e.g. myproject"
+      />
+    </div>
+    <div class="mb-2">
+      <label>Target URL:</label>
+      <input
+        type="url"
+        name="target"
+        class="form-control"
+        placeholder="https://example.com/page"
+      />
+    </div>
+    <button class="btn btn-primary" type="submit">Create Redirect</button>
+  </form>
+  {% if error %}
+  <div class="alert alert-danger mt-2">{{ error }}</div>
+  {% endif %} {% if message %}
+  <div class="alert alert-success mt-2">{{ message }}</div>
+  {% endif %}
+  <h5 class="mt-4">Your Redirects:</h5>
+  <table class="table table-bordered table-sm">
+    <thead>
+      <tr>
+        <th>Short Path</th>
+        <th>Target URL</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for path, target in redirects.items() %}
+      <tr>
+        <td><code>/go/{{ path }}</code></td>
+        <td><a href="{{ target }}" target="_blank">{{ target }}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

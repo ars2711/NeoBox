@@ -1,0 +1,271 @@
+{% extends "/layout.html" %} {% block title %}Scientific Calculator{% endblock
+%} {% block main %}
+<div class="container py-4" style="max-width: 420px">
+  <h2 class="mb-4 text-center">Scientific Calculator</h2>
+  <div class="card shadow">
+    <div class="card-body">
+      <div
+        id="sci-display"
+        class="form-control mb-3 text-end fs-3"
+        style="
+          height: 60px;
+          background: #f8f9fa;
+          font-family: 'Consolas', monospace;
+        "
+        readonly
+      >
+        0
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('(')">
+            (
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress(')')">
+            )
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('π')">
+            π
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('e')">
+            e
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-warning w-100 py-2" onclick="sciPress('^')">
+            xʸ
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-danger w-100 py-2" onclick="sciClear()">
+            C
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('sin(')">
+            sin
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('cos(')">
+            cos
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('tan(')">
+            tan
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('log(')">
+            log
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('ln(')">
+            ln
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('sqrt(')">
+            √
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('7')">
+            7
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('8')">
+            8
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('9')">
+            9
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-warning w-100 py-2" onclick="sciPress('/')">
+            ÷
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('%')">
+            %
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-secondary w-100 py-2" onclick="sciBackspace()">
+            ⌫
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('4')">
+            4
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('5')">
+            5
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('6')">
+            6
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-warning w-100 py-2" onclick="sciPress('*')">
+            ×
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('abs(')">
+            abs
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('exp(')">
+            exp
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('1')">
+            1
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('2')">
+            2
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('3')">
+            3
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-warning w-100 py-2" onclick="sciPress('-')">
+            −
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('!')">
+            n!
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('deg')">
+            deg
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('0')">
+            0
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress('.')">
+            .
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-light w-100 py-2" onclick="sciPress(',')">
+            ,
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-warning w-100 py-2" onclick="sciPress('+')">
+            +
+          </button>
+        </div>
+        <div class="col-4">
+          <button class="btn btn-success w-100 py-2" onclick="sciCalculate()">
+            =
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+<script>
+  let sciDisplay = document.getElementById("sci-display");
+  let sciCurrent = "";
+  let sciResultShown = false;
+
+  function sciPress(val) {
+    if (sciResultShown && "0123456789.(".includes(val)) {
+      sciCurrent = "";
+      sciResultShown = false;
+    }
+    // Replace π and e with math.js constants
+    if (val === "π") val = "pi";
+    if (val === "e") val = "e";
+    if (val === "deg") val = " deg ";
+    sciCurrent += val;
+    sciDisplay.textContent = sciCurrent;
+  }
+  function sciBackspace() {
+    sciCurrent = sciCurrent.slice(0, -1);
+    sciDisplay.textContent = sciCurrent || "0";
+  }
+  function sciClear() {
+    sciCurrent = "";
+    sciDisplay.textContent = "0";
+    sciResultShown = false;
+  }
+  function sciCalculate() {
+    try {
+      let expr = sciCurrent
+        .replace(/÷/g, "/")
+        .replace(/×/g, "*")
+        .replace(/π/g, "pi")
+        .replace(/%/g, "/100")
+        .replace(/deg/g, "* (pi / 180)");
+      let res = math.evaluate(expr);
+      sciDisplay.textContent = res;
+      sciCurrent = res.toString();
+      sciResultShown = true;
+    } catch {
+      sciDisplay.textContent = "Error";
+      sciCurrent = "";
+      sciResultShown = true;
+    }
+  }
+  // Keyboard support
+  document.addEventListener("keydown", function (e) {
+    if (e.key >= "0" && e.key <= "9") sciPress(e.key);
+    else if (["+", "-", "*", "/", ".", "^", "(", ")"].includes(e.key))
+      sciPress(e.key);
+    else if (e.key === "Enter" || e.key === "=") {
+      sciCalculate();
+      e.preventDefault();
+    } else if (e.key === "Backspace") {
+      sciBackspace();
+      e.preventDefault();
+    } else if (e.key === "Escape" || e.key === "c" || e.key === "C") {
+      sciClear();
+      e.preventDefault();
+    }
+  });
+</script>
+{% endblock %}

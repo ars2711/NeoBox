@@ -1,0 +1,37 @@
+{% extends "layout.html" %} {% block title %}Image Metadata Viewer{% endblock %}
+{% block main %}
+<div class="container mt-4">
+  <h2>Image Metadata Viewer</h2>
+  <form method="post" enctype="multipart/form-data" class="mb-3">
+    <input
+      type="file"
+      name="image"
+      accept="image/*"
+      class="form-control mb-2"
+      required
+    />
+    <button type="submit" class="btn btn-primary">View Metadata</button>
+  </form>
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %} {% if image_preview %}
+  <h5>Preview:</h5>
+  <img
+    src="data:image/png;base64,{{ image_preview }}"
+    style="max-width: 300px"
+  />
+  {% endif %} {% if metadata %}
+  <h5>Metadata:</h5>
+  <table class="table table-bordered table-sm">
+    <tbody>
+      {% for k, v in metadata.items() %}
+      <tr>
+        <th>{{ k }}</th>
+        <td>{{ v }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

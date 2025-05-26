@@ -1,0 +1,46 @@
+{% extends "/layout.html" %}
+{% block title %}Currency Converter{% endblock %}
+{% block main %}
+<div class="container py-4" style="max-width: 500px">
+  <h2 class="mb-4 text-center">Currency Converter</h2>
+  <form method="post" class="mb-3">
+    <div class="mb-2">
+      <input type="number" step="any" name="amount" class="form-control" placeholder="Amount" required value="{{ amount or '' }}">
+    </div>
+    <div class="row mb-2">
+      <div class="col">
+        <select name="from_currency" id="from_currency" class="form-select" required>
+          {% for code, name in currencies %}
+          <option value="{{ code }}" {% if from_currency==code %}selected{% endif %}>{{ code }} - {{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col text-center align-self-center">
+        <span>→</span>
+      </div>
+      <div class="col">
+        <select name="to_currency" id="to_currency" class="form-select" required>
+          {% for code, name in currencies %}
+          <option value="{{ code }}" {% if to_currency==code %}selected{% endif %}>{{ code }} - {{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Convert</button>
+  </form>
+  {% if result is not none %}
+    <div class="alert alert-info text-center">
+      Result: {{ result }}
+    </div>
+  {% endif %}
+</div>
+<!-- Add Select2 for searchable dropdowns -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    $('#from_currency').select2({width: '100%'});
+    $('#to_currency').select2({width: '100%'});
+  });
+</script>
+{% endblock %}
