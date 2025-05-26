@@ -1373,9 +1373,20 @@ def passkey_login_complete():
 @app.route("/tools/periodic-table")
 def periodic_table():
     import json
-    with open("static/data/elements.json", encoding="utf-8") as f:
-        data = json.load(f)
-    elements = data["elements"]  # <-- Only the list, not the whole dict
+    import requests  # Import the requests library
+
+    try:
+        response = requests.get("https://raw.githubusercontent.com/Bowserinator/Periodic-Table-JSON/master/PeriodicTableJSON.json", timeout=5)  # Fetch the JSON data
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        data = response.json()  # Parse the JSON data from the response
+        elements = data["elements"]
+    except requests.exceptions.RequestException as e:
+        # Handle potential network errors (e.g., connection refused, timeout)
+        return f"Error fetching data: {e}", 500
+    except json.JSONDecodeError as e:
+        # Handle potential JSON parsing errors
+        return f"Error parsing JSON: {e}", 500
+
     category_colors = {
         "alkali metal": "#ffb74d",
         "alkaline earth metal": "#ffd54f",
