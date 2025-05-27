@@ -95,7 +95,7 @@ class Feedback(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 app = Flask(__name__)
-
+app.config.from_pyfile('config.py')
 app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')  # inside project directory
 app.config['SESSION_FILE_THRESHOLD'] = 100  # optional: limit number of sessions
@@ -1512,4 +1512,6 @@ def ai_prompt():
     return render_template("tools/ai_prompt.html", prompt=prompt, result=result)
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run()
