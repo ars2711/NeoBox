@@ -9,7 +9,7 @@ from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_babel_next import Babel, gettext as _
+from flask_babel import Babel, gettext as _
 from datetime import datetime, timezone
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_mail import Mail, Message
