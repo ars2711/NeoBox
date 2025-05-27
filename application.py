@@ -94,6 +94,9 @@ class Feedback(db.Model):
 app = Flask(__name__)
 
 app.config["SESSION_PERMANENT"] = False
+app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')  # inside project directory
+app.config['SESSION_FILE_THRESHOLD'] = 100  # optional: limit number of sessions
+app.config['SESSION_FILE_MODE'] = 0o600  # optional: set file permissions
 app.config["SESSION_TYPE"] = "filesystem"
 app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 Session(app)
@@ -1506,4 +1509,4 @@ def ai_prompt():
     return render_template("tools/ai_prompt.html", prompt=prompt, result=result)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
