@@ -1,5 +1,14 @@
 __pycache__/
 *.pyc
+*.pyo
+*.db
+flask_session/
+eb-env/
+*.log
+*.pot
+*.cfg
+LICENSE
+README.md
+.git
+.gitignore
 .env
-.venv/
-instance/
