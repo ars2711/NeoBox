@@ -10,7 +10,6 @@ eb-env/
 LICENSE
 README.md
 .git
-.gitignore
 .env
 .vscode/
 .venv/

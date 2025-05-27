@@ -176,3 +176,8 @@ cython_debug/
 /flask_session
 *.db
 *.sqlite
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+eb-env/
