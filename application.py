@@ -37,7 +37,6 @@ BIGDATACLOUD_API_KEY = os.environ.get("BIGDATACLOUD_API_KEY")
 
 # --- Flask App Setup ---
 app = Flask(__name__)
-app.config.from_pyfile('config.py')
 app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')
 app.config['SESSION_FILE_THRESHOLD'] = 100
