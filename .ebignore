@@ -12,3 +12,5 @@ README.md
 .git
 .gitignore
 .env
+.vscode/
+.venv/
