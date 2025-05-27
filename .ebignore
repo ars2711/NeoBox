@@ -6,10 +6,10 @@ flask_session/
 eb-env/
 *.log
 *.pot
-*.cfg
 LICENSE
 README.md
 .git
 .env
 .vscode/
 .venv/
+babel.cfg
