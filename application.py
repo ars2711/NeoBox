@@ -49,6 +49,9 @@ def login_required(f):
 
 db = SQLAlchemy()
 
+with app.app_context():
+    db.create_all()
+
 # --- Update User Model to add otp and otp_expiry fields ---
 class User(db.Model):
     __tablename__ = 'users'
