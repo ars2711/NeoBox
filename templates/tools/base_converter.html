@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Base Converter{% endblock %}
+{% block main %}
+<h1>Base Converter</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>Number: <input name="number" value="{{ number }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <label>From Base:
+      <select name="from_base" class="form-select" style="width:100px;display:inline-block">
+        <option value="2" {% if from_base=="2" %}selected{% endif %}>2</option>
+        <option value="8" {% if from_base=="8" %}selected{% endif %}>8</option>
+        <option value="10" {% if from_base=="10" %}selected{% endif %}>10</option>
+        <option value="16" {% if from_base=="16" %}selected{% endif %}>16</option>
+      </select>
+    </label>
+    <label>To Base:
+      <select name="to_base" class="form-select" style="width:100px;display:inline-block">
+        <option value="2" {% if to_base=="2" %}selected{% endif %}>2</option>
+        <option value="8" {% if to_base=="8" %}selected{% endif %}>8</option>
+        <option value="10" {% if to_base=="10" %}selected{% endif %}>10</option>
+        <option value="16" {% if to_base=="16" %}selected{% endif %}>16</option>
+      </select>
+    </label>
+  </div>
+  <button class="btn btn-primary">Convert</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+{% endif %}
+{% endblock %}

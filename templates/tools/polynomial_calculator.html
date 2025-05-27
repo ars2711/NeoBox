@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}Polynomial Calculator{% endblock %}
+{% block main %}
+<h1>Polynomial Calculator</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>Coefficients (comma separated, highest degree first): <input name="coeffs" value="{{ coeffs }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <label>Value of x (for evaluation): <input name="x_val" value="{{ x_val }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <select name="action" class="form-select">
+      <option value="roots" {% if action=="roots" %}selected{% endif %}>Find Roots</option>
+      <option value="evaluate" {% if action=="evaluate" %}selected{% endif %}>Evaluate at x</option>
+      <option value="derivative" {% if action=="derivative" %}selected{% endif %}>Derivative</option>
+      <option value="integral" {% if action=="integral" %}selected{% endif %}>Integral</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Calculate</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <pre>{{ result }}</pre></div>
+{% endif %}
+{% endblock %}

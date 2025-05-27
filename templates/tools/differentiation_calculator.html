@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Differentiation Calculator{% endblock %}
+{% block main %}
+<div class="container py-4">
+  <h1 class="mb-3">Differentiation Calculator</h1>
+  <form method="post" class="mb-3" id="calcForm">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <label class="form-label">Expression</label>
+        <input name="expr" id="expr" value="{{ expr }}" class="form-control" autocomplete="off" required placeholder="e.g. x**2 + sin(x)">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Variable</label>
+        <input name="var" id="var" value="{{ var }}" class="form-control" autocomplete="off" required>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100">Differentiate</button>
+      </div>
+    </div>
+  </form>
+  <div class="mb-2">
+    <strong>Live Preview:</strong>
+    <div id="math-preview" class="border rounded bg-light p-2"></div>
+  </div>
+  {% if result is not none %}
+    <div class="alert alert-info mt-3">
+      <b>Result:</b>
+      <span id="math-result">{% if result %}$$ {{ result }} $$ {% endif %}</span>
+    </div>
+  {% endif %}
+</div>
+<script>
+function renderMath() {
+  let expr = document.getElementById('expr').value || '';
+  let variable = document.getElementById('var').value || 'x';
+  let latex = `\\frac{d}{d${variable}}\\left(${expr}\\right)`;
+  document.getElementById('math-preview').innerHTML = '$$' + latex + '$$';
+  if (window.MathJax) MathJax.typesetPromise();
+}
+['expr','var'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderMath);
+});
+window.addEventListener('DOMContentLoaded', renderMath);
+</script>
+{% endblock %}

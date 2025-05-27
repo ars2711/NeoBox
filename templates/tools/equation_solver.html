@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Equation Solver{% endblock %}
+{% block main %}
+<h1>Equation Solver</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>Equation (e.g. x**2-4): <input name="eqn" value="{{ eqn }}" class="form-control" required></label>
+  </div>
+  <div class="mb-2">
+    <label>Variable: <input name="var" value="{{ var }}" class="form-control" style="width:100px;display:inline-block"></label>
+  </div>
+  <button class="btn btn-primary">Solve</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+{% endif %}
+{% endblock %}

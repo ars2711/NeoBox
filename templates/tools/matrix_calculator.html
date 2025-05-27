@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Matrix Calculator{% endblock %}
+{% block main %}
+<h1>Matrix Calculator</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>Matrix A (e.g. [[1,2],[3,4]]): <input name="matrix_a" value="{{ matrix_a }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <label>Matrix B (optional): <input name="matrix_b" value="{{ matrix_b }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <select name="operation" class="form-select">
+      <option value="add" {% if operation=="add" %}selected{% endif %}>Add</option>
+      <option value="subtract" {% if operation=="subtract" %}selected{% endif %}>Subtract</option>
+      <option value="multiply" {% if operation=="multiply" %}selected{% endif %}>Multiply</option>
+      <option value="determinant" {% if operation=="determinant" %}selected{% endif %}>Determinant (A)</option>
+      <option value="inverse" {% if operation=="inverse" %}selected{% endif %}>Inverse (A)</option>
+      <option value="transpose" {% if operation=="transpose" %}selected{% endif %}>Transpose (A)</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Calculate</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <pre>{{ result }}</pre></div>
+{% endif %}
+{% endblock %}

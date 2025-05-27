@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}Fraction Calculator{% endblock %}
+{% block main %}
+<h1>Fraction Calculator</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>First Fraction (e.g. 1/2): <input name="a" value="{{ a }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <label>Second Fraction (e.g. 3/4): <input name="b" value="{{ b }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <select name="op" class="form-select">
+      <option value="+" {% if op=="+" %}selected{% endif %}>Add</option>
+      <option value="-" {% if op=="-" %}selected{% endif %}>Subtract</option>
+      <option value="*" {% if op=="*" %}selected{% endif %}>Multiply</option>
+      <option value="/" {% if op=="/" %}selected{% endif %}>Divide</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Calculate</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+{% endif %}
+{% endblock %}

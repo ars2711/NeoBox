@@ -31,6 +31,7 @@ from fido2.server import Fido2Server
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2 import cbor
 from markupsafe import Markup
+from sympy import symbols, sympify, integrate, diff, solve, Eq, sin, cos, tan, exp, log, Matrix
 
 # --- Configuration ---
 BIGDATACLOUD_API_KEY = os.environ.get("BIGDATACLOUD_API_KEY")
@@ -565,7 +566,16 @@ TOOLS = [
     {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "login_required": False, "description": "Explore elements and their properties."},
     {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "login_required": False, "description": "View metadata of uploaded images."},
     {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "login_required": False, "description": "Create custom redirects for your URLs."},
-
+    {"name": "Integration Calculator", "icon": "bi-calculator", "url": "integration-calculator", "login_required": False, "description": "Symbolic and definite integration."},
+    {"name": "Differentiation Calculator", "icon": "bi-calculator", "url": "differentiation-calculator", "login_required": False, "description": "Symbolic differentiation."},
+    {"name": "Equation Solver", "icon": "bi-calculator", "url": "equation-solver", "login_required": False, "description": "Solve algebraic equations."},
+    {"name": "Matrix Calculator", "icon": "bi-grid-3x3-gap", "url": "matrix-calculator", "login_required": False, "description": "Matrix operations (add, multiply, inverse, etc)."},
+{"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "login_required": False, "description": "Complex number arithmetic."},
+{"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
+{"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
+{"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "login_required": False, "description": "Convert numbers between bases."},
+{"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "login_required": False, "description": "Sine, cosine, tangent, etc."},
+{"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "login_required": False, "description": "Fraction arithmetic."},
     # Current tools
 ]
 
@@ -1487,6 +1497,256 @@ def ai_prompt():
             else:
                 result = f"I'm just a demo AI. You said: {prompt}"
     return render_template("tools/ai_prompt.html", prompt=prompt, result=result)
+
+@app.route("/tools/integration-calculator", methods=["GET", "POST"])
+def integration_calculator():
+    result = None
+    expr = ""
+    var = "x"
+    lower = ""
+    upper = ""
+    if request.method == "POST":
+        expr = request.form.get("expr", "")
+        var = request.form.get("var", "x")
+        lower = request.form.get("lower", "")
+        upper = request.form.get("upper", "")
+        try:
+            x = symbols(var)
+            parsed = sympify(expr)
+            if lower and upper:
+                result = integrate(parsed, (x, float(lower), float(upper)))
+            else:
+                result = integrate(parsed, x)
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/integration_calculator.html", result=result, expr=expr, var=var, lower=lower, upper=upper)
+
+@app.route("/tools/differentiation-calculator", methods=["GET", "POST"])
+def differentiation_calculator():
+    result = None
+    expr = ""
+    var = "x"
+    if request.method == "POST":
+        expr = request.form.get("expr", "")
+        var = request.form.get("var", "x")
+        try:
+            x = symbols(var)
+            parsed = sympify(expr)
+            result = diff(parsed, x)
+        except Exception as e:
+            result = f"Error: {e}"
+   
+    return render_template("tools/differentiation_calculator.html", result=result, expr=expr, var=var)
+
+@app.route("/tools/equation-solver", methods=["GET", "POST"])
+def equation_solver():
+    result = None
+    eqn = ""
+    var = "x"
+    if request.method == "POST":
+        eqn = request.form.get("eqn", "")
+        var = request.form.get("var", "x")
+        try:
+            x = symbols(var)
+            eq = Eq(sympify(eqn), 0)
+            result = solve(eq, x)
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/equation_solver.html", result=result, eqn=eqn, var=var)
+
+@app.route("/tools/matrix-calculator", methods=["GET", "POST"])
+def matrix_calculator():
+    result = None
+    matrix_a = ""
+    matrix_b = ""
+    operation = "add"
+    if request.method == "POST":
+        matrix_a = request.form.get("matrix_a", "")
+        matrix_b = request.form.get("matrix_b", "")
+        operation = request.form.get("operation", "add")
+        try:
+            A = Matrix(eval(matrix_a))
+            B = Matrix(eval(matrix_b)) if matrix_b else None
+            if operation == "add":
+                result = A + B
+            elif operation == "subtract":
+                result = A - B
+            elif operation == "multiply":
+                result = A * B
+            elif operation == "determinant":
+                result = A.det()
+            elif operation == "inverse":
+                result = A.inv()
+            elif operation == "transpose":
+                result = A.T
+            else:
+                result = "Invalid operation"
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/matrix_calculator.html", result=result, matrix_a=matrix_a, matrix_b=matrix_b, operation=operation)
+
+@app.route("/tools/complex-calculator", methods=["GET", "POST"])
+def complex_calculator():
+    result = None
+    a = ""
+    b = ""
+    op = "+"
+    if request.method == "POST":
+        a = request.form.get("a", "")
+        b = request.form.get("b", "")
+        op = request.form.get("op", "+")
+        try:
+            ca = complex(a.replace("i", "j"))
+            cb = complex(b.replace("i", "j"))
+            if op == "+":
+                result = ca + cb
+            elif op == "-":
+                result = ca - cb
+            elif op == "*":
+                result = ca * cb
+            elif op == "/":
+                result = ca / cb
+            else:
+                result = "Invalid operation"
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/complex_calculator.html", result=result, a=a, b=b, op=op)
+
+@app.route("/tools/polynomial-calculator", methods=["GET", "POST"])
+def polynomial_calculator():
+    result = None
+    coeffs = ""
+    x_val = ""
+    action = "roots"
+    if request.method == "POST":
+        coeffs = request.form.get("coeffs", "")
+        x_val = request.form.get("x_val", "")
+        action = request.form.get("action", "roots")
+        try:
+            coeff_list = [float(c) for c in coeffs.split(",")]
+            x = symbols("x")
+            poly = sum(c * x**i for i, c in enumerate(reversed(coeff_list)))
+            if action == "roots":
+                result = solve(poly, x)
+            elif action == "evaluate":
+                result = poly.subs(x, float(x_val))
+            elif action == "derivative":
+                result = diff(poly, x)
+            elif action == "integral":
+                result = integrate(poly, x)
+            else:
+                result = "Invalid action"
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/polynomial_calculator.html", result=result, coeffs=coeffs, x_val=x_val, action=action)
+
+@app.route("/tools/statistics-calculator", methods=["GET", "POST"])
+def statistics_calculator():
+    import statistics
+    result = None
+    data = ""
+    stat = "mean"
+    if request.method == "POST":
+        data = request.form.get("data", "")
+        stat = request.form.get("stat", "mean")
+        try:
+            nums = [float(x) for x in data.replace(";", ",").split(",") if x.strip()]
+            if stat == "mean":
+                result = statistics.mean(nums)
+            elif stat == "median":
+                result = statistics.median(nums)
+            elif stat == "mode":
+                result = statistics.mode(nums)
+            elif stat == "stdev":
+                result = statistics.stdev(nums)
+            elif stat == "variance":
+                result = statistics.variance(nums)
+            else:
+                result = "Invalid statistic"
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/statistics_calculator.html", result=result, data=data, stat=stat)
+
+@app.route("/tools/base-converter", methods=["GET", "POST"])
+def base_converter():
+    result = None
+    number = ""
+    from_base = "10"
+    to_base = "2"
+    if request.method == "POST":
+        number = request.form.get("number", "")
+        from_base = request.form.get("from_base", "10")
+        to_base = request.form.get("to_base", "2")
+        try:
+            n = int(number, int(from_base))
+            if to_base == "2":
+                result = bin(n)
+            elif to_base == "8":
+                result = oct(n)
+            elif to_base == "10":
+                result = str(n)
+            elif to_base == "16":
+                result = hex(n)
+            else:
+                result = format(n, f"b")  # fallback
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/base_converter.html", result=result, number=number, from_base=from_base, to_base=to_base)
+
+@app.route("/tools/trigonometry-calculator", methods=["GET", "POST"])
+def trigonometry_calculator():
+    result = None
+    angle = ""
+    func = "sin"
+    deg = True
+    if request.method == "POST":
+        angle = request.form.get("angle", "")
+        func = request.form.get("func", "sin")
+        deg = request.form.get("deg") == "on"
+        try:
+            val = float(angle)
+            if deg:
+                import math
+                val = math.radians(val)
+            if func == "sin":
+                result = sin(val)
+            elif func == "cos":
+                result = cos(val)
+            elif func == "tan":
+                result = tan(val)
+            else:
+                result = "Invalid function"
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/trigonometry_calculator.html", result=result, angle=angle, func=func, deg=deg)
+
+@app.route("/tools/fraction-calculator", methods=["GET", "POST"])
+def fraction_calculator():
+    from fractions import Fraction
+    result = None
+    a = ""
+    b = ""
+    op = "+"
+    if request.method == "POST":
+        a = request.form.get("a", "")
+        b = request.form.get("b", "")
+        op = request.form.get("op", "+")
+        try:
+            fa = Fraction(a)
+            fb = Fraction(b)
+            if op == "+":
+                result = fa + fb
+            elif op == "-":
+                result = fa - fb
+            elif op == "*":
+                result = fa * fb
+            elif op == "/":
+                result = fa / fb
+            else:
+                result = "Invalid operation"
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template("tools/fraction_calculator.html", result=result, a=a, b=b, op=op)
 
 if __name__ == "__main__":
     with app.app_context():

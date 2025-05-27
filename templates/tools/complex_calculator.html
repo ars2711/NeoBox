@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}Complex Number Calculator{% endblock %}
+{% block main %}
+<h1>Complex Number Calculator</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>First Number (e.g. 2+3i): <input name="a" value="{{ a }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <label>Second Number (e.g. 1-2i): <input name="b" value="{{ b }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <select name="op" class="form-select">
+      <option value="+" {% if op=="+" %}selected{% endif %}>Add</option>
+      <option value="-" {% if op=="-" %}selected{% endif %}>Subtract</option>
+      <option value="*" {% if op=="*" %}selected{% endif %}>Multiply</option>
+      <option value="/" {% if op=="/" %}selected{% endif %}>Divide</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Calculate</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+{% endif %}
+{% endblock %}

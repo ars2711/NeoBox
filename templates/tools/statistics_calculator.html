@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Statistics Calculator{% endblock %}
+{% block main %}
+<h1>Statistics Calculator</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>Data (comma or semicolon separated): <input name="data" value="{{ data }}" class="form-control"></label>
+  </div>
+  <div class="mb-2">
+    <select name="stat" class="form-select">
+      <option value="mean" {% if stat=="mean" %}selected{% endif %}>Mean</option>
+      <option value="median" {% if stat=="median" %}selected{% endif %}>Median</option>
+      <option value="mode" {% if stat=="mode" %}selected{% endif %}>Mode</option>
+      <option value="stdev" {% if stat=="stdev" %}selected{% endif %}>Standard Deviation</option>
+      <option value="variance" {% if stat=="variance" %}selected{% endif %}>Variance</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Calculate</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+{% endif %}
+{% endblock %}

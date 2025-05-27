@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Trigonometry Calculator{% endblock %}
+{% block main %}
+<h1>Trigonometry Calculator</h1>
+<form method="post">
+  <div class="mb-2">
+    <label>Angle: <input name="angle" value="{{ angle }}" class="form-control"></label>
+    <label><input type="checkbox" name="deg" {% if deg %}checked{% endif %}> Degrees</label>
+  </div>
+  <div class="mb-2">
+    <select name="func" class="form-select">
+      <option value="sin" {% if func=="sin" %}selected{% endif %}>Sine</option>
+      <option value="cos" {% if func=="cos" %}selected{% endif %}>Cosine</option>
+      <option value="tan" {% if func=="tan" %}selected{% endif %}>Tangent</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Calculate</button>
+</form>
+{% if result is not none %}
+  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+{% endif %}
+{% endblock %}

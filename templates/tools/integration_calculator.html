@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block title %}Integration Calculator{% endblock %}
+{% block main %}
+<div class="container py-4">
+  <h1 class="mb-3">Integration Calculator</h1>
+  <form method="post" class="mb-3" id="calcForm">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">Expression</label>
+        <input name="expr" id="expr" value="{{ expr }}" class="form-control" autocomplete="off" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Variable</label>
+        <input name="var" id="var" value="{{ var }}" class="form-control" autocomplete="off" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Lower Limit</label>
+        <input name="lower" id="lower" value="{{ lower }}" class="form-control" autocomplete="off">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Upper Limit</label>
+        <input name="upper" id="upper" value="{{ upper }}" class="form-control" autocomplete="off">
+      </div>
+      <div class="col-md-1">
+        <button class="btn btn-primary w-100">Integrate</button>
+      </div>
+    </div>
+  </form>
+  <div class="mb-2">
+    <strong>Live Preview:</strong>
+    <div id="math-preview" class="border rounded bg-light p-2"></div>
+  </div>
+  {% if result is not none %}
+    <div class="alert alert-info mt-3">
+      <b>Result:</b>
+      <span id="math-result">{% if result %}$$ {{ result }} $$ {% endif %}</span>
+    </div>
+  {% endif %}
+</div>
+<script>
+function renderMath() {
+  let expr = document.getElementById('expr').value || '';
+  let variable = document.getElementById('var').value || 'x';
+  let lower = document.getElementById('lower').value;
+  let upper = document.getElementById('upper').value;
+  let latex = '';
+  if (lower && upper) {
+    latex = `\\int_{${lower}}^{${upper}} \\left(${expr}\\right)\\, d${variable}`;
+  } else {
+    latex = `\\int \\left(${expr}\\right)\\, d${variable}`;
+  }
+  document.getElementById('math-preview').innerHTML = '$$' + latex + '$$';
+  if (window.MathJax) MathJax.typesetPromise();
+}
+['expr','var','lower','upper'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderMath);
+});
+window.addEventListener('DOMContentLoaded', renderMath);
+</script>
+{% endblock %}
