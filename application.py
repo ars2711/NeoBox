@@ -47,7 +47,7 @@ def login_required(f):
 
     return decorated_function
 
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 
 with app.app_context():
     db.create_all()
