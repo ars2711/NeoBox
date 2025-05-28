@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block main %}
+<h2>Color Generator</h2>
+<form method="post" class="mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-auto">
+      <label>How many?</label>
+      <input type="number" min="1" max="20" name="count" value="{{ count }}" class="form-control" style="width: 80px;">
+    </div>
+    <div class="col-auto">
+      <label>Format</label>
+      <select name="format" class="form-select">
+        <option value="hex" {% if fmt=="hex" %}selected{% endif %}>HEX</option>
+        <option value="rgb" {% if fmt=="rgb" %}selected{% endif %}>RGB</option>
+        <option value="hsl" {% if fmt=="hsl" %}selected{% endif %}>HSL</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary">Generate</button>
+    </div>
+  </div>
+</form>
+{% if result %}
+<div class="row g-3">
+  {% for color in result %}
+  <div class="col-auto">
+    <div class="card text-center" style="width: 7rem;">
+      <div class="card-body p-2">
+        <div style="background: {{ color }}; height: 50px; border-radius: 6px;"></div>
+        <div class="mt-2">
+          <code>{{ color }}</code>
+          <button class="btn btn-sm btn-outline-secondary ms-1" onclick="navigator.clipboard.writeText('{{ color }}')">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

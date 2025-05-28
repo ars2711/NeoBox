@@ -32,8 +32,8 @@ from fido2.server import Fido2Server
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2 import cbor
 from markupsafe import Markup
-from sympy import symbols, sympify, integrate, diff, solve, Eq, sin, cos, tan, exp, log, Matrix
-import openai
+from sympy import symbols, sympify, integrate, diff, solve, Eq, sin, cos, tan, exp, log, Matrix, asin, acos, atan, acot, asec, acsc, sinh, cosh, tanh, coth, sech, csch, asinh, acosh, atanh, acoth, asech, acsch, cot, sec, csc, pi, E
+from openai import OpenAI
 import google.generativeai as genai
 
 # --- Configuration ---
@@ -43,7 +43,7 @@ if not ON_RENDER:
     load_dotenv('.env')
 
 BIGDATACLOUD_API_KEY = os.environ.get("BIGDATACLOUD_API_KEY")
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # --- Flask App Setup ---
@@ -603,6 +603,8 @@ TOOLS = [
     # Conversion
     {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "category": "conversion", "login_required": False, "description": "Convert between various units of measurement."},
     {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "category": "conversion", "login_required": False, "description": "Convert currencies using real-time rates."},
+    {"name": "Flashcards", "icon": "bi-card-list", "url": "flashcards", "category": "productivity", "login_required": False, "description": "Create and study flashcards."},
+
 
     # Productivity
     {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "category": "productivity", "login_required": True, "description": "Manage your personal tasks and to-dos."},
@@ -616,11 +618,11 @@ TOOLS = [
 
     # AI
     {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "category": "ai", "login_required": False, "description": "Translate text between languages."},
-    {"name": "AI Prompt", "icon": "bi-robot", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
-    {"name": "AI Summarizer", "icon": "bi-robot", "url": "ai-summarizer", "category": "ai", "login_required": False, "description": "Summarize long text using AI."},
-    {"name": "AI Code Explainer", "icon": "bi-robot", "url": "ai-code-explainer", "category": "ai", "login_required": False, "description": "Explain code using AI."},
-    {"name": "AI Paraphraser", "icon": "bi-robot", "url": "ai-paraphraser", "category": "ai", "login_required": False, "description": "Paraphrase text using AI."},
-    {"name": "AI Gemini Prompt", "icon": "bi-robot", "url": "ai-gemini-prompt", "category": "ai", "login_required": False, "description": "Ask Gemini AI (Google) anything."},
+    #{"name": "AI Prompt", "icon": "bi-chat-right-dots", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
+    #{"name": "Text Summarizer", "icon": "bi-body-text", "url": "ai-summarizer", "category": "ai", "login_required": False, "description": "Summarize long text using AI."},
+    #{"name": "Text Paraphraser", "icon": "bi-list-columns-reverse", "url": "ai-paraphraser", "category": "ai", "login_required": False, "description": "Paraphrase text using AI."},
+    #{"name": "Code Explainer", "icon": "bi-code-slash", "url": "ai-code-explainer", "category": "ai", "login_required": False, "description": "Explain code using AI."},
+    #{"name": "Gemini Prompt", "icon": "bi-google", "url": "ai-gemini-prompt", "category": "ai", "login_required": False, "description": "Ask Gemini (Google AI) anything."},
 
     # Files
     {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "category": "files", "login_required": False, "description": "Convert files between different formats."},
@@ -628,6 +630,11 @@ TOOLS = [
 
     # Science
     {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "category": "science", "login_required": False, "description": "Explore elements and their properties."},
+    {"name": "Color Generator", "icon": "bi-palette", "url": "color-generator", "category": "science", "login_required": False, "description": "Generate random colors in HEX, RGB, or HSL."},
+    {"name": "Gradient Generator", "icon": "bi-palette2", "url": "gradient-generator", "category": "science", "login_required": False, "description": "Create CSS gradients with multiple colors."},
+    {"name": "Palette Generator", "icon": "bi-palette-fill", "url": "palette-generator", "category": "science", "login_required": False, "description": "Generate harmonious color palettes."},
+    {"name": "White Noise Generator", "icon": "bi-volume-mute", "url": "white-noise", "category": "science", "login_required": False, "description": "Play white, pink, brown noise and more."},
+    {"name": "Astrology/Star Map", "icon": "bi-stars", "url": "star-map", "category": "science", "login_required": False, "description": "View the night sky from any location."},
 
     # Other
     {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "category": "other", "login_required": False, "description": "Quickly search using your favorite search engines."},
@@ -643,8 +650,6 @@ UPCOMING_TOOLS = [
       {"name": "Image Enlarger", "icon": "bi-arrows-angle-expand", "soon": "Enlarging soon"},
       {"name": "Daily Routines/Reminders", "icon": "bi-calendar-check", "soon": "Reminding soon"},
       {"name": "Maps", "icon": "bi-geo-alt", "soon": "Mapping soon"},
-      {"name": "Color Generator", "icon": "bi-palette", "soon": "Coloring soon"},
-      {"name": "Gradient Generator", "icon": "bi-palette2", "soon": "Blending soon"},
       {"name": "Custom Calendar", "icon": "bi-calendar-range", "soon": "Planning soon"},
       {"name": "Weather", "icon": "bi-cloud-sun", "soon": "Forecasting soon"},
       {"name": "Password Manager", "icon": "bi-key", "soon": "Securing soon"},
@@ -666,7 +671,6 @@ UPCOMING_TOOLS = [
       {"name": "Basic Drawing", "icon": "bi-brush", "soon": "Drawing soon"},
       {"name": "Stock/Market Tracker", "icon": "bi-graph-up", "soon": "Analyzing soon"},
       {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "soon": "Bookmarking soon"},
-      {"name": "Flashcards/Study Tools", "icon": "bi-card-list", "soon": "Studying soon"},
       {"name": "World Clock & Meeting Planner", "icon": "bi-globe", "soon": "Planning soon"},
       {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "soon": "Playing soon"},
       {"name": "Video/Image Compressor", "icon": "bi-file-earmark-zip", "soon": "Compressing soon"},
@@ -684,17 +688,13 @@ UPCOMING_TOOLS = [
       {"name": "Study Laps", "icon": "bi-journal-check", "soon": "Tracking soon"},
       {"name": "Mood Tracker", "icon": "bi-emoji-smile", "soon": "Mood tracking soon"},
       {"name": "Screen Color Tool", "icon": "bi-lightbulb", "soon": "Lighting soon"},
-      {"name": "AI Chatbot", "icon": "bi-chat-dots", "soon": "Chatting soon"},
       {"name": "Collaborative Documents", "icon": "bi-file-earmark-text", "soon": "Collaborating soon"},
       {"name": "Event Planner", "icon": "bi-calendar-event", "soon": "Planning soon"},
       {"name": "Game Zone", "icon": "bi-controller", "soon": "Gaming soon"},
-      {"name": "Astrology/Star Map", "icon": "bi-stars", "soon": "Stargazing soon"},
       {"name": "Regex Tester", "icon": "bi-slash-square", "soon": "Testing soon"},
       {"name": "Image Cropper", "icon": "bi-crop", "soon": "Cropping soon"},
       {"name": "ASCII Art Generator", "icon": "bi-type", "soon": "ASCII soon"},
       {"name": "BPM Calculator", "icon": "bi-music-note-list", "soon": "Tapping soon"},
-      {"name": "Color Palette Generator", "icon": "bi-palette-fill", "soon": "Paletting soon"},
-      {"name": "White Noise Generator", "icon": "bi-volume-mute", "soon": "Soothing soon"},
       {"name": "Text Difference Checker", "icon": "bi-file-diff", "soon": "Comparing soon"},
       {"name": "Age Calculator", "icon": "bi-person-badge", "soon": "Aging soon"},
       {"name": "Random Quote/Fact Generator", "icon": "bi-lightning", "soon": "Surprising soon"},
@@ -1331,7 +1331,7 @@ def translator():
     result = ""
     detected = ""
     # Get supported languages as a dict: {'en': 'english', ...}
-    languages = GoogleTranslator.get_supported_languages(as_dict=True)
+    languages = GoogleTranslator().get_supported_languages(as_dict=True)
     if text:
         try:
             if src == "auto":
@@ -1418,13 +1418,29 @@ def download_file(zip_id, filename):
 def pomodoro():
     return render_template("tools/pomodoro.html")
 
-@app.route("/tools/stopwatch")
+@app.route("/tools/stopwatch", methods=["GET", "POST"])
 def stopwatch():
-    return render_template("tools/stopwatch.html")
+    if "stopwatches" not in session:
+        session["stopwatches"] = []
+    stopwatches = session["stopwatches"]
+    if request.method == "POST":
+        name = request.form.get("stopwatch_name", f"Stopwatch {len(stopwatches)+1}")
+        stopwatches.append({"name": name, "id": str(uuid.uuid4())})
+        session["stopwatches"] = stopwatches
+    return render_template("tools/stopwatch.html", stopwatches=stopwatches)
 
-@app.route("/tools/timer")
+@app.route("/tools/timer", methods=["GET", "POST"])
 def timer():
-    return render_template("tools/timer.html")
+    if "timers" not in session:
+        session["timers"] = []
+    timers = session["timers"]
+    if request.method == "POST":
+        name = request.form.get("timer_name", "Timer")
+        minutes = int(request.form.get("minutes", 0))
+        seconds = int(request.form.get("seconds", 0))
+        timers.append({"name": name, "minutes": minutes, "seconds": seconds})
+        session["timers"] = timers
+    return render_template("tools/timer.html", timers=timers)
 
 @app.route("/tools/world-clock")
 def world_clock():
@@ -1609,7 +1625,7 @@ def ai_prompt():
             result = "Please enter a prompt."
         else:
             try:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=256,
@@ -1628,7 +1644,7 @@ def ai_summarizer():
         text = request.form.get("text", "")
         if text:
             try:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Summarize the following text in a concise way."},
@@ -1650,7 +1666,7 @@ def ai_code_explainer():
         code = request.form.get("code", "")
         if code:
             try:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Explain what the following code does in simple terms."},
@@ -1722,41 +1738,56 @@ def equation_solver():
 
 @app.route("/tools/matrix-calculator", methods=["GET", "POST"])
 def matrix_calculator():
+    from sympy import Matrix
     result = None
+    num_matrices = int(request.form.get("num_matrices", 2))
     rows = int(request.form.get("rows", 2))
     cols = int(request.form.get("cols", 2))
     operation = request.form.get("operation", "add")
-    matrix_a = [[request.form.get(f"a_{i}_{j}", "0") for j in range(cols)] for i in range(rows)]
-    matrix_b = [[request.form.get(f"b_{i}_{j}", "0") for j in range(cols)] for i in range(rows)]
+    matrices = []
+    for idx in range(num_matrices):
+        matrix = [[request.form.get(f"m{idx}_{i}_{j}", "0") for j in range(cols)] for i in range(rows)]
+        matrices.append(matrix)
     if request.method == "POST":
         try:
-            A = Matrix([[float(x) for x in row] for row in matrix_a])
-            B = Matrix([[float(x) for x in row] for row in matrix_b])
+            mats = [Matrix([[float(x) for x in row] for row in m]) for m in matrices]
             if operation == "add":
-                result = A + B
+                result = sum(mats)
             elif operation == "subtract":
-                result = A - B
+                result = mats[0]
+                for m in mats[1:]:
+                    result -= m
             elif operation == "multiply":
-                result = A * B
+                result = mats[0]
+                for m in mats[1:]:
+                    result *= m
             elif operation == "determinant":
-                result = A.det()
+                result = mats[0].det()
             elif operation == "inverse":
-                result = A.inv()
+                result = mats[0].inv()
             elif operation == "transpose":
-                result = A.T
+                result = mats[0].T
             elif operation == "rank":
-                result = A.rank()
+                result = mats[0].rank()
             elif operation == "trace":
-                result = A.trace()
+                result = mats[0].trace()
             elif operation == "eigenvals":
-                result = A.eigenvals()
+                result = mats[0].eigenvals()
             elif operation == "eigenvects":
-                result = A.eigenvects()
+                result = mats[0].eigenvects()
             else:
                 result = "Invalid operation"
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/matrix_calculator.html", result=result, rows=rows, cols=cols, matrix_a=matrix_a, matrix_b=matrix_b, operation=operation)
+    return render_template(
+        "tools/matrix_calculator.html",
+        result=result,
+        num_matrices=num_matrices,
+        rows=rows,
+        cols=cols,
+        matrices=matrices,
+        operation=operation
+    )
 
 @app.route("/tools/complex-calculator", methods=["GET", "POST"])
 def complex_calculator():
@@ -2008,7 +2039,7 @@ def ai_paraphraser():
         text = request.form.get("text", "")
         if text:
             try:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Paraphrase the following text."},
@@ -2021,6 +2052,145 @@ def ai_paraphraser():
             except Exception as e:
                 paraphrased = f"Error: {e}"
     return render_template("tools/ai_paraphraser.html", paraphrased=paraphrased, text=text)
+
+@app.route("/tools/color-generator", methods=["GET", "POST"])
+def color_generator():
+    import random
+    result = []
+    count = int(request.form.get("count", 1))
+    fmt = request.form.get("format", "hex")
+    if request.method == "POST":
+        for _ in range(count):
+            r = random.randint(0, 255)
+            g = random.randint(0, 255)
+            b = random.randint(0, 255)
+            if fmt == "hex":
+                color = "#{:02X}{:02X}{:02X}".format(r, g, b)
+            elif fmt == "rgb":
+                color = f"rgb({r}, {g}, {b})"
+            elif fmt == "hsl":
+                import colorsys
+                h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
+                color = f"hsl({int(h*360)}, {int(s*100)}%, {int(l*100)}%)"
+            else:
+                color = "#{:02X}{:02X}{:02X}".format(r, g, b)
+            result.append(color)
+    return render_template("tools/color_generator.html", result=result, count=count, fmt=fmt)
+
+@app.route("/tools/gradient-generator", methods=["GET", "POST"])
+def gradient_generator():
+    colors = request.form.getlist("color") or ["#ff0000", "#0000ff"]
+    direction = request.form.get("direction", "to right")
+    gradient_type = request.form.get("type", "linear")
+    css = ""
+    if request.method == "POST":
+        if gradient_type == "linear":
+            css = f"linear-gradient({direction}, {', '.join(colors)})"
+        else:
+            css = f"radial-gradient(circle, {', '.join(colors)})"
+    return render_template("tools/gradient_generator.html", colors=colors, direction=direction, gradient_type=gradient_type, css=css)
+
+@app.route("/tools/palette-generator", methods=["GET", "POST"])
+def palette_generator():
+    import random
+    import colorsys
+    mode = request.form.get("mode", "random")
+    base = request.form.get("base", "#3498db")
+    palette = []
+    if request.method == "POST":
+        def hex_to_rgb(h):
+            h = h.lstrip("#")
+            return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+        def rgb_to_hex(r, g, b):
+            return "#{:02X}{:02X}{:02X}".format(r, g, b)
+        r, g, b = hex_to_rgb(base)
+        h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
+        if mode == "monochrome":
+            for i in range(5):
+                ll = min(1, max(0, l + (i-2)*0.15))
+                palette.append(rgb_to_hex(*[int(x*255) for x in colorsys.hls_to_rgb(h, ll, s)]))
+        elif mode == "complementary":
+            palette = [base, rgb_to_hex(*[int(x*255) for x in colorsys.hls_to_rgb((h+0.5)%1, l, s)])]
+        elif mode == "analogous":
+            for delta in (-0.08, -0.04, 0, 0.04, 0.08):
+                palette.append(rgb_to_hex(*[int(x*255) for x in colorsys.hls_to_rgb((h+delta)%1, l, s)]))
+        elif mode == "triadic":
+            palette = [base]
+            for delta in (1/3, 2/3):
+                palette.append(rgb_to_hex(*[int(x*255) for x in colorsys.hls_to_rgb((h+delta)%1, l, s)]))
+        elif mode == "tetradic":
+            palette = [base]
+            for delta in (0.25, 0.5, 0.75):
+                palette.append(rgb_to_hex(*[int(x*255) for x in colorsys.hls_to_rgb((h+delta)%1, l, s)]))
+        elif mode == "split-complementary":
+            palette = [base]
+            for delta in (0.42, 0.58):
+                palette.append(rgb_to_hex(*[int(x*255) for x in colorsys.hls_to_rgb((h+delta)%1, l, s)]))
+        elif mode == "random":
+            for _ in range(5):
+                palette.append("#{0:06x}".format(random.randint(0, 0xFFFFFF)).upper())
+    return render_template("tools/palette_generator.html", palette=palette, mode=mode, base=base)
+
+@app.route("/tools/white-noise")
+def white_noise():
+    return render_template("tools/white_noise.html")
+
+@app.route("/tools/star-map", methods=["GET", "POST"])
+def star_map():
+    # For demo: just pass lat/lon, date/time to template for JS rendering
+    lat = request.form.get("lat", "51.5")
+    lon = request.form.get("lon", "-0.1")
+    date = request.form.get("date", "")
+    time = request.form.get("time", "")
+    return render_template("tools/star_map.html", lat=lat, lon=lon, date=date, time=time)
+
+@app.route("/tools/flashcards", methods=["GET", "POST"])
+def flashcards():
+    import random
+    if "flashcards" not in session:
+        session["flashcards"] = []
+    flashcards = session["flashcards"]
+
+    # Support for sets (bundles)
+    if "flashcard_sets" not in session:
+        session["flashcard_sets"] = {"Default": []}
+    sets = session["flashcard_sets"]
+    current_set = request.form.get("set", "Default")
+    if current_set not in sets:
+        sets[current_set] = []
+    flashcards = sets[current_set]
+
+    # Add card
+    if request.method == "POST" and "front" in request.form and "back" in request.form:
+        front = request.form.get("front", "").strip()
+        back = request.form.get("back", "").strip()
+        if front and back:
+            flashcards.append({"front": front, "back": back})
+            sets[current_set] = flashcards
+            session["flashcard_sets"] = sets
+
+    # Shuffle
+    if request.method == "POST" and "shuffle" in request.form:
+        random.shuffle(flashcards)
+        sets[current_set] = flashcards
+        session["flashcard_sets"] = sets
+
+    # Add new set
+    if request.method == "POST" and "new_set" in request.form:
+        new_set = request.form.get("new_set_name", "").strip()
+        if new_set and new_set not in sets:
+            sets[new_set] = []
+            session["flashcard_sets"] = sets
+            current_set = new_set
+
+    # Switch set
+    if request.method == "POST" and "set" in request.form:
+        current_set = request.form.get("set")
+
+    # Temporary: clear flashcards after 1 hour (or on browser close)
+    session.permanent = False
+
+    return render_template("tools/flashcards.html", flashcards=flashcards, sets=sets, current_set=current_set)
 
 if __name__ == "__main__":
     with app.app_context():

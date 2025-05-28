@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block main %}
+<h2>Gradient Generator</h2>
+<form method="post" class="mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-auto">
+      <label>Type</label>
+      <select name="type" class="form-select" onchange="this.form.submit()">
+        <option value="linear" {% if gradient_type=='linear' %}selected{% endif %}>Linear</option>
+        <option value="radial" {% if gradient_type=='radial' %}selected{% endif %}>Radial</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <label>Direction</label>
+      <select name="direction" class="form-select">
+        <option value="to right" {% if direction=='to right' %}selected{% endif %}>Left → Right</option>
+        <option value="to left" {% if direction=='to left' %}selected{% endif %}>Right → Left</option>
+        <option value="to bottom" {% if direction=='to bottom' %}selected{% endif %}>Top → Bottom</option>
+        <option value="to top" {% if direction=='to top' %}selected{% endif %}>Bottom → Top</option>
+        <option value="135deg" {% if direction=='135deg' %}selected{% endif %}>135°</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <label>Colors</label>
+      <div class="d-flex flex-row gap-2">
+        {% for color in colors %}
+        <input type="color" name="color" value="{{ color }}" class="form-control form-control-color" style="width: 2.5rem;">
+        {% endfor %}
+        {% if colors|length < 5 %}
+        <button name="add_color" value="1" class="btn btn-outline-secondary btn-sm">+</button>
+        {% endif %}
+        {% if colors|length > 2 %}
+        <button name="remove_color" value="1" class="btn btn-outline-secondary btn-sm">-</button>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary">Generate</button>
+    </div>
+  </div>
+</form>
+{% if css %}
+<div class="card mt-3">
+  <div class="card-body">
+    <div style="height: 80px; border-radius: 8px; background: {{ css }};"></div>
+    <div class="mt-2">
+      <code>background: {{ css }};</code>
+      <button class="btn btn-sm btn-outline-secondary ms-1" onclick="navigator.clipboard.writeText('background: {{ css }};')">Copy CSS</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+<script>
+document.querySelectorAll('button[name="add_color"]').forEach(btn => {
+  btn.onclick = function(e) {
+    e.preventDefault();
+    let form = btn.closest('form');
+    let input = document.createElement('input');
+    input.type = 'color';
+    input.name = 'color';
+    input.value = '#ffffff';
+    input.className = 'form-control form-control-color';
+    input.style.width = '2.5rem';
+    form.insertBefore(input, btn);
+    form.submit();
+  }
+});
+document.querySelectorAll('button[name="remove_color"]').forEach(btn => {
+  btn.onclick = function(e) {
+    e.preventDefault();
+    let form = btn.closest('form');
+    let colors = form.querySelectorAll('input[type="color"]');
+    if (colors.length > 2) {
+      colors[colors.length - 1].remove();
+      form.submit();
+    }
+  }
+});
+</script>
+{% endblock %}

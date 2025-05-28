@@ -1,5 +1,5 @@
 {% extends "layout.html" %} {% block title %}AI Prompt{% endblock %} {% block
-content %}
+main %}
 <div class="container mt-4">
   <h2><i class="bi-robot"></i> AI Prompt</h2>
   <form method="post" class="mb-3">
@@ -12,11 +12,11 @@ content %}
   {% if result %}
   <div class="alert alert-info"><b>AI:</b> {{ result }}</div>
   {% endif %}
-  <div class="alert alert-secondary mt-4">
-    <small
-      >This is a demo AI. For real AI, connect to an API like OpenAI or
-      Gemini.</small
-    >
+  <div class="alert alert-secondary mt-3">
+    <small>
+      This tool uses OpenAI (ChatGPT), Gemini, or similar AI APIs to generate
+      results. Responses may not always be accurate or appropriate.
+    </small>
   </div>
 </div>
 {% endblock %}

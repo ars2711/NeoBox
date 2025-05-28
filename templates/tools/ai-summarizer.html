@@ -13,4 +13,11 @@
 </form>
 {% if summary %}
 <div class="alert alert-info mt-3"><b>Summary:</b> {{ summary }}</div>
-{% endif %} {% endblock %}
+{% endif %}
+<div class="alert alert-secondary mt-3">
+  <small>
+    This tool uses OpenAI (ChatGPT), Gemini, or similar AI APIs to generate
+    results. Responses may not always be accurate or appropriate.
+  </small>
+</div>
+{% endblock %}

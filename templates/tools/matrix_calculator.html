@@ -2,88 +2,65 @@
 {% block title %}Matrix Calculator{% endblock %}
 {% block main %}
 <div class="container py-4">
-  <h1 class="mb-3">Matrix Calculator</h1>
-  <form method="post" id="matrixForm">
+  <form method="post" class="mb-3">
     <div class="row g-2 mb-2">
-      <div class="col">
+      <div class="col-auto">
         <label>Rows</label>
-        <input type="number" name="rows" id="rows" class="form-control" min="1" max="8" value="{{ rows }}">
+        <input type="number" name="rows" min="1" max="6" value="{{ rows }}" class="form-control" style="width: 70px;">
       </div>
-      <div class="col">
-        <label>Columns</label>
-        <input type="number" name="cols" id="cols" class="form-control" min="1" max="8" value="{{ cols }}">
+      <div class="col-auto">
+        <label>Cols</label>
+        <input type="number" name="cols" min="1" max="6" value="{{ cols }}" class="form-control" style="width: 70px;">
       </div>
-      <div class="col">
+      <div class="col-auto">
+        <label>Matrices</label>
+        <input type="number" name="num_matrices" min="1" max="5" value="{{ num_matrices }}" class="form-control" style="width: 70px;">
+      </div>
+      <div class="col-auto">
         <label>Operation</label>
         <select name="operation" class="form-select">
           <option value="add" {% if operation=="add" %}selected{% endif %}>Add</option>
           <option value="subtract" {% if operation=="subtract" %}selected{% endif %}>Subtract</option>
           <option value="multiply" {% if operation=="multiply" %}selected{% endif %}>Multiply</option>
-          <option value="determinant" {% if operation=="determinant" %}selected{% endif %}>Determinant (A)</option>
-          <option value="inverse" {% if operation=="inverse" %}selected{% endif %}>Inverse (A)</option>
-          <option value="transpose" {% if operation=="transpose" %}selected{% endif %}>Transpose (A)</option>
-          <option value="rank" {% if operation=="rank" %}selected{% endif %}>Rank (A)</option>
-          <option value="trace" {% if operation=="trace" %}selected{% endif %}>Trace (A)</option>
-          <option value="eigenvals" {% if operation=="eigenvals" %}selected{% endif %}>Eigenvalues (A)</option>
-          <option value="eigenvects" {% if operation=="eigenvects" %}selected{% endif %}>Eigenvectors (A)</option>
+          <option value="determinant" {% if operation=="determinant" %}selected{% endif %}>Determinant (1st)</option>
+          <option value="inverse" {% if operation=="inverse" %}selected{% endif %}>Inverse (1st)</option>
+          <option value="transpose" {% if operation=="transpose" %}selected{% endif %}>Transpose (1st)</option>
+          <option value="rank" {% if operation=="rank" %}selected{% endif %}>Rank (1st)</option>
+          <option value="trace" {% if operation=="trace" %}selected{% endif %}>Trace (1st)</option>
+          <option value="eigenvals" {% if operation=="eigenvals" %}selected{% endif %}>Eigenvalues (1st)</option>
+          <option value="eigenvects" {% if operation=="eigenvects" %}selected{% endif %}>Eigenvectors (1st)</option>
         </select>
       </div>
-      <div class="col-auto d-flex align-items-end">
-        <button type="button" class="btn btn-outline-secondary" id="swapBtn" title="Swap A/B">
-          <i class="bi bi-arrow-left-right"></i>
-        </button>
+      <div class="col-auto align-self-end">
+        <button class="btn btn-primary">Calculate</button>
       </div>
     </div>
-    <div class="row g-2">
-      <div class="col">
-        <label>Matrix A</label>
-        <div id="matrixA"></div>
+    <div class="row">
+      {% for idx in range(num_matrices) %}
+      <div class="col-md-6 mb-3">
+        <div class="card p-2">
+          <b>Matrix {{ idx+1 }}</b>
+          <table class="table table-bordered table-sm mt-2 mb-0">
+            {% for i in range(rows) %}
+            <tr>
+              {% for j in range(cols) %}
+              <td>
+                <input type="text" name="m{{ idx }}_{{ i }}_{{ j }}" value="{{ matrices[idx][i][j] if matrices and matrices[idx]|length > i and matrices[idx][i]|length > j else '0' }}" class="form-control form-control-sm" style="width: 60px;">
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
       </div>
-      <div class="col">
-        <label>Matrix B</label>
-        <div id="matrixB"></div>
-      </div>
+      {% endfor %}
     </div>
-    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
   </form>
   {% if result is not none %}
-    <div class="alert alert-info mt-3">
-      <b>Result:</b>
-      <pre>{{ result }}</pre>
-    </div>
+  <div class="alert alert-info mt-3">
+    <b>Result:</b>
+    <pre>{{ result }}</pre>
+  </div>
   {% endif %}
 </div>
-<script>
-function buildMatrixInputs(id, rows, cols, values) {
-  let html = '<table class="table table-bordered table-sm">';
-  for (let i = 0; i < rows; i++) {
-    html += '<tr>';
-    for (let j = 0; j < cols; j++) {
-      let val = values && values[i] && values[i][j] ? values[i][j] : '';
-      html += `<td><input type="number" step="any" name="${id}_${i}_${j}" value="${val}" class="form-control" style="width:70px"></td>`;
-    }
-    html += '</tr>';
-  }
-  html += '</table>';
-  document.getElementById(id).innerHTML = html;
-}
-function updateMatrices() {
-  let rows = parseInt(document.getElementById('rows').value);
-  let cols = parseInt(document.getElementById('cols').value);
-  buildMatrixInputs('matrixA', rows, cols, {{ matrix_a|tojson|safe }});
-  buildMatrixInputs('matrixB', rows, cols, {{ matrix_b|tojson|safe }});
-}
-document.getElementById('rows').addEventListener('change', updateMatrices);
-document.getElementById('cols').addEventListener('change', updateMatrices);
-document.getElementById('swapBtn').onclick = function() {
-  let a = document.querySelectorAll('#matrixA input');
-  let b = document.querySelectorAll('#matrixB input');
-  for (let i = 0; i < a.length; i++) {
-    let tmp = a[i].value;
-    a[i].value = b[i].value;
-    b[i].value = tmp;
-  }
-};
-window.addEventListener('DOMContentLoaded', updateMatrices);
-</script>
 {% endblock %}

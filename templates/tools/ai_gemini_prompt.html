@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block main %}
+<h2>Gemini Prompt</h2>
+<form method="post">
+  <textarea
+    name="prompt"
+    class="form-control mb-2"
+    rows="3"
+    placeholder="Ask Gemini anything"
+  >
+{{ prompt }}</textarea
+  >
+  <button class="btn btn-primary">Ask Gemini</button>
+</form>
+{% if result %}
+<div class="alert alert-info mt-3"><b>Gemini:</b> {{ result }}</div>
+{% endif %}
+<div class="alert alert-secondary mt-3">
+  <small>
+    This tool uses Gemini (Google AI) to generate results. Responses may not
+    always be accurate or appropriate.
+  </small>
+</div>
+{% endblock %}

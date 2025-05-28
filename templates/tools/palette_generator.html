@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block main %}
+<h2>Palette Generator</h2>
+<form method="post" class="mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-auto">
+      <label>Base Color</label>
+      <input type="color" name="base" value="{{ base }}" class="form-control form-control-color" style="width: 2.5rem;">
+    </div>
+    <div class="col-auto">
+      <label>Mode</label>
+      <select name="mode" class="form-select">
+        <option value="random" {% if mode=="random" %}selected{% endif %}>Random</option>
+        <option value="monochrome" {% if mode=="monochrome" %}selected{% endif %}>Monochrome</option>
+        <option value="complementary" {% if mode=="complementary" %}selected{% endif %}>Complementary</option>
+        <option value="analogous" {% if mode=="analogous" %}selected{% endif %}>Analogous</option>
+        <option value="triadic" {% if mode=="triadic" %}selected{% endif %}>Triadic</option>
+        <option value="tetradic" {% if mode=="tetradic" %}selected{% endif %}>Tetradic</option>
+        <option value="split-complementary" {% if mode=="split-complementary" %}selected{% endif %}>Split-Complementary</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary">Generate</button>
+    </div>
+  </div>
+</form>
+{% if palette %}
+<div class="d-flex flex-row gap-3">
+  {% for color in palette %}
+  <div class="text-center">
+    <div style="background: {{ color }}; width: 60px; height: 60px; border-radius: 8px; border: 1px solid #ccc;"></div>
+    <div class="mt-1">
+      <code>{{ color }}</code>
+      <button class="btn btn-sm btn-outline-secondary ms-1" onclick="navigator.clipboard.writeText('{{ color }}')">Copy</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

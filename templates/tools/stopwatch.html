@@ -1,105 +1,82 @@
 {% extends "layout.html" %} {% block title %}Stopwatch{% endblock %} {% block
 main %}
 <div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow text-center">
-        <div class="card-body">
-          <h3 class="card-title mb-3">
-            <i class="bi bi-stopwatch-fill"></i> Stopwatch
-          </h3>
-          <div class="mb-3">
-            <svg id="swCircle" width="140" height="140">
-              <circle
-                cx="70"
-                cy="70"
-                r="60"
-                stroke="#e9ecef"
-                stroke-width="12"
-                fill="none"
-              />
-              <circle
-                id="swProgress"
-                cx="70"
-                cy="70"
-                r="60"
-                stroke="#198754"
-                stroke-width="12"
-                fill="none"
-                stroke-linecap="round"
-                stroke-dasharray="377"
-                stroke-dashoffset="377"
-              />
-              <text
-                id="swTimeText"
-                x="70"
-                y="80"
-                text-anchor="middle"
-                font-size="2em"
-                fill="#212529"
-              >
-                00:00:00
-              </text>
-            </svg>
-          </div>
-          <div class="mb-3">
-            <button
-              class="btn btn-success me-2"
-              onclick="startStopwatch()"
-              id="swStartBtn"
-            >
-              <i class="bi bi-play-fill"></i> Start
-            </button>
-            <button class="btn btn-warning me-2" onclick="stopStopwatch()">
-              <i class="bi bi-pause-fill"></i> Stop
-            </button>
-            <button class="btn btn-secondary" onclick="resetStopwatch()">
-              <i class="bi bi-arrow-counterclockwise"></i> Reset
-            </button>
-          </div>
+  <form method="post" class="mb-3 d-flex gap-2">
+    <input
+      name="stopwatch_name"
+      class="form-control w-auto"
+      placeholder="Stopwatch Name"
+    />
+    <button class="btn btn-primary">Add Stopwatch</button>
+  </form>
+  <div class="row g-3">
+    {% for sw in stopwatches %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card p-3">
+        <h5>{{ sw.name }}</h5>
+        <div id="display-{{ sw.id }}" class="fs-3">00:00:00.00</div>
+        <div class="btn-group mt-2">
+          <button
+            class="btn btn-success"
+            onclick="startStopwatch('{{ sw.id }}')"
+          >
+            Start
+          </button>
+          <button
+            class="btn btn-warning"
+            onclick="pauseStopwatch('{{ sw.id }}')"
+          >
+            Pause
+          </button>
+          <button
+            class="btn btn-danger"
+            onclick="resetStopwatch('{{ sw.id }}')"
+          >
+            Reset
+          </button>
         </div>
       </div>
     </div>
+    {% endfor %}
   </div>
 </div>
 <script>
-  let swInterval,
-    swTime = 0,
-    swRunning = false;
-  function updateStopwatch() {
-    let h = Math.floor(swTime / 3600),
-      m = Math.floor((swTime % 3600) / 60),
-      s = swTime % 60;
-    document.getElementById("swTimeText").textContent = `${h
+  let timers = {};
+  function startStopwatch(id) {
+    if (!timers[id])
+      timers[id] = { start: null, elapsed: 0, running: false, interval: null };
+    if (timers[id].running) return;
+    timers[id].running = true;
+    timers[id].start = Date.now() - timers[id].elapsed;
+    timers[id].interval = setInterval(() => updateDisplay(id), 10);
+  }
+  function pauseStopwatch(id) {
+    if (timers[id] && timers[id].running) {
+      timers[id].elapsed = Date.now() - timers[id].start;
+      timers[id].running = false;
+      clearInterval(timers[id].interval);
+    }
+  }
+  function resetStopwatch(id) {
+    if (timers[id]) {
+      timers[id].elapsed = 0;
+      timers[id].running = false;
+      clearInterval(timers[id].interval);
+      document.getElementById("display-" + id).textContent = "00:00:00.00";
+    }
+  }
+  function updateDisplay(id) {
+    if (!timers[id]) return;
+    let elapsed = Date.now() - timers[id].start;
+    let ms = Math.floor((elapsed % 1000) / 10);
+    let s = Math.floor(elapsed / 1000) % 60;
+    let m = Math.floor(elapsed / 60000) % 60;
+    let h = Math.floor(elapsed / 3600000);
+    document.getElementById("display-" + id).textContent = `${h
       .toString()
-      .padStart(2, 0)}:${m.toString().padStart(2, 0)}:${s
+      .padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
       .toString()
-      .padStart(2, 0)}`;
-    let percent = (swTime % 60) / 60;
-    let offset = 377 * (1 - percent);
-    document
-      .getElementById("swProgress")
-      .setAttribute("stroke-dashoffset", offset);
+      .padStart(2, "0")}.${ms.toString().padStart(2, "0")}`;
   }
-  function startStopwatch() {
-    if (swRunning) return;
-    swRunning = true;
-    document.getElementById("swStartBtn").disabled = true;
-    swInterval = setInterval(() => {
-      swTime++;
-      updateStopwatch();
-    }, 1000);
-  }
-  function stopStopwatch() {
-    clearInterval(swInterval);
-    swRunning = false;
-    document.getElementById("swStartBtn").disabled = false;
-  }
-  function resetStopwatch() {
-    stopStopwatch();
-    swTime = 0;
-    updateStopwatch();
-  }
-  updateStopwatch();
 </script>
 {% endblock %}

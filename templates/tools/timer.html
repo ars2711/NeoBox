@@ -6,6 +6,29 @@
       <div class="card shadow text-center">
         <div class="card-body">
           <h3 class="card-title mb-3"><i class="bi bi-stopwatch"></i> Timer</h3>
+          <form method="post" class="mb-3">
+            <input
+              name="timer_name"
+              class="form-control d-inline-block w-auto"
+              placeholder="Timer Name"
+            />
+            <input
+              name="minutes"
+              type="number"
+              min="0"
+              class="form-control d-inline-block w-auto"
+              placeholder="Min"
+            />
+            <input
+              name="seconds"
+              type="number"
+              min="0"
+              max="59"
+              class="form-control d-inline-block w-auto"
+              placeholder="Sec"
+            />
+            <button class="btn btn-primary">Add Timer</button>
+          </form>
           <div class="mb-3">
             <svg id="timerCircle" width="140" height="140">
               <circle

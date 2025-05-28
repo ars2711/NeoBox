@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block main %}
+<h2>Code Explainer</h2>
+<form method="post">
+  <textarea
+    name="code"
+    class="form-control mb-2"
+    rows="5"
+    placeholder="Paste code to explain"
+  >
+{{ code }}</textarea
+  >
+  <button class="btn btn-primary">Explain</button>
+</form>
+{% if explanation %}
+<div class="alert alert-info mt-3"><b>Explanation:</b> {{ explanation }}</div>
+{% endif %}
+<div class="alert alert-secondary mt-3">
+  <small>
+    This tool uses OpenAI, Gemini, or similar AI APIs to generate results.
+    Responses may not always be accurate or appropriate.
+  </small>
+</div>
+{% endblock %}

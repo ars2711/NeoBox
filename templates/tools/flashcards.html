@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% block title %}{{ _('Flashcards') }}{% endblock %}
+{% block description %}{{ _('Create, flip, and study your own flashcards. Organize them into sets for different subjects.') }}{% endblock %}
+{% block main %}
+<div class="container py-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h2 class="card-title mb-2"><i class="bi-card-list me-2"></i>{{ _('Flashcards') }}</h2>
+      <p class="card-text text-muted">{{ _('Create, flip, and study your own flashcards. Organize them into sets for different subjects.') }}</p>
+      <form method="post" class="row g-2 align-items-end mb-3">
+        <div class="col">
+          <label for="front" class="form-label">{{ _('Front') }}</label>
+          <input
+            id="front"
+            name="front"
+            class="form-control"
+            placeholder="{{ _('Enter your question or term') }}"
+          />
+        </div>
+        <div class="col">
+          <label for="back" class="form-label">{{ _('Back') }}</label>
+          <input
+            id="back"
+            name="back"
+            class="form-control"
+            placeholder="{{ _('Enter the answer or definition') }}"
+          />
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary">
+            <i class="bi-plus"></i> {{ _('Add') }}
+          </button>
+        </div>
+        <div class="col-auto">
+          <button name="shuffle" value="1" class="btn btn-secondary">
+            <i class="bi-shuffle"></i> {{ _('Shuffle') }}
+          </button>
+        </div>
+        <div class="col-auto">
+          <label for="set" class="form-label">{{ _('Set') }}</label>
+          <select
+            name="set"
+            id="set"
+            class="form-select"
+            onchange="this.form.submit()"
+          >
+            {% for set in sets %}
+            <option value="{{ set }}" {% if set == current_set %}selected{% endif %}>{{ set }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label for="new_set_name" class="form-label">{{ _('New Set') }}</label>
+          <input
+            name="new_set_name"
+            id="new_set_name"
+            class="form-control"
+            placeholder="{{ _('New Set Name') }}"
+          />
+          <button
+            name="new_set"
+            value="1"
+            class="btn btn-outline-primary btn-sm mt-1"
+          >
+            <i class="bi-plus-circle"></i> {{ _('Add Set') }}
+          </button>
+        </div>
+      </form>
+      {% if flashcards %}
+      <div class="row g-3">
+        {% for card in flashcards %}
+        <div class="col-md-4 col-6">
+          <div
+            class="card p-2 text-center flashcard-flip flashcard"
+            onclick="this.classList.toggle('flipped')"
+          >
+            <div class="flashcard-inner" style="min-height: 80px;">
+              <div class="flashcard-front" style="font-weight: bold">
+                {{ card.front }}
+                <div class="small text-muted mt-2">({{ _('Click to flip') }})</div>
+              </div>
+              <div class="flashcard-back">
+                {{ card.back }}
+                <div class="small text-muted mt-2">({{ _('Click to flip back') }})</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted">{{ _('No flashcards yet. Add some above!') }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

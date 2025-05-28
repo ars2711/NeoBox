@@ -246,3 +246,29 @@ body {
 .card {
   border-radius: 1.25rem;
 }
+
+/*flashcard*/
+.flashcard-flip {
+  perspective: 600px;
+}
+.flashcard-inner {
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+.flashcard.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+.flashcard-front,
+.flashcard-back {
+  backface-visibility: hidden;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 0;
+  padding: 1rem;
+}
+.flashcard-back {
+  transform: rotateY(180deg);
+  background: #f8f9fa;
+}

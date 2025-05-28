@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block main %}
+<h2>Text Paraphraser</h2>
+<form method="post">
+  <textarea
+    name="text"
+    class="form-control mb-2"
+    rows="5"
+    placeholder="Paste text to paraphrase"
+  >
+{{ text }}</textarea
+  >
+  <button class="btn btn-primary">Paraphrase</button>
+</form>
+{% if paraphrased %}
+<div class="alert alert-info mt-3"><b>Paraphrased:</b> {{ paraphrased }}</div>
+{% endif %}
+<div class="alert alert-secondary mt-3">
+  <small>
+    This tool uses OpenAI, Gemini, or similar AI APIs to generate results.
+    Responses may not always be accurate or appropriate.
+  </small>
+</div>
+{% endblock %}
