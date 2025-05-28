@@ -1,0 +1,13 @@
+{% extends "layout.html" %} {% block main %}
+<h2>Activity Log</h2>
+<ul class="list-group">
+  {% for log in logs %}
+  <li class="list-group-item">
+    <b>{{ log.action }}</b> — {{ log.details }}
+    <span class="text-muted float-end"
+      >{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</span
+    >
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -17,6 +17,18 @@
       placeholder="Custom short code (e.g. mylink)"
       required
     />
+    <div class="mb-2">
+      <label>Expiry:</label>
+      <select name="expiry" class="form-select">
+        <option value="1">1 hour</option>
+        <option value="24" selected>1 day</option>
+        <option value="168">7 days</option>
+        <option value="720">30 days</option>
+      </select>
+    </div>
+    <div class="alert alert-warning mt-2">
+      Custom short URLs are deleted after expiry (max 30 days).
+    </div>
     <button type="submit" class="btn btn-primary">Shorten</button>
   </form>
   {% if error %}

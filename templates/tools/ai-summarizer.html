@@ -1,0 +1,16 @@
+{% extends "layout.html" %} {% block main %}
+<h2>AI Summarizer</h2>
+<form method="post">
+  <textarea
+    name="text"
+    class="form-control mb-2"
+    rows="5"
+    placeholder="Paste text to summarize"
+  >
+{{ text }}</textarea
+  >
+  <button class="btn btn-primary">Summarize</button>
+</form>
+{% if summary %}
+<div class="alert alert-info mt-3"><b>Summary:</b> {{ summary }}</div>
+{% endif %} {% endblock %}

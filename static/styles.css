@@ -219,3 +219,10 @@ body {
   background: #43a047;
   border-radius: 50%;
 }
+
+/* Calculator */
+.calculator-screen, .sci-screen {
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+}

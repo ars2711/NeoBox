@@ -9,8 +9,8 @@ main %}
           <h3 class="card-title mb-3">
             <i class="bi bi-globe"></i> World Clock
           </h3>
-          <div id="map" style="height: 400px; border-radius: 1rem"></div>
-          <div id="clockInfo" class="mt-3 text-center"></div>
+          <div id="map" style="height: 400px"></div>
+          <div id="clocks"></div>
         </div>
       </div>
     </div>
@@ -18,61 +18,21 @@ main %}
 </div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-  let map = L.map("map").setView([20, 0], 2);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 6,
-  }).addTo(map);
-
-  let lastMarker = null;
-
-  function showTime(lat, lng) {
-    fetch(
-      `https://api.bigdatacloud.net/data/timezone-by-location?latitude=${lat}&longitude=${lng}&key={{ bigdatacloud_api_key }}`
-    )
+  var map = L.map("map").setView([20, 0], 2);
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    { attribution: "© CartoDB" }
+  ).addTo(map);
+  map.on("click", function (e) {
+    fetch(`https://worldtimeapi.org/api/timezone/Etc/GMT`)
       .then((r) => r.json())
       .then((data) => {
-        let tz = data.timezone || data.localTimeZone || "Etc/GMT";
-        if (!tz) tz = "Etc/GMT";
-        fetch(`https://worldtimeapi.org/api/timezone/${tz}`)
-          .then((r2) => r2.json())
-          .then((tzdata) => {
-            let dt = new Date(tzdata.datetime);
-            document.getElementById(
-              "clockInfo"
-            ).innerHTML = `<h5>${tz}</h5><div style="font-size:2em;">${dt.toLocaleTimeString()}</div>`;
-          })
-          .catch(() => {
-            document.getElementById(
-              "clockInfo"
-            ).innerHTML = `<div class="text-danger">Could not fetch time for this timezone.</div>`;
-          });
-      })
-      .catch(() => {
-        document.getElementById(
-          "clockInfo"
-        ).innerHTML = `<div class="text-danger">Could not fetch time for this location.</div>`;
+        let div = document.createElement("div");
+        div.textContent = `Time at (${e.latlng.lat.toFixed(
+          2
+        )}, ${e.latlng.lng.toFixed(2)}): ${data.datetime}`;
+        document.getElementById("clocks").appendChild(div);
       });
-  }
-
-  map.on("click", function (e) {
-    if (lastMarker) map.removeLayer(lastMarker);
-    lastMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
-    showTime(e.latlng.lat, e.latlng.lng);
   });
-
-  // Optionally, highlight user's current location/time
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      let lat = pos.coords.latitude,
-        lng = pos.coords.longitude;
-      L.circleMarker([lat, lng], {
-        radius: 10,
-        color: "#0d6efd",
-        fillColor: "#0d6efd",
-        fillOpacity: 0.5,
-      }).addTo(map);
-      showTime(lat, lng);
-    });
-  }
 </script>
 {% endblock %}

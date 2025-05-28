@@ -1,22 +1,33 @@
 {% extends "layout.html" %} {% block title %}To-Do List{% endblock %} {% block
 main %}
-<div class="container mt-4">
+<div class="container mt-4" style="max-width: 600px">
   <h2>To-Do List</h2>
-  <form method="post" class="mb-3">
+  <form method="post" class="mb-3 d-flex gap-2">
     <input
       type="text"
-      name="task"
+      name="content"
       class="form-control"
-      placeholder="Add a new task"
+      placeholder="Add a new task..."
       required
     />
-    <button type="submit" class="btn btn-primary mt-2">Add</button>
+    <input
+      type="date"
+      name="due_date"
+      class="form-control"
+      style="max-width: 160px"
+    />
+    <button class="btn btn-primary">Add</button>
   </form>
   <ul class="list-group">
     {% for todo in todos %}
-    <li class="list-group-item">{{ todo }}</li>
+    <li
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <span>{{ todo.content }}</span>
+      <span class="text-muted small">{{ todo.due_date or "" }}</span>
+    </li>
     {% else %}
-    <li class="list-group-item text-muted">No tasks yet.</li>
+    <li class="list-group-item text-muted">No to-dos yet.</li>
     {% endfor %}
   </ul>
 </div>

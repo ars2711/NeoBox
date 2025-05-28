@@ -3,11 +3,22 @@
 {% block main %}
 <div class="container py-4">
   <h1 class="mb-3">Differentiation Calculator</h1>
+  <!-- Symbol Picker -->
+  <div class="mb-2">
+    <label class="form-label">Quick Symbols:</label>
+    <div>
+      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="π">&pi;</button>
+      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="e">e</button>
+      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="^">^</button>
+      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="√">&radic;</button>
+      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="θ">&theta;</button>
+    </div>
+  </div>
   <form method="post" class="mb-3" id="calcForm">
     <div class="row g-2 align-items-end">
       <div class="col-md-6">
         <label class="form-label">Expression</label>
-        <input name="expr" id="expr" value="{{ expr }}" class="form-control" autocomplete="off" required placeholder="e.g. x**2 + sin(x)">
+        <input name="expr" id="expr" value="{{ expr }}" class="form-control" autocomplete="off" required placeholder="e.g. x^2 + sin(x)">
       </div>
       <div class="col-md-2">
         <label class="form-label">Variable</label>
@@ -41,5 +52,20 @@ function renderMath() {
   document.getElementById(id).addEventListener('input', renderMath);
 });
 window.addEventListener('DOMContentLoaded', renderMath);
+</script>
+<script>
+document.querySelectorAll('.symbol-btn').forEach(btn => {
+  btn.onclick = function() {
+    const active = document.activeElement;
+    if (active && active.tagName === "INPUT") {
+      const start = active.selectionStart, end = active.selectionEnd;
+      const val = active.value;
+      active.value = val.slice(0, start) + btn.dataset.symbol + val.slice(end);
+      active.focus();
+      active.selectionStart = active.selectionEnd = start + btn.dataset.symbol.length;
+      if (typeof renderMath === "function") renderMath();
+    }
+  }
+});
 </script>
 {% endblock %}

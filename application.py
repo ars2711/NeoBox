@@ -8,6 +8,7 @@ import uuid
 import io
 import base64
 import zipfile
+import csv
 from functools import wraps
 from datetime import datetime, timezone, timedelta
 
@@ -26,12 +27,14 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from flask_mail import Mail, Message
 from PIL import Image
 import PyPDF2
-from googletrans import Translator, LANGUAGES
+from deep_translator import GoogleTranslator
 from fido2.server import Fido2Server
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2 import cbor
 from markupsafe import Markup
 from sympy import symbols, sympify, integrate, diff, solve, Eq, sin, cos, tan, exp, log, Matrix
+import openai
+import google.generativeai as genai
 
 # --- Configuration ---
 ON_RENDER = os.environ.get('RENDER', None) == 'true'
@@ -40,6 +43,9 @@ if not ON_RENDER:
     load_dotenv('.env')
 
 BIGDATACLOUD_API_KEY = os.environ.get("BIGDATACLOUD_API_KEY")
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
 # --- Flask App Setup ---
 app = Flask(__name__)
 app.config["SESSION_TYPE"] = "filesystem"
@@ -112,6 +118,7 @@ class User(db.Model):
     otp = db.Column(db.String(10), nullable=True)
     otp_expiry = db.Column(db.DateTime, nullable=True)
     passkeys = db.Column(JSON, default=list)
+    delete_requested_at = db.Column(db.DateTime, nullable=True)
 
 class Visitor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -131,6 +138,27 @@ class Feedback(db.Model):
     rating = db.Column(db.Integer)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Note(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    content = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    content = db.Column(db.Text)
+    due_date = db.Column(db.Date)
+    completed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ActivityLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    action = db.Column(db.String(255))
+    details = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 # --- Utility Functions and Decorators ---
 def login_required(f):
@@ -155,6 +183,11 @@ def send_otp_email(user, otp):
         body=f"Your OTP code is: {otp}\nThis code will expire in 10 minutes."
     )
     mail.send(msg)
+
+def log_activity(user_id, action, details=""):
+    log = ActivityLog(user_id=user_id, action=action, details=details)
+    db.session.add(log)
+    db.session.commit()
 
 # --- Context Processors and Hooks ---
 @app.context_processor
@@ -553,35 +586,35 @@ AVAILABLE_LANGUAGES = [
 ]
 
 TOOLS = [
-    {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "login_required": False, "description": "Simple arithmetic calculator."},
-    {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "login_required": False, "description": "Advanced calculator for scientific functions."},
-    {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "login_required": False, "description": "Convert between various units of measurement."},
-    {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "login_required": False, "description": "Convert currencies using real-time rates."},
-    {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "login_required": True, "description": "Manage your personal tasks and to-dos."},
-    {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "login_required": False, "description": "Convert files between different formats."},
-    {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "login_required": False, "description": "Translate text between languages."},
-    {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "login_required": False, "description": "Quickly search using your favorite search engines."},
-    {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "login_required": True, "description": "Write and save personal notes."},
-    {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "login_required": False, "description": "Boost productivity with Pomodoro sessions."},
-    {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "login_required": False, "description": "View current times in cities worldwide."},
-    {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "login_required": False, "description": "Set a countdown timer for any task."},
-    {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "login_required": False, "description": "Track elapsed time with a stopwatch."},
-    {"name": "AI Prompt", "icon": "bi-robot", "url": "ai-prompt", "login_required": False, "description": "Get instant responses from a demo AI."},
-    {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "login_required": False, "description": "Find similar images on the web."},
-    {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "login_required": False, "description": "Shorten long URLs for easy sharing."},
-    {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "login_required": False, "description": "Explore elements and their properties."},
-    {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "login_required": False, "description": "View metadata of uploaded images."},
-    {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "login_required": False, "description": "Create custom redirects for your URLs."},
-    {"name": "Integration Calculator", "icon": "bi-calculator", "url": "integration-calculator", "login_required": False, "description": "Symbolic and definite integration."},
-    {"name": "Differentiation Calculator", "icon": "bi-calculator", "url": "differentiation-calculator", "login_required": False, "description": "Symbolic differentiation."},
-    {"name": "Equation Solver", "icon": "bi-calculator", "url": "equation-solver", "login_required": False, "description": "Solve algebraic equations."},
-    {"name": "Matrix Calculator", "icon": "bi-grid-3x3-gap", "url": "matrix-calculator", "login_required": False, "description": "Matrix operations (add, multiply, inverse, etc)."},
-    {"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "login_required": False, "description": "Complex number arithmetic."},
-    {"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
-    {"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
-    {"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "login_required": False, "description": "Convert numbers between bases."},
-    {"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "login_required": False, "description": "Sine, cosine, tangent, etc."},
-    {"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "login_required": False, "description": "Fraction arithmetic."},
+    {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "category": "math", "login_required": False, "description": "Simple arithmetic calculator."},
+    {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "category": "math", "login_required": False, "description": "Advanced calculator for scientific functions."},
+    {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "category": "conversion", "login_required": False, "description": "Convert between various units of measurement."},
+    {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "category": "conversion", "login_required": False, "description": "Convert currencies using real-time rates."},
+    {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "category": "productivity", "login_required": True, "description": "Manage your personal tasks and to-dos."},
+    {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "category": "files", "login_required": False, "description": "Convert files between different formats."},
+    {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "category": "ai", "login_required": False, "description": "Translate text between languages."},
+    {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "category": "other", "login_required": False, "description": "Quickly search using your favorite search engines."},
+    {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "category": "productivity", "login_required": True, "description": "Write and save personal notes."},
+    {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "category": "productivity", "login_required": False, "description": "Boost productivity with Pomodoro sessions."},
+    {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "category": "time", "login_required": False, "description": "View current times in cities worldwide."},
+    {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "category": "time", "login_required": False, "description": "Set a countdown timer for any task."},
+    {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "category": "time", "login_required": False, "description": "Track elapsed time with a stopwatch."},
+    {"name": "AI Prompt", "icon": "bi-robot", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
+    {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "category": "other", "login_required": False, "description": "Find similar images on the web."},
+    {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "category": "other", "login_required": False, "description": "Shorten long URLs for easy sharing."},
+    {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "category": "science", "login_required": False, "description": "Explore elements and their properties."},
+    {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "category": "other", "login_required": False, "description": "View metadata of uploaded images."},
+    {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "category": "other", "login_required": False, "description": "Create custom redirects for your URLs."},
+    {"name": "Integration Calculator", "icon": "bi-calculator", "url": "integration-calculator", "category": "math", "login_required": False, "description": "Symbolic and definite integration."},
+    {"name": "Differentiation Calculator", "icon": "bi-calculator", "url": "differentiation-calculator", "category": "math", "login_required": False, "description": "Symbolic differentiation."},
+    {"name": "Equation Solver", "icon": "bi-calculator", "url": "equation-solver", "category": "math", "login_required": False, "description": "Solve algebraic equations."},
+    {"name": "Matrix Calculator", "icon": "bi-grid-3x3-gap", "url": "matrix-calculator", "category": "math", "login_required": False, "description": "Matrix operations (add, multiply, inverse, etc)."},
+    {"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "category": "math", "login_required": False, "description": "Complex number arithmetic."},
+    {"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "category": "math", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
+    {"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "category": "math", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
+    {"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "category": "math", "login_required": False, "description": "Convert numbers between bases."},
+    {"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "category": "math", "login_required": False, "description": "Sine, cosine, tangent, etc."},
+    {"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "category": "math", "login_required": False, "description": "Fraction arithmetic."},
     # Current tools
 ]
 
@@ -658,6 +691,18 @@ UPCOMING_TOOLS = [
       {"name": "Daily Affirmations", "icon": "bi-chat-left-text", "soon": "Affirming soon"},
       {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
     # ... more upcoming tools ...
+]
+
+TOOL_CATEGORIES = [
+    {"key": "all", "name": "All"},
+    {"key": "math", "name": "Math"},
+    {"key": "science", "name": "Science"},
+    {"key": "productivity", "name": "Productivity"},
+    {"key": "conversion", "name": "Conversion"},
+    {"key": "ai", "name": "AI"},
+    {"key": "files", "name": "Files"},
+    {"key": "time", "name": "Time"},
+    {"key": "other", "name": "Other"},
 ]
 
 ALLOWED_EXTENSIONS = {
@@ -916,10 +961,52 @@ def currency_converter():
 def scientific_calculator():
     return render_template("tools/scientific_calculator.html")
 
-@app.route("/notes")
+@app.route("/tools/todo", methods=["GET", "POST"])
+@login_required
+def todo():
+    if request.method == "POST":
+        content = request.form.get("content")
+        due_date = request.form.get("due_date")
+        todo = Todo(user_id=session["user_id"], content=content, due_date=due_date)
+        db.session.add(todo)
+        db.session.commit()
+    todos = Todo.query.filter_by(user_id=session["user_id"]).order_by(Todo.due_date).all()
+    return render_template("tools/todo.html", todos=todos)
+
+@app.route("/tools/notes", methods=["GET", "POST"])
 @login_required
 def notes():
-    return render_template("notes.html")
+    if request.method == "POST":
+        content = request.form.get("content")
+        note = Note(user_id=session["user_id"], content=content)
+        db.session.add(note)
+        db.session.commit()
+    notes = Note.query.filter_by(user_id=session["user_id"]).order_by(Note.created_at.desc()).all()
+    return render_template("tools/notes.html", notes=notes)
+
+@app.route("/export/notes")
+@login_required
+def export_notes():
+    notes = Note.query.filter_by(user_id=session["user_id"]).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["content", "created_at"])
+    for note in notes:
+        writer.writerow([note.content, note.created_at])
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="notes.csv", mimetype="text/csv")
+
+@app.route("/export/todos")
+@login_required
+def export_todos():
+    todos = Todo.query.filter_by(user_id=session["user_id"]).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["content", "due_date", "completed", "created_at"])
+    for todo in todos:
+        writer.writerow([todo.content, todo.due_date, todo.completed, todo.created_at])
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="todos.csv", mimetype="text/csv")
 
 @app.route("/tools")
 def tools():
@@ -928,7 +1015,14 @@ def tools():
     filtered_tools = TOOLS
     if query:
         filtered_tools = [tool for tool in TOOLS if query in tool["name"].lower()]
-    return render_template("tools.html", tools=filtered_tools, upcoming_tools=UPCOMING_TOOLS, logged_in=logged_in, query=query)
+    return render_template(
+        "tools.html",
+        tools=filtered_tools,
+        upcoming_tools=UPCOMING_TOOLS,
+        logged_in=logged_in,
+        query=query,
+        tool_categories=TOOL_CATEGORIES
+    )
 
 @app.route("/login/google")
 def login_google():
@@ -1193,46 +1287,49 @@ def file_converter():
         zip_url=zip_url
     )
 
-
+@app.route("/api/translate", methods=["POST"])
+def api_translate():
+    from deep_translator import GoogleTranslator
+    text = request.form.get("text", "")
+    src = request.form.get("src", "auto")
+    dest = request.form.get("dest", "en")
+    result = ""
+    detected = ""
+    if text:
+        try:
+            if src == "auto":
+                detected = GoogleTranslator(source="auto", target=dest).detect(text)
+                src = detected
+            result = GoogleTranslator(source=src, target=dest).translate(text)
+        except Exception as e:
+            result = f"Error: {e}"
+    return jsonify({"result": result, "detected": detected})
 
 @app.route("/tools/translator", methods=["GET", "POST"])
 def translator():
+    text = request.form.get("text", "")
+    src = request.form.get("src", "auto")
+    dest = request.form.get("dest", "en")
     result = ""
-    text = ""
-    src = "en"
-    dest = "es"
-    languages = list(LANGUAGES.items())
-    # Add some easter egg languages
-    languages += [("xx-bork", "Bork Bork Bork!"), ("xx-pirate", "Pirate"), ("xx-hacker", "Hacker Speak")]
-    if request.method == "POST":
-        text = request.form.get("text", "")
-        src = request.form.get("src", "en")
-        dest = request.form.get("dest", "es")
-        if src == dest:
-            result = "Input and output languages cannot be the same."
-        elif dest == "xx-bork":
-            # Swedish Chef Borkify
-            result = text.replace("the", "zee").replace("a", "e").replace("o", "oo") + " Bork Bork Bork!"
-        elif dest == "xx-pirate":
-            # Pirate-ify
-            result = text.replace("my", "me").replace("you", "ye").replace("is", "be").replace("friend", "matey") + " Arrr!"
-        elif dest == "xx-hacker":
-            # Hacker speak (leet)
-            result = text.translate(str.maketrans("aeios", "43105"))
-        else:
-            try:
-                translator = Translator()
-                translated = translator.translate(text, src=src, dest=dest)
-                result = translated.text
-            except Exception as e:
-                result = f"Error: {e}"
+    detected = ""
+    # Get supported languages as a dict: {'en': 'english', ...}
+    languages = GoogleTranslator.get_supported_languages(as_dict=True)
+    if text:
+        try:
+            if src == "auto":
+                detected = GoogleTranslator(source="auto", target=dest).detect(text)
+                src = detected
+            result = GoogleTranslator(source=src, target=dest).translate(text)
+        except Exception as e:
+            result = f"Error: {e}"
     return render_template(
         "tools/translator.html",
-        result=result,
         text=text,
         src=src,
         dest=dest,
-        languages=languages
+        result=result,
+        languages=languages,
+        detected=detected
     )
 
 @app.route("/tools/search", methods=["GET", "POST"])
@@ -1429,7 +1526,7 @@ def image_metadata():
             except Exception as e:
                 error = f"Error reading image: {e}"
         else:
-            error = "No file uploaded."
+                       error = "No file uploaded."
     return render_template("tools/image_metadata.html", metadata=metadata, error=error, image_preview=image_preview)
 
 short_urls = {}
@@ -1441,12 +1538,14 @@ def url_shortener():
     if request.method == "POST":
         original = request.form.get("original")
         custom = request.form.get("custom")
+        expiry_hours = int(request.form.get("expiry", 24))
+        expiry = datetime.now(timezone.utc) + timedelta(hours=expiry_hours)
         if not original or not custom:
             error = "Both fields are required."
-        elif custom in short_urls:
+        elif custom in short_urls and short_urls[custom][1] > datetime.now(timezone.utc):
             error = "Custom short URL already taken."
         else:
-            short_urls[custom] = original
+            short_urls[custom] = (original, expiry)
             short_url = request.host_url + "s/" + custom
     return render_template("tools/url_shortener.html", short_url=short_url, error=error)
 
@@ -1484,10 +1583,6 @@ def go_redirect(path):
 
 @app.route("/tools/ai-prompt", methods=["GET", "POST"])
 def ai_prompt():
-    """
-    AI Prompt Tool: Accepts a prompt from the user and returns a response.
-    For demo, uses a simple rule-based response. Replace with real API (e.g., OpenAI) as needed.
-    """
     result = None
     prompt = ""
     if request.method == "POST":
@@ -1495,14 +1590,61 @@ def ai_prompt():
         if not prompt:
             result = "Please enter a prompt."
         else:
-            # --- Demo logic: Replace this with a real AI API call if available ---
-            if "hello" in prompt.lower():
-                result = "Hello! How can I help you today?"
-            elif "joke" in prompt.lower():
-                result = "Why did the computer show up at work late? It had a hard drive!"
-            else:
-                result = f"I'm just a demo AI. You said: {prompt}"
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=256,
+                    temperature=0.7,
+                )
+                result = response.choices[0].message.content
+            except Exception as e:
+                result = f"Error: {e}"
     return render_template("tools/ai_prompt.html", prompt=prompt, result=result)
+
+@app.route("/tools/ai-summarizer", methods=["GET", "POST"])
+def ai_summarizer():
+    summary = None
+    text = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        if text:
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "Summarize the following text in a concise way."},
+                        {"role": "user", "content": text}
+                    ],
+                    max_tokens=128,
+                    temperature=0.5,
+                )
+                summary = response.choices[0].message.content
+            except Exception as e:
+                summary = f"Error: {e}"
+    return render_template("tools/ai-summarizer.html", summary=summary, text=text)
+
+@app.route("/tools/ai-code-explainer", methods=["GET", "POST"])
+def ai_code_explainer():
+    explanation = None
+    code = ""
+    if request.method == "POST":
+        code = request.form.get("code", "")
+        if code:
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "Explain what the following code does in simple terms."},
+                        {"role": "user", "content": code}
+                    ],
+                    max_tokens=256,
+                    temperature=0.5,
+                )
+                explanation = response.choices[0].message.content
+            except Exception as e:
+                explanation = f"Error: {e}"
+    return render_template("tools/ai_code_explainer.html", explanation=explanation, code=code)
 
 @app.route("/tools/integration-calculator", methods=["GET", "POST"])
 def integration_calculator():
@@ -1563,16 +1705,15 @@ def equation_solver():
 @app.route("/tools/matrix-calculator", methods=["GET", "POST"])
 def matrix_calculator():
     result = None
-    matrix_a = ""
-    matrix_b = ""
-    operation = "add"
+    rows = int(request.form.get("rows", 2))
+    cols = int(request.form.get("cols", 2))
+    operation = request.form.get("operation", "add")
+    matrix_a = [[request.form.get(f"a_{i}_{j}", "0") for j in range(cols)] for i in range(rows)]
+    matrix_b = [[request.form.get(f"b_{i}_{j}", "0") for j in range(cols)] for i in range(rows)]
     if request.method == "POST":
-        matrix_a = request.form.get("matrix_a", "")
-        matrix_b = request.form.get("matrix_b", "")
-        operation = request.form.get("operation", "add")
         try:
-            A = Matrix(eval(matrix_a))
-            B = Matrix(eval(matrix_b)) if matrix_b else None
+            A = Matrix([[float(x) for x in row] for row in matrix_a])
+            B = Matrix([[float(x) for x in row] for row in matrix_b])
             if operation == "add":
                 result = A + B
             elif operation == "subtract":
@@ -1585,11 +1726,19 @@ def matrix_calculator():
                 result = A.inv()
             elif operation == "transpose":
                 result = A.T
+            elif operation == "rank":
+                result = A.rank()
+            elif operation == "trace":
+                result = A.trace()
+            elif operation == "eigenvals":
+                result = A.eigenvals()
+            elif operation == "eigenvects":
+                result = A.eigenvects()
             else:
                 result = "Invalid operation"
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/matrix_calculator.html", result=result, matrix_a=matrix_a, matrix_b=matrix_b, operation=operation)
+    return render_template("tools/matrix_calculator.html", result=result, rows=rows, cols=cols, matrix_a=matrix_a, matrix_b=matrix_b, operation=operation)
 
 @app.route("/tools/complex-calculator", methods=["GET", "POST"])
 def complex_calculator():
@@ -1753,6 +1902,98 @@ def fraction_calculator():
         except Exception as e:
             result = f"Error: {e}"
     return render_template("tools/fraction_calculator.html", result=result, a=a, b=b, op=op)
+
+@app.route("/upload-avatar", methods=["POST"])
+@login_required
+def upload_avatar():
+    user = User.query.get(session["user_id"])
+    if request.method == "POST":
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and allowed_file(file.filename, ['image']):
+                filename = secure_filename(file.filename)
+                path = os.path.join('static/avatars', filename)
+                file.save(path)
+                user.avatar_url = url_for('static', filename=f'avatars/{filename}')
+                db.session.commit()
+                flash("Avatar updated successfully!", "success")
+            else:
+                flash("Invalid file type. Please upload an image.", "danger")
+    return redirect("/profile")
+
+@app.route("/activity-log")
+@login_required
+def activity_log():
+    logs = ActivityLog.query.filter_by(user_id=session["user_id"]).order_by(ActivityLog.timestamp.desc()).all()
+    return render_template("activity_log.html", logs=logs)
+
+@app.route("/import/notes", methods=["POST"])
+@login_required
+def import_notes():
+    file = request.files.get("file")
+    if file:
+        reader = csv.DictReader(io.StringIO(file.read().decode()))
+        for row in reader:
+            note = Note(user_id=session["user_id"], content=row["content"])
+            db.session.add(note)
+        db.session.commit()
+        flash("Notes imported!", "success")
+    return redirect("/tools/notes")
+
+@app.route("/import/todos", methods=["POST"])
+@login_required
+def import_todos():
+    file = request.files.get("file")
+    if file:
+        reader = csv.DictReader(io.StringIO(file.read().decode()))
+        for row in reader:
+            todo = Todo(
+                user_id=session["user_id"],
+                content=row["content"],
+                due_date=row.get("due_date"),
+                completed=row.get("completed") == "True"
+            )
+            db.session.add(todo)
+        db.session.commit()
+        flash("Todos imported!", "success")
+    return redirect("/tools/todo")
+
+@app.route("/tools/ai-gemini-prompt", methods=["GET", "POST"])
+def ai_gemini_prompt():
+    result = None
+    prompt = ""
+    if request.method == "POST":
+        prompt = request.form.get("prompt", "").strip()
+        if prompt:
+            try:
+                model = genai.GenerativeModel('gemini-pro')
+                response = model.generate_content(prompt)
+                result = response.text
+            except Exception as e:
+                result = f"Error: {e}"
+    return render_template("tools/ai_gemini_prompt.html", prompt=prompt, result=result)
+
+@app.route("/tools/ai-paraphraser", methods=["GET", "POST"])
+def ai_paraphraser():
+    paraphrased = None
+    text = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        if text:
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "Paraphrase the following text."},
+                        {"role": "user", "content": text}
+                    ],
+                    max_tokens=256,
+                    temperature=0.7,
+                )
+                paraphrased = response.choices[0].message.content
+            except Exception as e:
+                paraphrased = f"Error: {e}"
+    return render_template("tools/ai_paraphraser.html", paraphrased=paraphrased, text=text)
 
 if __name__ == "__main__":
     with app.app_context():

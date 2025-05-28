@@ -28,7 +28,13 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
 
-    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/service-worker.js');
+}
+</script>
+
     <meta name="theme-color" content="#0d6efd" />
 
     <title>NeoBox | {% block title %}{% endblock %}</title>
@@ -181,7 +187,6 @@
     </div>
   </div>
   <script src="/static/script.js"></script>
-  <script src="/static/service-worker.js"></script>
 </footer>
     <script>
       // Set theme before CSS loads to prevent white flash
@@ -195,5 +200,26 @@
       } catch (e) {}
     </script>
     <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.js"></script>
+    <script>
+function setTheme(theme) {
+  if (theme === "auto") {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+    else
+      document.documentElement.setAttribute("data-bs-theme", "light");
+  } else {
+    document.documentElement.setAttribute("data-bs-theme", theme);
+  }
+}
+document.addEventListener("DOMContentLoaded", function() {
+  {% if g.user and g.user.theme %}
+    setTheme("{{ g.user.theme }}");
+  {% elif session.theme %}
+    setTheme("{{ session.theme }}");
+  {% else %}
+    setTheme("auto");
+  {% endif %}
+});
+    </script>
   </body>
 </html>

@@ -3,12 +3,19 @@
 {% block main %}
 <div class="container mt-1">
   <h1>Tools</h1>
+  <div class="mb-3">
+    <div class="d-flex flex-nowrap overflow-auto" id="categoryTabs" style="gap: 0.5rem;">
+      {% for cat in tool_categories %}
+        <button class="btn btn-outline-primary btn-sm category-tab" data-category="{{ cat.key }}">{{ cat.name }}</button>
+      {% endfor %}
+    </div>
+  </div>
   <div class="mb-4">
     <input type="text" id="toolSearch" class="form-control" placeholder="Search tools..." style="max-width:300px;display:inline-block;">
   </div>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="toolsGrid">
     {% for tool in tools %}
-    <div class="col tool-card fade-in" data-name="{{ tool.name|lower }}">
+    <div class="col tool-card fade-in" data-name="{{ tool.name|lower }}" data-category="{{ tool.category }}">
       {% if not tool.login_required or logged_in %}
       <a href="tools/{{ tool.url }}" class="text-decoration-none">
       {% else %}
@@ -45,4 +52,34 @@
     {% endfor %}
   </div>
 </div>
+<script>
+const toolCards = document.querySelectorAll('.tool-card');
+const searchInput = document.getElementById('toolSearch');
+const categoryTabs = document.querySelectorAll('.category-tab');
+let activeCategory = "all";
+
+function filterTools() {
+  const search = searchInput.value.toLowerCase();
+  toolCards.forEach(card => {
+    const name = card.getAttribute('data-name');
+    const category = card.getAttribute('data-category');
+    const matchesCategory = (activeCategory === "all" || category === activeCategory);
+    const matchesSearch = (!search || name.includes(search));
+    card.style.display = (matchesCategory && matchesSearch) ? "" : "none";
+  });
+}
+
+categoryTabs.forEach(tab => {
+  tab.addEventListener('click', function() {
+    categoryTabs.forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    activeCategory = this.getAttribute('data-category');
+    filterTools();
+  });
+});
+searchInput.addEventListener('input', filterTools);
+
+// Set "All" as active by default
+categoryTabs[0].classList.add('active');
+</script>
 {% endblock %}

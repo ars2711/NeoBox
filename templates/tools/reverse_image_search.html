@@ -1,40 +1,48 @@
 {% extends "layout.html" %} {% block title %}Reverse Image Search{% endblock %}
 {% block main %}
-<div class="container mt-4">
-  <h2>Reverse Image Search</h2>
-  <form method="post" enctype="multipart/form-data">
-    <div class="mb-2">
-      <label>Paste Image URL:</label>
+<div class="container py-4" style="max-width: 500px">
+  <h2 class="mb-3">Reverse Image Search</h2>
+  <form method="post" enctype="multipart/form-data" id="imgForm">
+    <div class="mb-3">
       <input
-        type="url"
-        name="image_url"
+        type="file"
+        name="image"
+        id="imageInput"
         class="form-control"
-        placeholder="https://example.com/image.jpg"
-        value="{{ image_url }}"
-        required
+        accept="image/*"
       />
+      <div
+        id="dropZone"
+        class="border rounded p-3 text-center mt-2"
+        style="background: var(--bs-body-bg)"
+      >
+        Drag & drop an image here or click above to select.
+      </div>
     </div>
-    <div class="mb-2">
-      <label>Or Upload Image:</label>
-      <input type="file" name="image_file" accept="image/*" />
-    </div>
-    <button class="btn btn-primary" type="submit">Search</button>
+    <button class="btn btn-primary">Search</button>
   </form>
-  {% if error %}
-  <div class="alert alert-danger mt-2">{{ error }}</div>
-  {% endif %} {% if upload_url %}
-  <h5>Search on:</h5>
-  <ul>
-    {% for engine in engines %}
-    <li>
-      <a href="{{ engine.url }}{{ upload_url | urlencode }}" target="_blank">
-        <i class="{{ engine.icon }}"></i> {{ engine.name }}
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-  {% if upload_url.startswith('data:image') %}
-  <img src="{{ upload_url }}" style="max-width: 300px" />
-  {% endif %} {% endif %}
+  {% if result %}
+  <div class="alert alert-info mt-3">{{ result }}</div>
+  {% endif %}
+  <div class="alert alert-warning mt-3">
+    Uploaded images are stored temporarily and deleted after search.
+  </div>
 </div>
+<script>
+  const dropZone = document.getElementById("dropZone");
+  const imageInput = document.getElementById("imageInput");
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("bg-secondary");
+  });
+  dropZone.addEventListener("dragleave", (e) => {
+    dropZone.classList.remove("bg-secondary");
+  });
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("bg-secondary");
+    imageInput.files = e.dataTransfer.files;
+  });
+  dropZone.addEventListener("click", () => imageInput.click());
+</script>
 {% endblock %}

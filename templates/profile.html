@@ -2,7 +2,7 @@
 {% block title %}Profile{% endblock %}
 {% block main %}
 <h2>Profile</h2>
-<form method="post" class="text-start" style="max-width: 400px; margin: 0 auto">
+<form method="post" class="text-start" style="max-width: 400px; margin: 0 auto" enctype="multipart/form-data">
   <div class="mb-3">
     <label class="form-label">Username</label>
     <input class="form-control" value="{{ user.username }}" disabled>
@@ -28,11 +28,26 @@
       <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Other</option>
     </select>
   </div>
+  <div class="mb-3">
+    <img src="{{ user.avatar_url or url_for('static', filename='default_avatar.png') }}" class="rounded-circle mb-2" width="80">
+    <input type="file" name="avatar" accept="image/*" class="form-control mb-2">
+  </div>
   <button class="btn btn-primary" type="submit">Update</button>
 </form>
 <button type="button" class="btn btn-secondary mt-2" id="register-passkey">
   Register Passkey (Windows Hello, Face ID, etc.)
 </button>
+<form method="post" action="{{ url_for('delete_account') }}">
+  <button class="btn btn-danger">Request Account Deletion</button>
+</form>
+{% if user.delete_requested_at %}
+  <div class="alert alert-danger mt-3">
+    Your account is scheduled for deletion on <b>{{ (user.delete_requested_at + timedelta(days=7)).strftime('%Y-%m-%d') }}</b>.<br>
+    <form method="post" action="{{ url_for('cancel_delete') }}">
+      <button class="btn btn-warning">Cancel Deletion</button>
+    </form>
+  </div>
+{% endif %}
 <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.js"></script>
 <script>
   document.getElementById("register-passkey").onclick = async function () {

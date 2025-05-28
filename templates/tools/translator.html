@@ -3,24 +3,73 @@
 {% block main %}
 <div class="container mt-4">
   <h2>Text Translator</h2>
-  <form method="post">
-    <div class="mb-3">
-      <textarea name="text" class="form-control" rows="3" placeholder="Enter text to translate" required>{{ text }}</textarea>
+  <form id="translatorForm" autocomplete="off">
+    <div class="row g-2">
+      <div class="col">
+        <label>From:</label>
+        <select name="src" id="src" class="form-select">
+          <option value="auto" {% if src == "auto" %}selected{% endif %}>Auto-Detect</option>
+          {% for code, lang in languages.items() %}
+            <option value="{{ code }}" {% if src == code %}selected{% endif %}>{{ lang|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto d-flex align-items-end">
+        <button type="button" class="btn btn-outline-secondary" id="reverseBtn" title="Reverse languages">
+          <i class="bi bi-arrow-left-right"></i>
+        </button>
+      </div>
+      <div class="col">
+        <label>To:</label>
+        <select name="dest" id="dest" class="form-select">
+          {% for code, lang in languages.items() %}
+            <option value="{{ code }}" {% if dest == code %}selected{% endif %}>{{ lang }}</option>
+          {% endfor %}
+        </select>
+      </div>
     </div>
-    <div class="mb-3">
-      <label>Translate to:</label>
-      <select name="dest" class="form-select">
-        {% for code, lang in languages %}
-          <option value="{{ code }}" {% if dest == code %}selected{% endif %}>{{ lang }}</option>
-        {% endfor %}
-      </select>
+    <div class="mb-3 mt-2">
+      <textarea name="text" id="text" class="form-control" rows="3" placeholder="Enter text to translate" required>{{ text }}</textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Translate</button>
   </form>
-  {% if result %}
-    <div class="alert alert-info mt-3">
-      <strong>Translation:</strong> {{ result }}
-    </div>
-  {% endif %}
+  <div class="alert alert-info mt-3" id="translationResult" style="display:none;">
+    <strong>Translation:</strong> <span id="translatedText"></span>
+  </div>
 </div>
+<script>
+function instantTranslate() {
+  let text = document.getElementById('text').value;
+  let src = document.getElementById('src').value;
+  let dest = document.getElementById('dest').value;
+  if (!text.trim()) return;
+  fetch("/tools/translator", {
+    method: "POST",
+    headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    body: `text=${encodeURIComponent(text)}&src=${src}&dest=${dest}`
+  })
+  .then(r => r.text())
+  .then(html => {
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(html, "text/html");
+    let result = doc.getElementById("translationResult");
+    let translated = doc.getElementById("translatedText");
+    if (translated && result) {
+      document.getElementById("translationResult").style.display = "";
+      document.getElementById("translatedText").innerHTML = translated.innerHTML;
+    }
+  });
+}
+document.getElementById('text').addEventListener('input', instantTranslate);
+document.getElementById('src').addEventListener('change', instantTranslate);
+document.getElementById('dest').addEventListener('change', instantTranslate);
+document.getElementById('reverseBtn').onclick = function() {
+  let src = document.getElementById('src');
+  let dest = document.getElementById('dest');
+  let tmp = src.value;
+  src.value = dest.value;
+  dest.value = tmp;
+  instantTranslate();
+};
+window.addEventListener('DOMContentLoaded', instantTranslate);
+</script>
 {% endblock %}
