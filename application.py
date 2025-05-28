@@ -34,15 +34,21 @@ from markupsafe import Markup
 from sympy import symbols, sympify, integrate, diff, solve, Eq, sin, cos, tan, exp, log, Matrix
 
 # --- Configuration ---
-BIGDATACLOUD_API_KEY = os.environ.get("BIGDATACLOUD_API_KEY")
+ON_RENDER = os.environ.get('RENDER', None) == 'true'
 
+if not ON_RENDER:
+    load_dotenv('.env')
+
+BIGDATACLOUD_API_KEY = os.environ.get("BIGDATACLOUD_API_KEY")
 # --- Flask App Setup ---
 app = Flask(__name__)
+app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')
 app.config['SESSION_FILE_THRESHOLD'] = 100
 app.config['SESSION_FILE_MODE'] = 0o600
-app.config["SESSION_TYPE"] = "filesystem"
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
 app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 Session(app)
 
@@ -570,12 +576,12 @@ TOOLS = [
     {"name": "Differentiation Calculator", "icon": "bi-calculator", "url": "differentiation-calculator", "login_required": False, "description": "Symbolic differentiation."},
     {"name": "Equation Solver", "icon": "bi-calculator", "url": "equation-solver", "login_required": False, "description": "Solve algebraic equations."},
     {"name": "Matrix Calculator", "icon": "bi-grid-3x3-gap", "url": "matrix-calculator", "login_required": False, "description": "Matrix operations (add, multiply, inverse, etc)."},
-{"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "login_required": False, "description": "Complex number arithmetic."},
-{"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
-{"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
-{"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "login_required": False, "description": "Convert numbers between bases."},
-{"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "login_required": False, "description": "Sine, cosine, tangent, etc."},
-{"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "login_required": False, "description": "Fraction arithmetic."},
+    {"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "login_required": False, "description": "Complex number arithmetic."},
+    {"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
+    {"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
+    {"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "login_required": False, "description": "Convert numbers between bases."},
+    {"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "login_required": False, "description": "Sine, cosine, tangent, etc."},
+    {"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "login_required": False, "description": "Fraction arithmetic."},
     # Current tools
 ]
 
