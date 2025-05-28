@@ -1877,16 +1877,25 @@ def trigonometry_calculator():
         func = request.form.get("func", "sin")
         deg = request.form.get("deg") == "on"
         try:
+            angle_unit = request.form.get("angle_unit", "deg")
             val = float(angle)
-            if deg:
+            if angle_unit == "deg":
                 import math
                 val = math.radians(val)
-            if func == "sin":
-                result = sin(val)
-            elif func == "cos":
-                result = cos(val)
-            elif func == "tan":
-                result = tan(val)
+            elif angle_unit == "grad":
+                val = val * (math.pi / 200)
+            # else: radians, no change
+            # Map function names to sympy functions
+            func_map = {
+                "sin": sin, "sin^-1": asin, "sinh": sinh, "sinh^-1": asinh,
+                "cos": cos, "cos^-1": acos, "cosh": cosh, "cosh^-1": acosh,
+                "tan": tan, "tan^-1": atan, "tanh": tanh, "tanh^-1": atanh,
+                "cot": cot, "cot^-1": acot, "coth": coth, "coth^-1": acoth,
+                "sec": sec, "sec^-1": asec, "sech": sech, "sech^-1": asech,
+                "csc": csc, "csc^-1": acsc, "csch": csch, "csch^-1": acsch,
+            }
+            if func in func_map:
+                result = func_map[func](val)
             else:
                 result = "Invalid function"
         except Exception as e:
