@@ -56,33 +56,38 @@
   <button class="btn btn-primary">Calculate</button>
 </form>
 {% if result is not none %}
-  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+  <div class="alert alert-info mt-3">
+    <b>Result:</b> <span id="trig-result">{{ result }}</span>
+    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
+  </div>
 {% endif %}
 <script>
 function renderTrigPreview() {
   let angle = document.getElementById('angle').value || '';
   let func = document.querySelector('select[name="func"]').value;
-  let deg = document.querySelector('input[name="deg"]').checked;
-  let displayFunc = func.replace(/^arc/, '\\mathrm{arc}') // e.g. arcsec -> \mathrm{arcsec}
-    .replace("arcsin", "\\sin^{-1}")
-    .replace("arccos", "\\cos^{-1}")
-    .replace("arctan", "\\tan^{-1}")
-    .replace("arccot", "\\cot^{-1}")
-    .replace("arcsec", "\\sec^{-1}")
-    .replace("arccsc", "\\csc^{-1}")
-    .replace("arcsinh", "\\sinh^{-1}")
-    .replace("arccosh", "\\cosh^{-1}")
-    .replace("arctanh", "\\tanh^{-1}")
-    .replace("arccoth", "\\coth^{-1}")
-    .replace("arcsech", "\\sech^{-1}")
-    .replace("arccsch", "\\csch^{-1}");
-  let latex = displayFunc + "(" + angle + (deg ? "^{\\circ}" : "") + ")";
+  let unit = document.getElementById('angle_unit').value;
+  let unitLatex = unit === 'deg' ? '^{\\circ}' : (unit === 'grad' ? '^{g}' : '');
+  let displayFunc = func
+    .replace('^-1', '^{-1}')
+    .replace('sinh', '\\sinh')
+    .replace('cosh', '\\cosh')
+    .replace('tanh', '\\tanh')
+    .replace('coth', '\\coth')
+    .replace('sech', '\\sech')
+    .replace('csch', '\\csch')
+    .replace('sin', '\\sin')
+    .replace('cos', '\\cos')
+    .replace('tan', '\\tan')
+    .replace('cot', '\\cot')
+    .replace('sec', '\\sec')
+    .replace('csc', '\\csc');
+  let latex = displayFunc + '(' + angle + unitLatex + ')';
   document.getElementById('trig-preview').innerHTML = "$$" + latex + "$$";
   if (window.MathJax) MathJax.typesetPromise();
 }
 document.getElementById('angle').addEventListener('input', renderTrigPreview);
 document.querySelector('select[name="func"]').addEventListener('change', renderTrigPreview);
-document.querySelector('input[name="deg"]').addEventListener('change', renderTrigPreview);
+document.getElementById('angle_unit').addEventListener('change', renderTrigPreview);
 window.addEventListener('DOMContentLoaded', renderTrigPreview);
 document.querySelectorAll('.symbol-btn').forEach(btn => {
   btn.onclick = function() {

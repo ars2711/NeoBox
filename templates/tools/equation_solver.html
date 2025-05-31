@@ -1,27 +1,70 @@
-{% extends "layout.html" %}
-{% block title %}Equation Solver{% endblock %}
-{% block main %}
+{% extends "layout.html" %} {% block title %}Equation Solver{% endblock %} {%
+block main %}
 <div class="container py-4">
   <h1 class="mb-3">Equation Solver</h1>
   <div class="mb-2">
     <label class="form-label">Quick Symbols:</label>
     <div>
-      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="=">=</button>
-      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="π">&pi;</button>
-      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="∞">&infin;</button>
-      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="^">^</button>
-      <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="√">&radic;</button>
+      <button
+        type="button"
+        class="btn btn-light btn-sm symbol-btn"
+        data-symbol="="
+      >
+        =
+      </button>
+      <button
+        type="button"
+        class="btn btn-light btn-sm symbol-btn"
+        data-symbol="π"
+      >
+        &pi;
+      </button>
+      <button
+        type="button"
+        class="btn btn-light btn-sm symbol-btn"
+        data-symbol="∞"
+      >
+        &infin;
+      </button>
+      <button
+        type="button"
+        class="btn btn-light btn-sm symbol-btn"
+        data-symbol="^"
+      >
+        ^
+      </button>
+      <button
+        type="button"
+        class="btn btn-light btn-sm symbol-btn"
+        data-symbol="√"
+      >
+        &radic;
+      </button>
     </div>
   </div>
   <form method="post" class="mb-3" id="calcForm">
     <div class="row g-2 align-items-end">
       <div class="col-md-7">
         <label class="form-label">Equation (e.g. x^2-4):</label>
-        <input name="eqn" id="eqn" value="{{ eqn }}" class="form-control" autocomplete="off" required>
+        <input
+          name="eqn"
+          id="eqn"
+          value="{{ eqn }}"
+          class="form-control"
+          autocomplete="off"
+          required
+        />
       </div>
       <div class="col-md-2">
         <label class="form-label">Variable</label>
-        <input name="var" id="var" value="{{ var }}" class="form-control" autocomplete="off" required>
+        <input
+          name="var"
+          id="var"
+          value="{{ var }}"
+          class="form-control"
+          autocomplete="off"
+          required
+        />
       </div>
       <div class="col-md-2">
         <button class="btn btn-primary w-100">Solve</button>
@@ -30,39 +73,44 @@
   </form>
   <div class="mb-2">
     <strong>Live Preview:</strong>
-    <div id="math-preview" class="border rounded bg-light p-2"></div>
+    <div id="math-preview" class="border rounded p-2"></div>
   </div>
   {% if result is not none %}
-    <div class="alert alert-info mt-3">
-      <b>Result:</b>
-      <span id="math-result">{% if result %}$$ {{ result }} $$ {% endif %}</span>
-    </div>
+  <div class="alert alert-info mt-3">
+    <b>Result:</b> <span id="calc-result">{{ result }}</span> {% if explanation
+    %}
+    <div class="mt-2 small text-muted">{{ explanation }}</div>
+    {% endif %}
+  </div>
   {% endif %}
 </div>
 <script>
-function renderMath() {
-  let eqn = document.getElementById('eqn').value || '';
-  document.getElementById('math-preview').innerHTML = '$$' + eqn + '=0$$';
-  if (window.MathJax) MathJax.typesetPromise();
-}
-['eqn'].forEach(id => {
-  document.getElementById(id).addEventListener('input', renderMath);
-});
-window.addEventListener('DOMContentLoaded', renderMath);
+  function renderMath() {
+    let eqn = document.getElementById("eqn").value || "";
+    document.getElementById("math-preview").innerHTML = "$$" + eqn + "=0$$";
+    if (window.MathJax) MathJax.typesetPromise();
+  }
+  ["eqn"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", renderMath);
+  });
+  window.addEventListener("DOMContentLoaded", renderMath);
 </script>
 <script>
-document.querySelectorAll('.symbol-btn').forEach(btn => {
-  btn.onclick = function() {
-    const active = document.activeElement;
-    if (active && active.tagName === "INPUT") {
-      const start = active.selectionStart, end = active.selectionEnd;
-      const val = active.value;
-      active.value = val.slice(0, start) + btn.dataset.symbol + val.slice(end);
-      active.focus();
-      active.selectionStart = active.selectionEnd = start + btn.dataset.symbol.length;
-      if (typeof renderMath === "function") renderMath();
-    }
-  }
-});
+  document.querySelectorAll(".symbol-btn").forEach((btn) => {
+    btn.onclick = function () {
+      const active = document.activeElement;
+      if (active && active.tagName === "INPUT") {
+        const start = active.selectionStart,
+          end = active.selectionEnd;
+        const val = active.value;
+        active.value =
+          val.slice(0, start) + btn.dataset.symbol + val.slice(end);
+        active.focus();
+        active.selectionStart = active.selectionEnd =
+          start + btn.dataset.symbol.length;
+        if (typeof renderMath === "function") renderMath();
+      }
+    };
+  });
 </script>
 {% endblock %}

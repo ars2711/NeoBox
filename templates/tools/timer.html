@@ -3,156 +3,210 @@
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <div class="card shadow text-center">
+      <div class="card shadow text-center mb-4">
         <div class="card-body">
           <h3 class="card-title mb-3"><i class="bi bi-stopwatch"></i> Timer</h3>
-          <form method="post" class="mb-3">
-            <input
-              name="timer_name"
-              class="form-control d-inline-block w-auto"
-              placeholder="Timer Name"
-            />
-            <input
-              name="minutes"
-              type="number"
-              min="0"
-              class="form-control d-inline-block w-auto"
-              placeholder="Min"
-            />
-            <input
-              name="seconds"
-              type="number"
-              min="0"
-              max="59"
-              class="form-control d-inline-block w-auto"
-              placeholder="Sec"
-            />
-            <button class="btn btn-primary">Add Timer</button>
-          </form>
-          <div class="mb-3">
-            <svg id="timerCircle" width="140" height="140">
-              <circle
-                cx="70"
-                cy="70"
-                r="60"
-                stroke="#e9ecef"
-                stroke-width="12"
-                fill="none"
-              />
-              <circle
-                id="timerProgress"
-                cx="70"
-                cy="70"
-                r="60"
-                stroke="#fd7e14"
-                stroke-width="12"
-                fill="none"
-                stroke-linecap="round"
-                stroke-dasharray="377"
-                stroke-dashoffset="377"
-              />
-              <text
-                id="timerTimeText"
-                x="70"
-                y="80"
-                text-anchor="middle"
-                font-size="2em"
-                fill="#212529"
-              >
-                00:00
-              </text>
-            </svg>
-          </div>
-          <div
-            class="mb-3 d-flex justify-content-center align-items-center gap-2"
+          <form
+            method="post"
+            class="row g-2 justify-content-center align-items-end"
           >
-            <input
-              type="number"
-              id="minutes"
-              class="form-control form-control-sm"
-              placeholder="Min"
-              min="0"
-              style="width: 80px"
-            />
-            <input
-              type="number"
-              id="seconds"
-              class="form-control form-control-sm"
-              placeholder="Sec"
-              min="0"
-              max="59"
-              style="width: 80px"
-            />
-            <button class="btn btn-outline-primary btn-sm" onclick="setTimer()">
-              Set
-            </button>
+            <div class="col-12">
+              <input
+                name="timer_name"
+                class="form-control mb-2"
+                placeholder="Timer Name"
+              />
+            </div>
+            <div class="col-6 col-md-5">
+              <input
+                name="minutes"
+                type="number"
+                min="0"
+                class="form-control"
+                placeholder="Min"
+              />
+            </div>
+            <div class="col-6 col-md-5">
+              <input
+                name="seconds"
+                type="number"
+                min="0"
+                max="59"
+                class="form-control"
+                placeholder="Sec"
+              />
+            </div>
+            <div class="col-12">
+              <button class="btn btn-primary w-100">Add Timer</button>
+            </div>
+          </form>
+          {% if error %}
+          <div class="alert alert-danger mt-3 mb-0 py-2 small" role="alert">
+            {{ error }}
           </div>
-          <div class="mb-3">
-            <button
-              class="btn btn-primary me-2"
-              onclick="startTimer()"
-              id="timerStartBtn"
-            >
-              <i class="bi bi-play-fill"></i> Start
-            </button>
-            <button class="btn btn-secondary" onclick="resetTimer()">
-              <i class="bi bi-arrow-counterclockwise"></i> Reset
-            </button>
-          </div>
-          <div id="timerStatus" class="mt-2 small text-muted"></div>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
+  <div class="row g-4 justify-content-center">
+    {% for timer in timers %}
+    <div class="col-12 col-md-6 col-lg-5 col-xl-4 d-flex align-items-stretch">
+      <div
+        class="card timer-card neo-card neo-card-hover text-center position-relative mb-4 w-100"
+      >
+        <form
+          method="post"
+          class="delete-timer-form position-absolute"
+          style="top: 1.2em; right: 1.2em; z-index: 2"
+        >
+          <input type="hidden" name="delete_timer" value="{{ timer.id }}" />
+          <button
+            class="btn btn-danger btn-sm px-3 py-2"
+            title="Delete"
+            type="submit"
+            style="
+              border-radius: 1.1em;
+              font-size: 1.3em;
+              background: #f44336;
+              color: #fff;
+              border: none;
+              box-shadow: none;
+            "
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </form>
+        <div class="fw-bold mb-2" style="font-size: 1.35em; margin-top: 0.5em">
+          {{ timer.name or 'Timer' }}
+        </div>
+        <svg width="170" height="170" class="mb-3">
+          <circle
+            cx="85"
+            cy="85"
+            r="70"
+            stroke="#e9ecef"
+            stroke-width="12"
+            fill="none"
+          />
+          <circle
+            id="timerProgress-{{ timer.id }}"
+            cx="85"
+            cy="85"
+            r="70"
+            stroke="#2196f3"
+            stroke-width="12"
+            fill="none"
+            stroke-linecap="round"
+            stroke-dasharray="440"
+            stroke-dashoffset="440"
+            style="
+              transition: stroke-dashoffset 0.3s cubic-bezier(0.4, 2, 0.6, 1);
+            "
+          />
+          <text
+            id="timerTimeText-{{ timer.id }}"
+            x="85"
+            y="98"
+            text-anchor="middle"
+            font-size="2.4em"
+            fill="currentColor"
+            font-weight="600"
+          >
+            00:00
+          </text>
+        </svg>
+        <div class="mb-3 d-flex justify-content-center gap-3">
+          <button
+            class="btn btn-primary btn-lg px-4"
+            onclick="startTimer('{{ timer.id }}'); return false;"
+          >
+            <i class="bi bi-play-fill"></i> Start
+          </button>
+          <button
+            class="btn btn-secondary btn-lg px-4"
+            onclick="resetTimer('{{ timer.id }}'); return false;"
+          >
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+          </button>
+        </div>
+        <div
+          id="timerStatus-{{ timer.id }}"
+          class="mt-2 small text-muted"
+        ></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 </div>
 <script>
-  let timerSet = 0,
-    timerLeft = 0,
-    timerInterval,
-    timerRunning = false;
-  function updateTimer() {
-    let m = Math.floor(timerLeft / 60),
-      s = timerLeft % 60;
-    document.getElementById("timerTimeText").textContent = `${m
+  let timers = {};
+  function updateTimer(timerId) {
+    let timer = timers[timerId];
+    let m = Math.floor(timer.left / 60),
+      s = timer.left % 60;
+    document.getElementById(`timerTimeText-${timerId}`).textContent = `${m
       .toString()
       .padStart(2, 0)}:${s.toString().padStart(2, 0)}`;
-    let percent = timerSet ? timerLeft / timerSet : 0;
+    let percent = timer.set ? timer.left / timer.set : 0;
     let offset = 377 * (1 - percent);
     document
-      .getElementById("timerProgress")
+      .getElementById(`timerProgress-${timerId}`)
       .setAttribute("stroke-dashoffset", offset);
   }
-  function setTimer() {
-    let m = parseInt(document.getElementById("minutes").value) || 0;
-    let s = parseInt(document.getElementById("seconds").value) || 0;
-    timerSet = timerLeft = m * 60 + s;
-    updateTimer();
-    document.getElementById("timerStatus").textContent = "";
+  function setTimer(timerId, minutes, seconds) {
+    let m = parseInt(minutes) || 0;
+    let s = parseInt(seconds) || 0;
+    timers[timerId] = {
+      set: m * 60 + s,
+      left: m * 60 + s,
+      interval: null,
+      running: false,
+    };
+    updateTimer(timerId);
   }
-  function startTimer() {
-    if (timerRunning || timerLeft <= 0) return;
-    timerRunning = true;
-    document.getElementById("timerStartBtn").disabled = true;
-    timerInterval = setInterval(() => {
-      if (timerLeft > 0) {
-        timerLeft--;
-        updateTimer();
+  function startTimer(timerId) {
+    let timer = timers[timerId];
+    if (timer.running || timer.left <= 0) return;
+    timer.running = true;
+    updateTimer(timerId);
+    timer.interval = setInterval(() => {
+      if (timer.left > 0) {
+        timer.left--;
+        updateTimer(timerId);
       } else {
-        clearInterval(timerInterval);
-        timerRunning = false;
-        document.getElementById("timerStartBtn").disabled = false;
-        document.getElementById("timerStatus").textContent = "Time's up!";
+        clearInterval(timer.interval);
+        timer.running = false;
+        document.getElementById(`timerStatus-${timerId}`).textContent = "Time's up!";
       }
     }, 1000);
   }
-  function resetTimer() {
-    clearInterval(timerInterval);
-    timerLeft = timerSet;
-    updateTimer();
-    timerRunning = false;
-    document.getElementById("timerStartBtn").disabled = false;
-    document.getElementById("timerStatus").textContent = "";
+  function resetTimer(timerId) {
+    let timer = timers[timerId];
+    clearInterval(timer.interval);
+    timer.left = timer.set;
+    updateTimer(timerId);
+    timer.running = false;
+    document.getElementById(`timerStatus-${timerId}`).textContent = "";
   }
-  updateTimer();
+  document.addEventListener("DOMContentLoaded", () => {
+    {% for timer in timers %}
+    setTimer("{{ timer.id }}", "{{ timer.minutes }}", "{{ timer.seconds }}");
+    // Attach delete handler for AJAX delete
+    document.querySelectorAll('.delete-timer-form').forEach(form => {
+      form.onsubmit = function(e) {
+        e.preventDefault();
+        fetch(window.location.pathname, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(new FormData(form))
+        }).then(() => {
+          form.closest('.col-12, .col-md-6, .col-lg-5, .col-xl-4').remove();
+        });
+        return false;
+      };
+    });
+    {% endfor %}
+  });
 </script>
 {% endblock %}

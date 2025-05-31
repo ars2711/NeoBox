@@ -2,9 +2,12 @@
 {% block title %}Statistics Calculator{% endblock %}
 {% block main %}
 <h1>Statistics Calculator</h1>
-<form method="post">
+<form method="post" enctype="multipart/form-data" class="mb-3">
   <div class="mb-2">
-    <label>Data (comma or semicolon separated): <input name="data" value="{{ data }}" class="form-control"></label>
+    <label>Data (comma, semicolon, or file):
+      <input name="data" value="{{ data }}" class="form-control mb-1">
+      <input type="file" name="data_file" accept=".csv,.xlsx,.xls,.txt" class="form-control form-control-sm mt-1">
+    </label>
   </div>
   <div class="mb-2">
     <select name="stat" class="form-select">
@@ -13,11 +16,24 @@
       <option value="mode" {% if stat=="mode" %}selected{% endif %}>Mode</option>
       <option value="stdev" {% if stat=="stdev" %}selected{% endif %}>Standard Deviation</option>
       <option value="variance" {% if stat=="variance" %}selected{% endif %}>Variance</option>
+      <option value="min" {% if stat=="min" %}selected{% endif %}>Minimum</option>
+      <option value="max" {% if stat=="max" %}selected{% endif %}>Maximum</option>
+      <option value="sum" {% if stat=="sum" %}selected{% endif %}>Sum</option>
+      <option value="count" {% if stat=="count" %}selected{% endif %}>Count</option>
+      <option value="range" {% if stat=="range" %}selected{% endif %}>Range</option>
+      <option value="iqr" {% if stat=="iqr" %}selected{% endif %}>Interquartile Range (IQR)</option>
+      <option value="skew" {% if stat=="skew" %}selected{% endif %}>Skewness</option>
+      <option value="kurtosis" {% if stat=="kurtosis" %}selected{% endif %}>Kurtosis</option>
+      <option value="describe" {% if stat=="describe" %}selected{% endif %}>Full Summary</option>
     </select>
   </div>
   <button class="btn btn-primary">Calculate</button>
 </form>
 {% if result is not none %}
-  <div class="alert alert-info mt-3">Result: <b>{{ result }}</b></div>
+  <div class="alert alert-info mt-3">
+    <b>Result:</b>
+    <pre>{{ result }}</pre>
+    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
+  </div>
 {% endif %}
 {% endblock %}

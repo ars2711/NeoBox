@@ -12,8 +12,17 @@ main %}
   <div class="row g-3">
     {% for sw in stopwatches %}
     <div class="col-md-6 col-lg-4">
-      <div class="card p-3">
+      <div class="card p-3 position-relative">
         <h5>{{ sw.name }}</h5>
+        <form
+          method="post"
+          class="delete-stopwatch-form position-absolute top-0 end-0 m-1"
+        >
+          <input type="hidden" name="delete_stopwatch" value="{{ sw.id }}" />
+          <button class="btn btn-sm btn-danger" title="Delete">
+            <i class="bi-trash"></i>
+          </button>
+        </form>
         <div id="display-{{ sw.id }}" class="fs-3">00:00:00.00</div>
         <div class="btn-group mt-2">
           <button

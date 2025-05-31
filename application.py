@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel, gettext as _
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_mail import Mail, Message
-from PIL import Image
+from PIL import Image, ExifTags
 import PyPDF2
 from deep_translator import GoogleTranslator
 from fido2.server import Fido2Server
@@ -234,7 +234,7 @@ def index():
             db.session.add(Visitor(ip=ip))
             db.session.commit()
         count = Visitor.query.count()
-        return render_template("landing.html", visitor_count=count)
+        return render_template("landing.html", visitor_count=count, _=_)
 
 # --- Registration Route ---
 @app.route("/register", methods=["GET", "POST"])
@@ -322,8 +322,9 @@ def verify_otp():
         user.otp_expiry = None
         db.session.commit()
         session.pop("pending_user_id", None)
-        flash("Your account has been verified! You can now log in.", "success")
-        return redirect("/login")
+        session["user_id"] = user.id  # Log in user
+        flash("Your account has been verified! Welcome!", "success")
+        return redirect("/")
     return render_template("verify_otp.html", email=user.email)
 
 # --- Resend OTP Route ---
@@ -940,32 +941,28 @@ def unit_converter():
         units=units
     )
 
+import requests
+
 @app.route("/tools/currency-converter", methods=["GET", "POST"])
 def currency_converter():
-    try:
-        resp = requests.get("https://www.frankfurter.app/currencies")
-        currencies = sorted(resp.json().items())
-    except Exception:
-        currencies = [("USD", "US Dollar"), ("EUR", "Euro"), ("GBP", "British Pound")]
-
+    currencies = []
     result = None
     amount = None
     from_currency = None
     to_currency = None
-
+    try:
+        resp = requests.get("https://api.frankfurter.app/currencies")
+        currencies = sorted(resp.json().items())
+    except Exception:
+        currencies = [("USD", "US Dollar"), ("EUR", "Euro")]
     if request.method == "POST":
-        amount = request.form.get("amount")
+        amount = float(request.form.get("amount", 0))
         from_currency = request.form.get("from_currency")
         to_currency = request.form.get("to_currency")
-        try:
-            amount = float(amount)
-            url = f"https://www.frankfurter.app/latest?amount={amount}&from={from_currency}&to={to_currency}"
-            resp = requests.get(url)
+        if from_currency and to_currency and amount:
+            resp = requests.get(f"https://api.frankfurter.app/latest?amount={amount}&from={from_currency}&to={to_currency}")
             data = resp.json()
-            result = data["rates"][to_currency]
-        except Exception as e:
-            result = f"Error: {e}"
-
+            result = data["rates"].get(to_currency)
     return render_template(
         "tools/currency_converter.html",
         result=result,
@@ -1329,14 +1326,30 @@ def translator():
     src = request.form.get("src", "auto")
     dest = request.form.get("dest", "en")
     result = ""
-    detected = ""
-    # Get supported languages as a dict: {'en': 'english', ...}
-    languages = GoogleTranslator().get_supported_languages(as_dict=True)
+    # Use a static mapping for language codes to names
+    language_map = {
+        "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic", "hy": "Armenian", "az": "Azerbaijani",
+        "eu": "Basque", "be": "Belarusian", "bn": "Bengali", "bs": "Bosnian", "bg": "Bulgarian", "ca": "Catalan",
+        "ceb": "Cebuano", "ny": "Chichewa", "zh-cn": "Chinese (Simplified)", "zh-tw": "Chinese (Traditional)",
+        "co": "Corsican", "hr": "Croatian", "cs": "Czech", "da": "Danish", "nl": "Dutch", "en": "English",
+        "eo": "Esperanto", "et": "Estonian", "tl": "Filipino", "fi": "Finnish", "fr": "French", "fy": "Frisian",
+        "gl": "Galician", "ka": "Georgian", "de": "German", "el": "Greek", "gu": "Gujarati", "ht": "Haitian Creole",
+        "ha": "Hausa", "haw": "Hawaiian", "iw": "Hebrew", "hi": "Hindi", "hmn": "Hmong", "hu": "Hungarian",
+        "is": "Icelandic", "ig": "Igbo", "id": "Indonesian", "ga": "Irish", "it": "Italian", "ja": "Japanese",
+        "jw": "Javanese", "kn": "Kannada", "kk": "Kazakh", "km": "Khmer", "ko": "Korean", "ku": "Kurdish (Kurmanji)",
+        "ky": "Kyrgyz", "lo": "Lao", "la": "Latin", "lv": "Latvian", "lt": "Lithuanian", "lb": "Luxembourgish",
+        "mk": "Macedonian", "mg": "Malagasy", "ms": "Malay", "ml": "Malayalam", "mt": "Maltese", "mi": "Maori",
+        "mr": "Marathi", "mn": "Mongolian", "my": "Myanmar (Burmese)", "ne": "Nepali", "no": "Norwegian",
+        "ps": "Pashto", "fa": "Persian", "pl": "Polish", "pt": "Portuguese", "pa": "Punjabi", "ro": "Romanian",
+        "ru": "Russian", "sm": "Samoan", "gd": "Scots Gaelic", "sr": "Serbian", "st": "Sesotho", "sn": "Shona",
+        "sd": "Sindhi", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian", "so": "Somali", "es": "Spanish",
+        "su": "Sundanese", "sw": "Swahili", "sv": "Swedish", "tg": "Tajik", "ta": "Tamil", "te": "Telugu",
+        "th": "Thai", "tr": "Turkish", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "vi": "Vietnamese",
+        "cy": "Welsh", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu"
+    }
+    language_choices = sorted(language_map.items(), key=lambda x: x[1])
     if text:
         try:
-            if src == "auto":
-                detected = GoogleTranslator(source="auto", target=dest).detect(text)
-                src = detected
             result = GoogleTranslator(source=src, target=dest).translate(text)
         except Exception as e:
             result = f"Error: {e}"
@@ -1346,8 +1359,7 @@ def translator():
         src=src,
         dest=dest,
         result=result,
-        languages=languages,
-        detected=detected
+        language_choices=language_choices
     )
 
 @app.route("/tools/search", methods=["GET", "POST"])
@@ -1434,13 +1446,33 @@ def timer():
     if "timers" not in session:
         session["timers"] = []
     timers = session["timers"]
+    error = None
     if request.method == "POST":
-        name = request.form.get("timer_name", "Timer")
-        minutes = int(request.form.get("minutes", 0))
-        seconds = int(request.form.get("seconds", 0))
-        timers.append({"name": name, "minutes": minutes, "seconds": seconds})
-        session["timers"] = timers
-    return render_template("tools/timer.html", timers=timers)
+        # Handle timer deletion
+        if request.form.get("delete_timer"):
+            del_id = request.form.get("delete_timer")
+            timers = [t for t in timers if str(t.get("id")) != str(del_id)]
+            session["timers"] = timers
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return ("", 204)
+            else:
+                return redirect(request.url)
+        try:
+            name = request.form.get("timer_name", "Timer").strip() or "Timer"
+            minutes_raw = request.form.get("minutes", "0")
+            seconds_raw = request.form.get("seconds", "0")
+            minutes = int(minutes_raw) if minutes_raw.isdigit() else 0
+            seconds = int(seconds_raw) if seconds_raw.isdigit() else 0
+            if minutes < 0 or seconds < 0 or seconds > 59:
+                error = _("Please enter valid non-negative values. Seconds must be 0-59.")
+            elif minutes == 0 and seconds == 0:
+                error = _("Timer must be at least 1 second.")
+            else:
+                timers.append({"name": name, "minutes": minutes, "seconds": seconds, "id": str(uuid.uuid4())})
+                session["timers"] = timers
+        except Exception:
+            error = _("Invalid input. Please enter numbers only.")
+    return render_template("tools/timer.html", timers=timers, error=error)
 
 @app.route("/tools/world-clock")
 def world_clock():
@@ -1534,7 +1566,7 @@ def periodic_table():
 
 @app.route("/tools/image-metadata", methods=["GET", "POST"])
 def image_metadata():
-    metadata = None
+    metadata = {}
     error = None
     image_preview = None
     if request.method == "POST":
@@ -1548,19 +1580,27 @@ def image_metadata():
                 img.save(preview_io, format="PNG")
                 preview_io.seek(0)
                 image_preview = base64.b64encode(preview_io.read()).decode("utf-8")
-                # Get metadata
-                metadata = dict(img.info)
-                # Try EXIF
+                # Basic info
+                file.seek(0, os.SEEK_END)
+                size = file.tell()
+                file.seek(0)
+                metadata["Format"] = img.format
+                metadata["Mode"] = img.mode
+                metadata["Dimensions"] = f"{img.width} x {img.height}"
+                metadata["File Size"] = f"{size/1024:.2f} KB"
+                # EXIF
                 exif_data = img.getexif()
                 if exif_data:
-                    exif = {Image.ExifTags.TAGS.get(k, k): v for k, v in exif_data.items()}
-                    metadata.update(exif)
+                    from PIL.ExifTags import TAGS
+                    for tag_id, value in exif_data.items():
+                        tag = TAGS.get(tag_id, tag_id)
+                        metadata[str(tag)] = value
                 if not metadata:
-                    metadata = {"Info": "No metadata found."}
+                    metadata["Info"] = "No metadata found."
             except Exception as e:
                 error = f"Error reading image: {e}"
         else:
-                       error = "No file uploaded."
+            error = "No file uploaded."
     return render_template("tools/image_metadata.html", metadata=metadata, error=error, image_preview=image_preview)
 
 short_urls = {}
@@ -1746,7 +1786,16 @@ def matrix_calculator():
     operation = request.form.get("operation", "add")
     matrices = []
     for idx in range(num_matrices):
-        matrix = [[request.form.get(f"m{idx}_{i}_{j}", "0") for j in range(cols)] for i in range(rows)]
+        matrix = []
+        for i in range(rows):
+            row = []
+            for j in range(cols):
+                val = request.form.get(f"m{idx}_{i}_{j}", "0")
+                if isinstance(val, dict):
+                    print(f"Matrix input error: got dict at m{idx}_{i}_{j}: {val}")
+                    val = 0.0
+                row.append(val)
+            matrix.append(row)
         matrices.append(matrix)
     if request.method == "POST":
         try:
@@ -2133,64 +2182,70 @@ def palette_generator():
 
 @app.route("/tools/white-noise")
 def white_noise():
-    return render_template("tools/white_noise.html")
+    return render_template("tools/white_noise.html", sounds=WHITE_NOISE_SOUNDS)
 
-@app.route("/tools/star-map", methods=["GET", "POST"])
-def star_map():
-    # For demo: just pass lat/lon, date/time to template for JS rendering
-    lat = request.form.get("lat", "51.5")
-    lon = request.form.get("lon", "-0.1")
-    date = request.form.get("date", "")
-    time = request.form.get("time", "")
-    return render_template("tools/star_map.html", lat=lat, lon=lon, date=date, time=time)
-
-@app.route("/tools/flashcards", methods=["GET", "POST"])
-def flashcards():
-    import random
-    if "flashcards" not in session:
-        session["flashcards"] = []
-    flashcards = session["flashcards"]
-
-    # Support for sets (bundles)
-    if "flashcard_sets" not in session:
-        session["flashcard_sets"] = {"Default": []}
-    sets = session["flashcard_sets"]
-    current_set = request.form.get("set", "Default")
-    if current_set not in sets:
-        sets[current_set] = []
-    flashcards = sets[current_set]
-
-    # Add card
-    if request.method == "POST" and "front" in request.form and "back" in request.form:
-        front = request.form.get("front", "").strip()
-        back = request.form.get("back", "").strip()
-        if front and back:
-            flashcards.append({"front": front, "back": back})
-            sets[current_set] = flashcards
-            session["flashcard_sets"] = sets
-
-    # Shuffle
-    if request.method == "POST" and "shuffle" in request.form:
-        random.shuffle(flashcards)
-        sets[current_set] = flashcards
-        session["flashcard_sets"] = sets
-
-    # Add new set
-    if request.method == "POST" and "new_set" in request.form:
-        new_set = request.form.get("new_set_name", "").strip()
-        if new_set and new_set not in sets:
-            sets[new_set] = []
-            session["flashcard_sets"] = sets
-            current_set = new_set
-
-    # Switch set
-    if request.method == "POST" and "set" in request.form:
-        current_set = request.form.get("set")
-
-    # Temporary: clear flashcards after 1 hour (or on browser close)
-    session.permanent = False
-
-    return render_template("tools/flashcards.html", flashcards=flashcards, sets=sets, current_set=current_set)
+WHITE_NOISE_SOUNDS = [
+    {"key": "white", "icon": "bi-soundwave", "name": _(u"White Noise"), "desc": _(u"Classic static"), "file": None},
+    {"key": "pink", "icon": "bi-soundwave", "name": _(u"Pink Noise"), "desc": _(u"Balanced static"), "file": None},
+    {"key": "brown", "icon": "bi-soundwave", "name": _(u"Brown Noise"), "desc": _(u"Deep static"), "file": None},
+    {"key": "rain", "icon": "bi-cloud-drizzle", "name": _(u"Rain"), "desc": _(u"Gentle rain"), "file": "rain.mp3"},
+    {"key": "forest", "icon": "bi-tree", "name": _(u"Forest"), "desc": _(u"Birds & trees"), "file": "forest.mp3"},
+    {"key": "night", "icon": "bi-moon-stars", "name": _(u"Night"), "desc": _(u"Crickets & night air"), "file": "night.mp3"},
+    {"key": "ocean", "icon": "bi-water", "name": _(u"Ocean"), "desc": _(u"Waves"), "file": "ocean.mp3"},
+    {"key": "wind", "icon": "bi-wind", "name": _(u"Wind"), "desc": _(u"Soft wind"), "file": "wind.mp3"},
+    {"key": "fire", "icon": "bi-fire", "name": _(u"Fire"), "desc": _(u"Campfire crackle"), "file": "fire.mp3"},
+    {"key": "thunder", "icon": "bi-cloud-lightning-rain", "name": _(u"Thunderstorm"), "desc": _(u"Rain & thunder"), "file": "thunder.mp3"},
+    {"key": "cafe", "icon": "bi-cup-hot", "name": _(u"Cafe"), "desc": _(u"Coffee shop"), "file": "cafe.mp3"},
+    {"key": "train", "icon": "bi-train-front", "name": _(u"Train"), "desc": _(u"Train ride"), "file": "train.mp3"},
+    {"key": "fan", "icon": "bi-fan", "name": _(u"Fan"), "desc": _(u"Electric fan"), "file": "fan.mp3"},
+    {"key": "fireplace", "icon": "bi-fire", "name": _(u"Fireplace"), "desc": _(u"Indoor fire"), "file": "fireplace.mp3"},
+    {"key": "river", "icon": "bi-droplet", "name": _(u"River"), "desc": _(u"Flowing water"), "file": "river.mp3"},
+    {"key": "birds", "icon": "bi-egg-fried", "name": _(u"Birds"), "desc": _(u"Morning birds"), "file": "birds.mp3"},
+    {"key": "city", "icon": "bi-buildings", "name": _(u"City"), "desc": _(u"Urban ambience"), "file": "city.mp3"},
+    {"key": "library", "icon": "bi-journal-bookmark", "name": _(u"Library"), "desc": _(u"Quiet study"), "file": "library.mp3"},
+    # --- Extended options, add files to static/media/ to enable ---
+    {"key": "rainroof", "icon": "bi-house", "name": _(u"Rain on Roof"), "desc": _(u"Rain hitting roof"), "file": "rainroof.mp3"},
+    {"key": "waves", "icon": "bi-water", "name": _(u"Waves"), "desc": _(u"Sea shore"), "file": "waves.mp3"},
+    {"key": "fireplace2", "icon": "bi-fire", "name": _(u"Fireplace 2"), "desc": _(u"Cozy fire"), "file": "fireplace2.mp3"},
+    {"key": "leaves", "icon": "bi-leaf", "name": _(u"Leaves"), "desc": _(u"Rustling leaves"), "file": "leaves.mp3"},
+    {"key": "stream", "icon": "bi-droplet-half", "name": _(u"Stream"), "desc": _(u"Small creek"), "file": "stream.mp3"},
+    {"key": "waterfall", "icon": "bi-droplet-fill", "name": _(u"Waterfall"), "desc": _(u"Falling water"), "file": "waterfall.mp3"},
+    {"key": "crowd", "icon": "bi-people", "name": _(u"Crowd"), "desc": _(u"People talking"), "file": "crowd.mp3"},
+    {"key": "market", "icon": "bi-shop", "name": _(u"Market"), "desc": _(u"Busy market"), "file": "market.mp3"},
+    {"key": "jungle", "icon": "bi-flower2", "name": _(u"Jungle"), "desc": _(u"Tropical forest"), "file": "jungle.mp3"},
+    {"key": "highway", "icon": "bi-truck", "name": _(u"Highway"), "desc": _(u"Cars passing"), "file": "highway.mp3"},
+    {"key": "subway", "icon": "bi-train-lightrail-front", "name": _(u"Subway"), "desc": _(u"Underground train"), "file": "subway.mp3"},
+    {"key": "trainstation", "icon": "bi-train-freight-front", "name": _(u"Train Station"), "desc": _(u"Station ambience"), "file": "trainstation.mp3"},
+    {"key": "fountain", "icon": "bi-droplet", "name": _(u"Fountain"), "desc": _(u"Water fountain"), "file": "fountain.mp3"},
+    {"key": "windchimes", "icon": "bi-wind", "name": _(u"Wind Chimes"), "desc": _(u"Chimes in wind"), "file": "windchimes.mp3"},
+    {"key": "birdsforest", "icon": "bi-egg-fried", "name": _(u"Birds Forest"), "desc": _(u"Forest birds"), "file": "birdsforest.mp3"},
+    {"key": "night2", "icon": "bi-moon-stars", "name": _(u"Night 2"), "desc": _(u"Night ambience"), "file": "night2.mp3"},
+    {"key": "snow", "icon": "bi-snow", "name": _(u"Snow"), "desc": _(u"Falling snow"), "file": "snow.mp3"},
+    {"key": "typing", "icon": "bi-keyboard", "name": _(u"Typing"), "desc": _(u"Keyboard typing"), "file": "typing.mp3"},
+    {"key": "clock", "icon": "bi-clock", "name": _(u"Clock"), "desc": _(u"Ticking clock"), "file": "clock.mp3"},
+    {"key": "laundry", "icon": "bi-droplet", "name": _(u"Laundry"), "desc": _(u"Washing machine"), "file": "laundry.mp3"},
+    {"key": "vacuum", "icon": "bi-wind", "name": _(u"Vacuum"), "desc": _(u"Vacuum cleaner"), "file": "vacuum.mp3"},
+    {"key": "hairdryer", "icon": "bi-wind", "name": _(u"Hair Dryer"), "desc": _(u"Blowing air"), "file": "hairdryer.mp3"},
+    {"key": "car", "icon": "bi-car-front", "name": _(u"Car Ride"), "desc": _(u"Inside a car"), "file": "car.mp3"},
+    {"key": "plane", "icon": "bi-airplane", "name": _(u"Airplane"), "desc": _(u"In-flight hum"), "file": "plane.mp3"},
+    {"key": "boat", "icon": "bi-water", "name": _(u"Boat"), "desc": _(u"On a boat"), "file": "boat.mp3"},
+    {"key": "heartbeat", "icon": "bi-heart-pulse", "name": _(u"Heartbeat"), "desc": _(u"Heartbeat sound"), "file": "heartbeat.mp3"},
+    {"key": "catpurr", "icon": "bi-emoji-smile", "name": _(u"Cat Purr"), "desc": _(u"Purring cat"), "file": "catpurr.mp3"},
+    {"key": "dogbark", "icon": "bi-emoji-smile", "name": _(u"Dog Bark"), "desc": _(u"Dog barking"), "file": "dogbark.mp3"},
+    {"key": "frog", "icon": "bi-droplet", "name": _(u"Frogs"), "desc": _(u"Frogs croaking"), "file": "frog.mp3"},
+    {"key": "crickets", "icon": "bi-moon-stars", "name": _(u"Crickets"), "desc": _(u"Night crickets"), "file": "crickets.mp3"},
+    {"key": "beach", "icon": "bi-water", "name": _(u"Beach"), "desc": _(u"Beach waves"), "file": "beach.mp3"},
+    {"key": "campfire", "icon": "bi-fire", "name": _(u"Campfire"), "desc": _(u"Outdoor fire"), "file": "campfire.mp3"},
+    {"key": "rainforest", "icon": "bi-tree", "name": _(u"Rainforest"), "desc": _(u"Rainforest ambience"), "file": "rainforest.mp3"},
+    {"key": "windy", "icon": "bi-wind", "name": _(u"Windy"), "desc": _(u"Strong wind"), "file": "windy.mp3"},
+    {"key": "seagulls", "icon": "bi-egg-fried", "name": _(u"Seagulls"), "desc": _(u"Seagulls at sea"), "file": "seagulls.mp3"},
+    {"key": "barn", "icon": "bi-house", "name": _(u"Barn"), "desc": _(u"Barn animals"), "file": "barn.mp3"},
+    {"key": "trainwhistle", "icon": "bi-train-front", "name": _(u"Train Whistle"), "desc": _(u"Train horn"), "file": "trainwhistle.mp3"},
+    {"key": "churchbells", "icon": "bi-bell", "name": _(u"Church Bells"), "desc": _(u"Bells ringing"), "file": "churchbells.mp3"},
+    {"key": "windmill", "icon": "bi-wind", "name": _(u"Windmill"), "desc": _(u"Windmill blades"), "file": "windmill.mp3"},
+    {"key": "rainwindow", "icon": "bi-shop-window", "name": _(u"Rain on Window"), "desc": _(u"Rain hitting glass"), "file": "rainwindow.mp3"},
+    # Add more as you add files to static/media/ ...
+]
 
 if __name__ == "__main__":
     with app.app_context():

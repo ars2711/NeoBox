@@ -9,9 +9,9 @@
     </div>
     <div class="row mb-2">
       <div class="col">
-        <select name="from_currency" id="from_currency" class="form-select" required>
+        <select name="from_currency" id="from_currency" class="form-select select2" required>
           {% for code, name in currencies %}
-          <option value="{{ code }}" {% if from_currency==code %}selected{% endif %}>{{ code }} - {{ name }}</option>
+            <option value="{{ code }}" {% if from_currency==code %}selected{% endif %}>{{ code }} - {{ name }}</option>
           {% endfor %}
         </select>
       </div>

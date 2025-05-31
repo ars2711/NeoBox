@@ -1,75 +1,58 @@
 {% extends "layout.html" %}
-{% block title %}Text Translator{% endblock %}
+{% block title %}{{ _('Text Translator') }}{% endblock %}
 {% block main %}
 <div class="container mt-4">
-  <h2>Text Translator</h2>
-  <form id="translatorForm" autocomplete="off">
-    <div class="row g-2">
-      <div class="col">
-        <label>From:</label>
-        <select name="src" id="src" class="form-select">
-          <option value="auto" {% if src == "auto" %}selected{% endif %}>Auto-Detect</option>
-          {% for code, lang in languages.items() %}
-            <option value="{{ code }}" {% if src == code %}selected{% endif %}>{{ lang|capitalize }}</option>
+  <h2 class="mb-3"><i class="bi-translate"></i> {{ _('Text Translator') }}</h2>
+  <form method="post" class="mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label for="src">{{ _('From') }}</label>
+        <select name="src" id="src" class="form-select select2">
+          <option value="auto" {% if src == "auto" %}selected{% endif %}>{{ _('Auto-Detect') }}</option>
+          {% for code, lang in language_choices %}
+            <option value="{{ code }}" {% if src == code %}selected{% endif %}>{{ lang }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-auto d-flex align-items-end">
-        <button type="button" class="btn btn-outline-secondary" id="reverseBtn" title="Reverse languages">
-          <i class="bi bi-arrow-left-right"></i>
+      <div class="col-auto d-flex align-items-center">
+        <button type="button" class="btn btn-outline-secondary" id="switch-btn" title="{{ _('Switch languages') }}">
+          <i class="bi-arrow-left-right"></i>
         </button>
       </div>
-      <div class="col">
-        <label>To:</label>
-        <select name="dest" id="dest" class="form-select">
-          {% for code, lang in languages.items() %}
+      <div class="col-md-4">
+        <label for="dest">{{ _('To') }}</label>
+        <select name="dest" id="dest" class="form-select select2">
+          {% for code, lang in language_choices %}
             <option value="{{ code }}" {% if dest == code %}selected{% endif %}>{{ lang }}</option>
           {% endfor %}
         </select>
       </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100"><i class="bi-arrow-right-circle"></i> {{ _('Translate') }}</button>
+      </div>
     </div>
-    <div class="mb-3 mt-2">
-      <textarea name="text" id="text" class="form-control" rows="3" placeholder="Enter text to translate" required>{{ text }}</textarea>
+    <div class="row mt-3">
+      <div class="col-md-6">
+        <textarea name="text" id="text" class="form-control" rows="5" placeholder="{{ _('Enter text to translate') }}">{{ text }}</textarea>
+      </div>
+      <div class="col-md-6">
+        <div class="form-control" style="height: 100%; min-height: 120px; background: var(--bs-body-bg); color: var(--bs-body-color);">{{ result }}</div>
+      </div>
     </div>
   </form>
-  <div class="alert alert-info mt-3" id="translationResult" style="display:none;">
-    <strong>Translation:</strong> <span id="translatedText"></span>
-  </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
 <script>
-function instantTranslate() {
-  let text = document.getElementById('text').value;
-  let src = document.getElementById('src').value;
-  let dest = document.getElementById('dest').value;
-  if (!text.trim()) return;
-  fetch("/tools/translator", {
-    method: "POST",
-    headers: {"Content-Type": "application/x-www-form-urlencoded"},
-    body: `text=${encodeURIComponent(text)}&src=${src}&dest=${dest}`
-  })
-  .then(r => r.text())
-  .then(html => {
-    let parser = new DOMParser();
-    let doc = parser.parseFromString(html, "text/html");
-    let result = doc.getElementById("translationResult");
-    let translated = doc.getElementById("translatedText");
-    if (translated && result) {
-      document.getElementById("translationResult").style.display = "";
-      document.getElementById("translatedText").innerHTML = translated.innerHTML;
-    }
-  });
-}
-document.getElementById('text').addEventListener('input', instantTranslate);
-document.getElementById('src').addEventListener('change', instantTranslate);
-document.getElementById('dest').addEventListener('change', instantTranslate);
-document.getElementById('reverseBtn').onclick = function() {
-  let src = document.getElementById('src');
-  let dest = document.getElementById('dest');
-  let tmp = src.value;
-  src.value = dest.value;
-  dest.value = tmp;
-  instantTranslate();
-};
-window.addEventListener('DOMContentLoaded', instantTranslate);
+  $(function() { $('.select2').select2(); });
+  document.getElementById('switch-btn').onclick = function() {
+    let src = document.getElementById('src');
+    let dest = document.getElementById('dest');
+    let temp = src.value;
+    src.value = dest.value;
+    dest.value = temp;
+    src.dispatchEvent(new Event('change'));
+    dest.dispatchEvent(new Event('change'));
+  };
 </script>
 {% endblock %}

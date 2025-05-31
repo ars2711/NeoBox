@@ -1,4 +1,8 @@
-{% extends "layout.html" %} {% block title %}{{ _("Welcome to NeoBox") }}{%endblock %} {% block main %}
+{% extends "layout.html" %} {% block title %}{{ _("Welcome to NeoBox") }}{%
+endblock %} {% block description %}{{ _('NeoBox: The all-in-one productivity,
+study, and utility web app. Calculators, converters, notes, reminders, and
+more—ad-free, privacy-first, and always free!') }}{% endblock %} {% block main
+%}
 <div class="container py-5">
   <!-- Hero Section -->
   <div class="row align-items-center mb-5">
@@ -13,7 +17,7 @@
         <span id="typewriter"></span><span class="blinking-cursor">|</span>
       </h1>
       <script>
-        const text = "Welcome to NeoBox!";
+        const text = "{{ _('Welcome to NeoBox!') }}";
         let i = 0;
         const speed = 80;
         function typeWriter() {
@@ -26,8 +30,28 @@
         window.onload = typeWriter;
       </script>
       <p class="lead mb-4">
-        {{ _("Your all-in-one productivity and utility web app.") }}
+        {{ _('Your all-in-one productivity and utility web app. Free,
+        privacy-first, and packed with features for students, professionals, and
+        lifelong learners.') }}
       </p>
+      <ul class="list-unstyled small mb-3">
+        <li>
+          <i class="bi bi-check-circle text-success"></i> {{ _('100% free, no
+          ads, no tracking') }}
+        </li>
+        <li>
+          <i class="bi bi-check-circle text-success"></i> {{ _('Modern
+          calculators, converters, and study tools') }}
+        </li>
+        <li>
+          <i class="bi bi-check-circle text-success"></i> {{ _('Dark mode, i18n,
+          and accessibility built-in') }}
+        </li>
+        <li>
+          <i class="bi bi-check-circle text-success"></i> {{ _('Cloud sync,
+          reminders, and more for registered users') }}
+        </li>
+      </ul>
       <a class="btn btn-primary btn-lg me-2" href="/tools"
         >{{ _("Explore Tools") }}</a
       >
@@ -42,10 +66,12 @@
       <div id="dailyQuote" class="mt-4 fst-italic text-muted small"></div>
       <script>
         const quotes = [
-          "Productivity is never an accident.",
-          "Small steps every day make big results.",
-          "You don’t need more time, you just need to decide.",
-          "Focus on being productive, not busy."
+          "{{ _('Productivity is never an accident.') }}",
+          "{{ _('Small steps every day make big results.') }}",
+          "{{ _('You don’t need more time, you just need to decide.') }}",
+          "{{ _('Focus on being productive, not busy.') }}",
+          "{{ _('NeoBox helps me ace my exams!') }}",
+          "{{ _('The best all-in-one study and work toolkit.') }}",
         ];
         document.getElementById("dailyQuote").innerText =
           quotes[Math.floor(Math.random() * quotes.length)];
@@ -61,59 +87,135 @@
       />
     </div>
   </div>
-
   <!-- About Section -->
   <div class="row mb-5" data-aos="fade-up">
     <div class="col-lg-8 mx-auto">
       <h2 class="fw-semibold mb-3">{{ _("About NeoBox") }}</h2>
       <p class="fs-5">
-        {{ _("NeoBox is your digital Swiss Army knife. Access calculators,
-        converters, note-taking, reminders, and dozens of other tools—all in one
-        place. No ads, no clutter, just pure productivity. Built for students,
-        professionals, and anyone who wants to get more done, faster.") }}
+        {{ _('NeoBox is your digital Swiss Army knife. Access calculators,
+        converters, note-taking, reminders, flashcards, world clocks, and dozens
+        of other tools—all in one place. No ads, no clutter, just pure
+        productivity. Built for students, professionals, and anyone who wants to
+        get more done, faster.') }}
       </p>
+      <ul class="list-unstyled fs-6">
+        <li>
+          <b>{{ _('Multi-language support') }}</b>: {{ _('Use NeoBox in your
+          preferred language.') }}
+        </li>
+        <li>
+          <b>{{ _('Dark mode & accessibility') }}</b>: {{ _('Designed for
+          comfort and usability.') }}
+        </li>
+        <li>
+          <b>{{ _('Cloud sync & reminders') }}</b>: {{ _('Never lose your notes
+          or deadlines.') }}
+        </li>
+        <li>
+          <b>{{ _('Open source') }}</b>:
+          <a href="https://github.com/ars2711/NeoBox">GitHub</a>
+        </li>
+      </ul>
     </div>
   </div>
-
   <!-- Features Grid -->
   <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
     <div class="col">
-      <div class="card h-100 text-center shadow-sm" data-aos="zoom-in" data-aos-delay="100">
+      <div
+        class="card h-100 text-center shadow-sm"
+        data-aos="zoom-in"
+        data-aos-delay="100"
+      >
         <div class="card-body">
           <i class="bi bi-calculator display-5 text-primary"></i>
           <h5 class="card-title mt-3">{{ _("Smart Tools") }}</h5>
           <p class="card-text">
-            {{ _("From calculators to converters, find everything you need in
-            one place.") }}
+            {{ _('From calculators to converters, flashcards to clocks, find
+            everything you need in one place.') }}
           </p>
         </div>
       </div>
     </div>
     <div class="col">
-      <div class="card h-100 text-center shadow-sm" data-aos="zoom-in" data-aos-delay="200">
+      <div
+        class="card h-100 text-center shadow-sm"
+        data-aos="zoom-in"
+        data-aos-delay="200"
+      >
         <div class="card-body">
           <i class="bi bi-cloud-arrow-down display-5 text-success"></i>
           <h5 class="card-title mt-3">{{ _("Cloud Sync") }}</h5>
           <p class="card-text">
-            {{ _("Access your notes and settings anywhere, anytime, on any
-            device.") }}
+            {{ _('Access your notes, flashcards, and settings anywhere, anytime,
+            on any device.') }}
           </p>
         </div>
       </div>
     </div>
     <div class="col">
-      <div class="card h-100 text-center shadow-sm" data-aos="zoom-in" data-aos-delay="300">
+      <div
+        class="card h-100 text-center shadow-sm"
+        data-aos="zoom-in"
+        data-aos-delay="300"
+      >
         <div class="card-body">
           <i class="bi bi-shield-check display-5 text-info"></i>
           <h5 class="card-title mt-3">{{ _("Privacy First") }}</h5>
           <p class="card-text">
-            {{ _("Your data is yours. We never sell or share your information.") }}
+            {{ _('Your data is yours. We never sell or share your information.')
+            }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div
+        class="card h-100 text-center shadow-sm"
+        data-aos="zoom-in"
+        data-aos-delay="400"
+      >
+        <div class="card-body">
+          <i class="bi bi-translate display-5 text-warning"></i>
+          <h5 class="card-title mt-3">{{ _('Internationalization') }}</h5>
+          <p class="card-text">
+            {{ _('NeoBox is available in English, Urdu, Arabic, Spanish, and
+            more!') }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div
+        class="card h-100 text-center shadow-sm"
+        data-aos="zoom-in"
+        data-aos-delay="500"
+      >
+        <div class="card-body">
+          <i class="bi bi-moon-stars display-5 text-dark"></i>
+          <h5 class="card-title mt-3">{{ _('Dark Mode') }}</h5>
+          <p class="card-text">
+            {{ _('Switch between light and dark themes for comfort anytime.') }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div
+        class="card h-100 text-center shadow-sm"
+        data-aos="zoom-in"
+        data-aos-delay="600"
+      >
+        <div class="card-body">
+          <i class="bi bi-lightning-charge display-5 text-danger"></i>
+          <h5 class="card-title mt-3">{{ _('Fast & Lightweight') }}</h5>
+          <p class="card-text">
+            {{ _('Loads instantly, works offline, and is optimized for all
+            devices.') }}
           </p>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Testimonials Section -->
   <div class="row mb-5" data-aos="fade-up">
     <div class="col-lg-8 mx-auto">
@@ -125,11 +227,11 @@
           <div class="card h-100 shadow-sm">
             <div class="card-body">
               <p class="card-text">
-                "{{ _("NeoBox has made my daily workflow so much easier. All my
-                tools in one place!") }}"
+                "{{ _('NeoBox has made my daily workflow so much easier. All my
+                tools in one place!') }}"
               </p>
               <div class="text-end text-muted small">
-                — {{ _("Sara, Student") }}
+                — {{ _('Sara, Student') }}
               </div>
             </div>
           </div>
@@ -138,11 +240,36 @@
           <div class="card h-100 shadow-sm">
             <div class="card-body">
               <p class="card-text">
-                "{{ _("I love the clean interface and the variety of utilities.
-                Highly recommended!") }}"
+                "{{ _('I love the clean interface and the variety of utilities.
+                Highly recommended!') }}"
               </p>
               <div class="text-end text-muted small">
-                — {{ _("Alex, Developer") }}
+                — {{ _('Alex, Developer') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <p class="card-text">
+                "{{ _('NeoBox is a must-have for students and professionals
+                alike!') }}"
+              </p>
+              <div class="text-end text-muted small">
+                — {{ _('Maria, Teacher') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <p class="card-text">
+                "{{ _('The best productivity app I have ever used.') }}"
+              </p>
+              <div class="text-end text-muted small">
+                — {{ _('Omar, Engineer') }}
               </div>
             </div>
           </div>
@@ -150,7 +277,6 @@
       </div>
     </div>
   </div>
-
   <!-- FAQ Section -->
   <div class="row mb-5" data-aos="fade-up">
     <div class="col-lg-8 mx-auto">
@@ -223,10 +349,52 @@
             </div>
           </div>
         </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq4">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faqCollapse4"
+            >
+              {{ _("Which languages are supported?") }}
+            </button>
+          </h2>
+          <div
+            id="faqCollapse4"
+            class="accordion-collapse collapse"
+            data-bs-parent="#faqAccordion"
+          >
+            <div class="accordion-body">
+              {{ _('English, Urdu, Arabic, Spanish, and more coming soon!') }}
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq5">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faqCollapse5"
+            >
+              {{ _("Can I contribute to NeoBox?") }}
+            </button>
+          </h2>
+          <div
+            id="faqCollapse5"
+            class="accordion-collapse collapse"
+            data-bs-parent="#faqAccordion"
+          >
+            <div class="accordion-body">
+              {{ _('Yes! NeoBox is open source. Visit our GitHub to contribute
+              or suggest features.') }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
   <!-- Call to Action & Links -->
   <div class="row mb-4" data-aos="zoom-in">
     <div class="col text-center">
@@ -239,10 +407,16 @@
       <a href="/feedback" class="btn btn-outline-warning btn-lg"
         >{{ _("Give Feedback") }}</a
       >
+      <a
+        href="https://github.com/ars2711/NeoBox"
+        class="btn btn-outline-dark btn-lg ms-2"
+        target="_blank"
+        ><i class="bi bi-github"></i> GitHub</a
+      >
     </div>
   </div>
 </div>
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
   AOS.init();
@@ -259,10 +433,8 @@
     "/static/media/undraw_remotely_p27a.svg",
     "/static/media/undraw_website_27ju.svg",
     "/static/media/undraw_workspace_s6wf.svg",
-    // Add more image paths as needed
   ];
   document.getElementById("random-illustration").src =
     illustrations[Math.floor(Math.random() * illustrations.length)];
 </script>
-  {% endblock %}
-</div>
+{% endblock %}

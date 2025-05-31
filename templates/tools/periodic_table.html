@@ -1,55 +1,108 @@
-{% extends "layout.html" %} {% block title %}Interactive Periodic Table{%
-endblock %} {% block main %}
+{% extends "layout.html" %} {% block title %} Periodic Table{% endblock %} {%
+block main %}
 <div class="container mt-4">
   <h2 class="text-center mb-4">
     <i class="bi-tablet"></i> Interactive Periodic Table
   </h2>
   <!-- Category/Block Filter Controls -->
   <div class="mb-3 text-center">
-    <div class="d-inline-flex flex-wrap justify-content-center gap-2">
-      <button class="btn btn-sm btn-outline-secondary" data-filter="all">
-        All
-      </button>
+    <input
+      id="ptable-search"
+      class="form-control d-inline-block w-auto me-2"
+      style="max-width: 220px; display: inline-block"
+      placeholder="Search element..."
+    />
+    <div
+      class="ptable-filters d-inline-flex flex-wrap justify-content-center gap-2 align-items-center"
+    >
+      <button class="btn btn-sm ptable-cat-btn" data-filter="all">All</button>
       {% set categories = elements | map(attribute='category') | select | unique
       | list %} {% for cat in categories %}
       <button
-        class="btn btn-sm"
-        style="background: {{ category_colors[cat] or '#eee' }}; color: #222;"
+        class="btn btn-sm ptable-cat-btn"
         data-filter="{{ cat|e }}"
+        data-color="{{ category_colors[cat] or '#222' }}"
+        title="{{ cat|title }}"
       >
         {{ cat|title }}
       </button>
       {% endfor %}
-      <button class="btn btn-sm btn-outline-info" data-filter-block="s">
+      <button
+        class="btn btn-sm ptable-block-btn"
+        data-filter-block="s"
+        data-color="#17a2b8"
+      >
         s-block
       </button>
-      <button class="btn btn-sm btn-outline-info" data-filter-block="p">
+      <button
+        class="btn btn-sm ptable-block-btn"
+        data-filter-block="p"
+        data-color="#17a2b8"
+      >
         p-block
       </button>
-      <button class="btn btn-sm btn-outline-info" data-filter-block="d">
+      <button
+        class="btn btn-sm ptable-block-btn"
+        data-filter-block="d"
+        data-color="#17a2b8"
+      >
         d-block
       </button>
-      <button class="btn btn-sm btn-outline-info" data-filter-block="f">
+      <button
+        class="btn btn-sm ptable-block-btn"
+        data-filter-block="f"
+        data-color="#17a2b8"
+      >
         f-block
+      </button>
+      <button
+        class="btn btn-sm ptable-block-btn"
+        data-filter-lanth="lanthanide"
+        data-color="#388e3c"
+      >
+        Lanthanides
+      </button>
+      <button
+        class="btn btn-sm ptable-block-btn"
+        data-filter-lanth="actinide"
+        data-color="#388e3c"
+      >
+        Actinides
       </button>
     </div>
   </div>
   <div class="d-flex justify-content-center">
     <div>
-      <!-- Main Periodic Table Grid -->
+      <!-- Main Periodic Table Grid (no f-block elements) -->
       <div class="periodic-table mb-2" style="position: relative">
         {% for el in elements %} {% if el.symbol and el.number and el.period <=
-        7 and el.group %}
+        7 and el.group and el.block != 'f' %}
         <div
           class="element-cell"
-          data-element='{{ el|tojson|safe }}'
+          data-symbol="{{ el.symbol }}"
+          data-number="{{ el.number }}"
           data-category="{{ el.category|e }}"
           data-block="{{ el.block|e }}"
+          data-lanth-act="none"
           style="grid-column: {{ el.group }}; grid-row: {{ el.period }}; background: {{ category_colors[el.category] or '#f8f9fa' }};"
           title="{{ el.name }}"
         >
-          <div class="element-number">{{ el.number }}</div>
-          <div class="element-symbol">{{ el.symbol }}</div>
+          <div class="element-number" title="Atomic Number">
+            {{ el.number }}
+          </div>
+          <div class="element-symbol" title="Symbol">{{ el.symbol }}</div>
+          <div
+            class="element-mass"
+            style="
+              font-size: 0.65em;
+              color: #666;
+              max-width: 44px;
+              overflow-x: auto;
+              white-space: nowrap;
+            "
+          >
+            {{ '%.3f'|format(el.atomic_mass|float) if el.atomic_mass else '' }}
+          </div>
         </div>
         {% endif %} {% endfor %}
       </div>
@@ -66,21 +119,35 @@ endblock %} {% block main %}
       </div>
       <!-- Lanthanides Row -->
       <div
-        class="periodic-table mb-1"
+        class="periodic-table mb-1 lanthanides-row"
         style="grid-template-columns: repeat(15, 48px); margin-left: 96px"
       >
         {% for el in elements %} {% if el.symbol and el.number and el.period ==
-        6 and el.group == 3 and el.block == "f" %}
+        6 and el.block == 'f' %}
         <div
-          class="element-cell"
-          data-element="{{ el|tojson|safe }}"
+          class="element-cell lanthanide-cell"
+          data-symbol="{{ el.symbol }}"
+          data-number="{{ el.number }}"
           data-category="{{ el.category|e }}"
           data-block="{{ el.block|e }}"
+          data-lanth-act="lanthanide"
           style="background: {{ category_colors[el.category] or '#f8f9fa' }};"
           title="{{ el.name }}"
         >
           <div class="element-number">{{ el.number }}</div>
           <div class="element-symbol">{{ el.symbol }}</div>
+          <div
+            class="element-mass"
+            style="
+              font-size: 0.65em;
+              color: #666;
+              max-width: 44px;
+              overflow-x: auto;
+              white-space: nowrap;
+            "
+          >
+            {{ '%.3f'|format(el.atomic_mass|float) if el.atomic_mass else '' }}
+          </div>
         </div>
         {% endif %} {% endfor %}
       </div>
@@ -97,21 +164,35 @@ endblock %} {% block main %}
       </div>
       <!-- Actinides Row -->
       <div
-        class="periodic-table mb-3"
+        class="periodic-table mb-3 actinides-row"
         style="grid-template-columns: repeat(15, 48px); margin-left: 96px"
       >
         {% for el in elements %} {% if el.symbol and el.number and el.period ==
-        7 and el.group == 3 and el.block == "f" %}
+        7 and el.block == 'f' %}
         <div
-          class="element-cell"
-          data-element="{{ el|tojson|safe }}"
+          class="element-cell actinide-cell"
+          data-symbol="{{ el.symbol }}"
+          data-number="{{ el.number }}"
           data-category="{{ el.category|e }}"
           data-block="{{ el.block|e }}"
+          data-lanth-act="actinide"
           style="background: {{ category_colors[el.category] or '#f8f9fa' }};"
           title="{{ el.name }}"
         >
           <div class="element-number">{{ el.number }}</div>
           <div class="element-symbol">{{ el.symbol }}</div>
+          <div
+            class="element-mass"
+            style="
+              font-size: 0.65em;
+              color: #666;
+              max-width: 44px;
+              overflow-x: auto;
+              white-space: nowrap;
+            "
+          >
+            {{ '%.3f'|format(el.atomic_mass|float) if el.atomic_mass else '' }}
+          </div>
         </div>
         {% endif %} {% endfor %}
       </div>
@@ -149,144 +230,6 @@ endblock %} {% block main %}
   </div>
 </div>
 
-<style>
-  .periodic-table {
-    display: grid;
-    grid-template-columns: repeat(18, 48px);
-    gap: 4px;
-    justify-content: center;
-    margin: 0 auto;
-  }
-  .element-cell {
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    padding: 0.5rem 0;
-    transition: background 0.2s, box-shadow 0.2s;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-    opacity: 1;
-  }
-  .element-cell.inactive {
-    opacity: 0.2;
-    filter: grayscale(0.7);
-  }
-  .element-cell:hover {
-    background: #e3f2fd !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    z-index: 2;
-  }
-  .element-symbol {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: #212529;
-    line-height: 1;
-  }
-  .element-number {
-    font-size: 0.8em;
-    color: #888;
-    line-height: 1;
-  }
-  #element-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-  }
-  #element-modal.active {
-    display: flex !important;
-  }
-  #element-modal .modal-content {
-    background: #fff;
-    margin: 2vw auto;
-    padding: 2rem 2rem 1rem 2rem;
-    border-radius: 1rem;
-    max-width: 900px;
-    width: 95vw;
-    max-height: 95vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  }
-  #element-modal .close {
-    position: absolute;
-    right: 1.5rem;
-    top: 1.2rem;
-    font-size: 2rem;
-    cursor: pointer;
-    z-index: 10;
-  }
-  #element-modal .modal-header {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  #modal-symbol {
-    font-size: 2.2rem;
-    font-weight: bold;
-  }
-  #modal-name {
-    font-size: 1.2rem;
-    color: #666;
-  }
-  #modal-category {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #444;
-  }
-  #modal-summary {
-    font-size: 1rem;
-    color: #333;
-  }
-  #modal-img img {
-    max-width: 120px;
-    max-height: 120px;
-    display: block;
-    margin: 0 auto 10px auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-  #modal-img a {
-    display: block;
-    text-align: center;
-    font-size: 0.95em;
-    margin-bottom: 5px;
-    word-break: break-all;
-  }
-  .atom-visual {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px 0;
-    min-height: 120px;
-  }
-  .modal-table-wrapper {
-    max-height: 350px;
-    overflow-y: auto;
-  }
-  @media (max-width: 700px) {
-    #element-modal .modal-content {
-      max-width: 99vw;
-      padding: 1rem 0.5rem;
-    }
-    .row.g-3 {
-      flex-direction: column;
-    }
-  }
-</style>
 <script>
   // Category color mapping (should match your categories)
   const categoryColors = {
@@ -303,8 +246,52 @@ endblock %} {% block main %}
     unknown: "#eeeeee",
   };
 
-  // Filter logic
   document.addEventListener("DOMContentLoaded", function () {
+    // --- Button color coding ---
+    function applyButtonColors() {
+      document.querySelectorAll(".ptable-cat-btn").forEach((btn) => {
+        const color = btn.getAttribute("data-color");
+        if (color) {
+          btn.style.background = color;
+          btn.style.borderColor = color;
+          btn.style.color = "#222";
+        } else {
+          btn.style.background = "";
+          btn.style.borderColor = "#bbb";
+          btn.style.color = "#222";
+        }
+        if (document.documentElement.getAttribute("data-bs-theme") === "dark") {
+          btn.style.background = "transparent";
+          btn.style.color = color || "#fff";
+          btn.style.borderColor = color || "#888";
+        }
+      });
+      document.querySelectorAll(".ptable-block-btn").forEach((btn) => {
+        const color = btn.getAttribute("data-color");
+        if (color) {
+          btn.style.background = color;
+          btn.style.borderColor = color;
+          btn.style.color = "#222";
+        } else {
+          btn.style.background = "";
+          btn.style.borderColor = "#bbb";
+          btn.style.color = "#222";
+        }
+        if (document.documentElement.getAttribute("data-bs-theme") === "dark") {
+          btn.style.background = "transparent";
+          btn.style.color = color || "#fff";
+          btn.style.borderColor = color || "#888";
+        }
+      });
+    }
+    applyButtonColors();
+    // Re-apply button color coding on theme switch
+    const observer = new MutationObserver(applyButtonColors);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-bs-theme"],
+    });
+
     // Filtering by category
     document.querySelectorAll("[data-filter]").forEach((btn) => {
       btn.onclick = function () {
@@ -316,6 +303,10 @@ endblock %} {% block main %}
             cell.classList.add("inactive");
           }
         });
+        document
+          .querySelectorAll(".ptable-cat-btn, .ptable-block-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
       };
     });
     // Filtering by block
@@ -329,62 +320,115 @@ endblock %} {% block main %}
             cell.classList.add("inactive");
           }
         });
+        document
+          .querySelectorAll(".ptable-cat-btn, .ptable-block-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
       };
     });
-
+    // Filtering by lanthanide/actinide
+    document.querySelectorAll("[data-filter-lanth]").forEach((btn) => {
+      btn.onclick = function () {
+        const type = this.getAttribute("data-filter-lanth");
+        document.querySelectorAll(".element-cell").forEach((cell) => {
+          if (cell.dataset.lanthAct === type) {
+            cell.classList.remove("inactive");
+          } else {
+            cell.classList.add("inactive");
+          }
+        });
+        document
+          .querySelectorAll(".ptable-cat-btn, .ptable-block-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+      };
+    });
+    // --- Search functionality ---
+    const searchBox = document.getElementById("ptable-search");
+    if (searchBox) {
+      searchBox.addEventListener("input", function () {
+        const q = this.value.trim().toLowerCase();
+        document.querySelectorAll(".element-cell").forEach((cell) => {
+          const symbol = cell.dataset.symbol
+            ? cell.dataset.symbol.toLowerCase()
+            : "";
+          const name = cell.title ? cell.title.toLowerCase() : "";
+          const number = cell.dataset.number || "";
+          if (!q || symbol.includes(q) || name.includes(q) || number === q) {
+            cell.classList.remove("inactive");
+          } else {
+            cell.classList.add("inactive");
+          }
+        });
+        document
+          .querySelectorAll(".ptable-cat-btn, .ptable-block-btn")
+          .forEach((b) => b.classList.remove("active"));
+      });
+    }
     // Modal logic
     function closeModal() {
       document.getElementById("element-modal").classList.remove("active");
     }
     window.closeModal = closeModal;
-
-    document.querySelectorAll(".element-cell").forEach((cell) => {
-      cell.onclick = function () {
-        const el = JSON.parse(this.dataset.element);
-        if (!el.symbol || !el.number) return;
-        document.getElementById("modal-symbol").innerText = `${el.symbol} (${el.name})`;
-        document.getElementById("modal-name").innerHTML = `<b>Atomic Number:</b> ${el.number} &nbsp; <b>Atomic Mass:</b> ${el.atomic_mass ?? ""}`;
-        document.getElementById("modal-category").innerHTML = `<b>Category:</b> ${el.category ?? "Unknown"}`;
-        document.getElementById("modal-summary").innerHTML = el.summary ? `<b>Summary:</b> ${el.summary}` : "";
-
+    // Click handler for all element cells
+    let elementsData = {{ elements|tojson|safe }};
+    console.log('Loaded elementsData:', elementsData);
+    window.elementsData = elementsData;
+    // --- DEBUG: Log all clicks on periodic-table ---
+    document.querySelectorAll('.periodic-table').forEach(table => {
+      table.addEventListener('click', function(e) {
+        console.log('Table clicked:', e.target);
+      });
+    });
+    // --- Robust: Attach per-cell click listeners for reliability ---
+    document.querySelectorAll('.element-cell').forEach(cell => {
+      cell.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const symbol = this.dataset.symbol;
+        const number = parseInt(this.dataset.number);
+        console.log('Element cell clicked:', symbol, number);
+        const el = (window.elementsData || []).find(
+          (e) => e.symbol === symbol && String(e.number) === String(number)
+        );
+        if (!el) {
+          console.warn('No element found for:', symbol, number);
+          return;
+        }
+        document.getElementById('modal-symbol').innerText = `${el.symbol} (${el.name})`;
+        document.getElementById('modal-name').innerHTML = `<b>Atomic Number:</b> ${el.number} &nbsp; <b>Atomic Mass:</b> ${el.atomic_mass ?? ''}`;
+        document.getElementById('modal-category').innerHTML = `<b>Category:</b> ${el.category ?? 'Unknown'}`;
+        document.getElementById('modal-summary').innerHTML = el.summary ? `<b>Summary:</b> ${el.summary}` : '';
         // Images and links
-        let imgHtml = "";
+        let imgHtml = '';
         if (el.bohr_model_image) {
           imgHtml += `<img src="${el.bohr_model_image}" alt="${el.name} Bohr Model">`;
         }
         if (el.image && el.image.attribution) {
           imgHtml += `<img src="${el.image.url}" alt="${el.name}" style="max-width: 120px; max-height: 120px;">`;
         }
-
         let linksHtml = `<div class="d-flex flex-wrap justify-content-center gap-2">`;
         if (el.bohr_model_3d) {
           linksHtml += `<a href="${el.bohr_model_3d}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-arrow-down"></i> 3D Model (.glb)</a>`;
         }
         if (el.source) {
-          linksHtml += `<a href="${el.source}" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-wikipedia"></i> Wikipedia</a>`;
+          linksHtml += `<a href="${el.source}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i> Source</a>`;
         }
         linksHtml += `</div>`;
         imgHtml += linksHtml;
-        document.getElementById("modal-img").innerHTML = imgHtml;
-
+        document.getElementById('modal-img').innerHTML = imgHtml;
         // Table of properties
-        let table = "";
+        let table = '';
         for (const [k, v] of Object.entries(el)) {
-          if (
-            [
-              "symbol", "name", "number", "category", "summary", "atomic_mass",
-              "protons", "neutrons", "electrons", "block", "group", "period",
-              "image", "spectral_img", "source", "bohr_model_image", "bohr_model_3d"
-            ].includes(k)
-          ) continue;
-          let value = Array.isArray(v) ? v.join(", ") : v;
-          if (value === null || value === undefined) value = "";
-          table += `<tr><th>${k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</th><td>${value}</td></tr>`;
+          if ([
+            'name', 'symbol', 'number', 'category', 'summary',
+            'bohr_model_image', 'bohr_model_3d', 'image', 'source',
+          ].includes(k)) continue;
+          if (v === null || v === undefined || v === '') continue;
+          table += `<tr><th>${k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</th><td>${v}</td></tr>`;
         }
-        document.getElementById("modal-table").innerHTML = table;
-
-        document.getElementById("element-modal").classList.add("active");
-      };
+        document.getElementById('modal-table').innerHTML = table;
+        document.getElementById('element-modal').classList.add('active');
+      });
     });
     // Close modal when clicking outside modal-content
     document

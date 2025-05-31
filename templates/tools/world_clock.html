@@ -1,5 +1,5 @@
-{% extends "layout.html" %} {% block title %}World Clock{% endblock %} {% block
-main %}
+{% extends "layout.html" %} {% block title %}{{ _('World Clock') }}{% endblock
+%} {% block main %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <div class="container py-4">
   <div class="row justify-content-center">
@@ -7,10 +7,10 @@ main %}
       <div class="card shadow">
         <div class="card-body">
           <h3 class="card-title mb-3">
-            <i class="bi bi-globe"></i> World Clock
+            <i class="bi bi-globe"></i> {{ _('World Clock') }}
           </h3>
           <div id="map" style="height: 400px"></div>
-          <div id="clocks"></div>
+          <div id="clocks" class="row mt-3"></div>
         </div>
       </div>
     </div>
@@ -23,16 +23,99 @@ main %}
     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     { attribution: "© CartoDB" }
   ).addTo(map);
+  function createClockDiv(timezone, city, datetime) {
+    let div = document.createElement("div");
+    div.className = "col-md-4 mb-3";
+    div.innerHTML = `
+      <div class="card p-2 text-center position-relative">
+        <button class="btn-close position-absolute top-0 end-0 m-2" onclick="this.closest('.col-md-4').remove(); event.stopPropagation();"></button>
+        <div><b>${city || timezone}</b></div>
+        <canvas width="80" height="80" class="analog-clock mb-2"></canvas>
+        <div class="digital-clock fs-5" data-time="${datetime.toISOString()}" data-fetched="${Date.now()}">${datetime.toLocaleTimeString()}</div>
+      </div>
+    `;
+    return div;
+  }
+  function drawAnalogClock(canvas, date) {
+    let ctx = canvas.getContext("2d");
+    let radius = canvas.width / 2;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.beginPath();
+    ctx.arc(0, 0, radius - 2, 0, 2 * Math.PI);
+    ctx.stroke();
+    let h = date.getHours() % 12;
+    let m = date.getMinutes();
+    let s = date.getSeconds();
+    ctx.save();
+    ctx.rotate(((h + m / 60) * 30 * Math.PI) / 180);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -radius * 0.5);
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    ctx.rotate(((m + s / 60) * 6 * Math.PI) / 180);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -radius * 0.7);
+    ctx.strokeStyle = "#666";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    ctx.rotate((s * 6 * Math.PI) / 180);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -radius * 0.8);
+    ctx.strokeStyle = "#e74c3c";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  }
+  function updateClocks() {
+    document.querySelectorAll(".analog-clock").forEach(function (canvas) {
+      let digital = canvas.parentElement.querySelector(".digital-clock");
+      let date = new Date(digital.dataset.time);
+      date.setSeconds(
+        date.getSeconds() +
+          (Date.now() - parseInt(digital.dataset.fetched)) / 1000
+      );
+      digital.textContent = date.toLocaleTimeString();
+      drawAnalogClock(canvas, date);
+    });
+    setTimeout(updateClocks, 1000);
+  }
   map.on("click", function (e) {
-    fetch(`https://worldtimeapi.org/api/timezone/Etc/GMT`)
+    fetch(
+      `https://api.bigdatacloud.net/data/timezone-by-location?latitude=${e.latlng.lat}&longitude=${e.latlng.lng}&key={{ bigdatacloud_api_key }}`
+    )
       .then((r) => r.json())
       .then((data) => {
-        let div = document.createElement("div");
-        div.textContent = `Time at (${e.latlng.lat.toFixed(
-          2
-        )}, ${e.latlng.lng.toFixed(2)}): ${data.datetime}`;
-        document.getElementById("clocks").appendChild(div);
+        if (!data.timezone) return;
+        fetch(`https://worldtimeapi.org/api/timezone/${data.timezone}`)
+          .then((r) => r.json())
+          .then((timeData) => {
+            let dt = new Date(timeData.datetime);
+            let div = createClockDiv(
+              data.timezone,
+              data.localityInfo &&
+                data.localityInfo.administrative &&
+                data.localityInfo.administrative[0]
+                ? data.localityInfo.administrative[0].name
+                : "",
+              dt
+            );
+            document.getElementById("clocks").appendChild(div);
+            updateClocks();
+          });
       });
   });
+  // Initial call to update clocks (in case clocks are preloaded)
+  updateClocks();
 </script>
 {% endblock %}

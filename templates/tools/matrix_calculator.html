@@ -60,6 +60,7 @@
   <div class="alert alert-info mt-3">
     <b>Result:</b>
     <pre>{{ result }}</pre>
+    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
   </div>
   {% endif %}
 </div>

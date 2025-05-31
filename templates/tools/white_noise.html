@@ -1,78 +1,454 @@
-{% extends "layout.html" %} {% block main %}
-<h2>White Noise Generator</h2>
-<div class="mb-3">
-  <button class="btn btn-primary me-2" onclick="playNoise('white')">
-    White Noise
-  </button>
-  <button class="btn btn-secondary me-2" onclick="playNoise('pink')">
-    Pink Noise
-  </button>
-  <button class="btn btn-warning me-2" onclick="playNoise('brown')">
-    Brown Noise
-  </button>
-  <button class="btn btn-danger" onclick="stopNoise()">Stop</button>
-</div>
-<div class="alert alert-secondary">
-  <small
-    >Noise is generated in-browser using the Web Audio API. No downloads
-    required.</small
-  >
+{% extends "layout.html" %} {% block title %}{{ _('White Noise Generator') }}{%
+endblock %} {% block main %}
+<div class="white-noise-container">
+  <div class="wn-list-col">
+    <input
+      type="text"
+      class="form-control wn-list-search"
+      id="wn-search"
+      placeholder="{{ _('Search sounds...') }}"
+      aria-label="{{ _('Search sounds') }}"
+    />
+    <div class="wn-sound-list" id="wn-sound-list">
+      {% for snd in sounds %}
+      <div class="wn-sound-list-item" data-noise="{{ snd.key }}">
+        <button
+          class="btn wn-sound-btn"
+          data-noise="{{ snd.key }}"
+          aria-label="{{ snd.name }}{% if snd.desc %}, {{ snd.desc }}{% endif %}"
+        >
+          <i class="bi {{ snd.icon }}"></i> <span>{{ snd.name }}</span>
+          <span class="wn-sound-desc">{{ snd.desc }}</span>
+        </button>
+        <div class="wn-sound-hover-icons">
+          <button
+            class="btn btn-sm wn-add-btn"
+            title="{{ _('Add to mix') }}"
+            tabindex="-1"
+          >
+            <i class="bi bi-plus-circle"></i>
+          </button>
+          <button
+            class="btn btn-sm wn-play-btn"
+            title="{{ _('Play now') }}"
+            tabindex="-1"
+          >
+            <i class="bi bi-play-fill"></i>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="wn-main-col text-center">
+    <div
+      class="wn-mix-header d-flex align-items-center justify-content-between mb-2"
+    >
+      <div class="fw-bold">{{ _('Mix') }}</div>
+      <div class="wn-mix-global-controls d-flex align-items-center gap-2">
+        <button
+          class="btn btn-outline-primary btn-lg"
+          id="wn-play-all"
+          title="{{ _('Play/Pause all') }}"
+          aria-label="{{ _('Play/Pause all') }}"
+        >
+          <i class="bi bi-play-fill" id="wn-play-all-icon"></i>
+        </button>
+        <button
+          class="btn btn-outline-danger btn-sm"
+          id="wn-stop-all"
+          title="{{ _('Stop all') }}"
+        >
+          <i class="bi bi-stop-circle"></i>
+        </button>
+        <div class="wn-global-volume d-flex align-items-center">
+          <i class="bi bi-volume-down"></i>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.7"
+            id="wn-global-volume"
+            aria-label="{{ _('Global volume') }}"
+            class="wn-mix-volume"
+            style="width: 90px"
+          />
+          <i class="bi bi-volume-up"></i>
+        </div>
+      </div>
+    </div>
+    <div id="wn-mix-list" class="wn-mix-list"></div>
+    <div id="wn-mix-empty" class="text-muted py-4">
+      {{ _('No sounds in your mix. Add some from the left!') }}
+    </div>
+  </div>
 </div>
 <script>
-  let audioCtx, noiseNode;
-  function playNoise(type) {
-    stopNoise();
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let bufferSize = 2 * audioCtx.sampleRate,
-      noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
-      output = noiseBuffer.getChannelData(0);
-    if (type === "white") {
-      for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
-    } else if (type === "pink") {
-      let b0 = 0,
-        b1 = 0,
-        b2 = 0,
-        b3 = 0,
-        b4 = 0,
-        b5 = 0,
-        b6 = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        let white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.969 * b2 + white * 0.153852;
-        b3 = 0.8665 * b3 + white * 0.3104856;
-        b4 = 0.55 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.016898;
-        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-        output[i] *= 0.11;
-        b6 = white * 0.115926;
-      }
-    } else if (type === "brown") {
-      let lastOut = 0.0;
-      for (let i = 0; i < bufferSize; i++) {
-        let white = Math.random() * 2 - 1;
-        output[i] = (lastOut + 0.02 * white) / 1.02;
-        lastOut = output[i];
-        output[i] *= 3.5;
-      }
+  const wnSounds = {{ sounds|tojson }};
+  const ambientLoops = {};
+  wnSounds.forEach(snd => { if (snd.file) ambientLoops[snd.key] = "/static/media/" + snd.file; });
+  function _(s) { return s; } // Dummy for JS, real translation is server-side
+
+  // --- State ---
+  let mix = {}; // key: { audio, playing, volume, speed, ... }
+  let globalVolume = 0.7;
+  let isAllPlaying = false;
+
+  // --- UI Rendering ---
+  function renderSoundList(filter = "") {
+    const list = document.getElementById('wn-sound-list');
+    list.innerHTML = '';
+    let found = false;
+    wnSounds.forEach(snd => {
+      if (filter && !((snd.name+snd.desc).toLowerCase().includes(filter.toLowerCase()))) return;
+      found = true;
+      const item = document.createElement('div');
+      item.className = 'wn-sound-list-item';
+      item.setAttribute('data-noise', snd.key);
+      // Main button
+      const btn = document.createElement('button');
+      btn.className = 'btn wn-sound-btn';
+      btn.setAttribute('data-noise', snd.key);
+      btn.setAttribute('aria-label', snd.name + (snd.desc ? (', '+snd.desc) : ''));
+      btn.innerHTML = `<i class="bi ${snd.icon}"></i> <span>${snd.name}</span> <span class="wn-sound-desc">${snd.desc}</span>`;
+      // Hover icons
+      const hover = document.createElement('div');
+      hover.className = 'wn-sound-hover-icons';
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn btn-sm wn-add-btn';
+      addBtn.title = _('Add to mix');
+      addBtn.innerHTML = '<i class="bi bi-plus-circle"></i>';
+      addBtn.onclick = (e) => { e.stopPropagation(); addToMix(snd.key); };
+      const playBtn = document.createElement('button');
+      playBtn.className = 'btn btn-sm wn-play-btn wn-sound-play-toggle';
+      playBtn.title = _('Play now');
+      playBtn.setAttribute('aria-label', _('Play now'));
+      playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+      playBtn.onclick = (e) => { e.stopPropagation(); addToMix(snd.key, true); };
+      hover.appendChild(addBtn);
+      hover.appendChild(playBtn);
+      item.appendChild(btn);
+      item.appendChild(hover);
+      // Hover logic
+      item.onmouseenter = () => hover.style.opacity = 1;
+      item.onmouseleave = () => hover.style.opacity = 0;
+      btn.onclick = () => addToMix(snd.key);
+      list.appendChild(item);
+    });
+    if (!found) {
+      const nores = document.createElement('div');
+      nores.className = 'text-muted text-center py-3';
+      nores.innerText = _('No sounds found.');
+      list.appendChild(nores);
     }
-    noiseNode = audioCtx.createBufferSource();
-    noiseNode.buffer = noiseBuffer;
-    noiseNode.loop = true;
-    noiseNode.connect(audioCtx.destination);
-    noiseNode.start(0);
   }
-  function stopNoise() {
-    if (noiseNode) {
-      noiseNode.stop();
-      noiseNode.disconnect();
-      noiseNode = null;
+
+  function renderMixList() {
+    const mixList = document.getElementById('wn-mix-list');
+    const empty = document.getElementById('wn-mix-empty');
+    mixList.innerHTML = '';
+    const keys = Object.keys(mix);
+    if (!keys.length) {
+      empty.style.display = '';
+      return;
     }
-    if (audioCtx) {
-      audioCtx.close();
-      audioCtx = null;
+    empty.style.display = 'none';
+    keys.forEach(key => {
+      const snd = wnSounds.find(s=>s.key===key);
+      const m = mix[key];
+      const card = document.createElement('div');
+      card.className = 'wn-mix-card neo-card neo-card-hover d-flex align-items-start gap-3 mb-2 p-2';
+      // Icon
+      const icon = document.createElement('div');
+      icon.className = 'wn-mix-icon';
+      icon.innerHTML = `<i class="bi ${snd.icon}"></i>`;
+      card.appendChild(icon);
+      // Info
+      const info = document.createElement('div');
+      info.className = 'wn-mix-info flex-grow-1 text-start';
+      info.innerHTML = `<div class=\"fw-bold\">${snd.name}</div><div class=\"small text-muted\">${snd.desc}</div>`;
+      card.appendChild(info);
+      // Controls
+      const controls = document.createElement('div');
+      controls.className = 'wn-mix-controls d-flex align-items-center gap-2';
+      // Play/pause
+      const playBtn = document.createElement('button');
+      playBtn.className = m.playing ? 'btn btn-primary wn-mix-play-toggle' : 'btn btn-outline-primary wn-mix-play-toggle';
+      playBtn.title = m.playing ? _('Pause') : _('Play');
+      playBtn.setAttribute('aria-label', m.playing ? _('Pause') : _('Play'));
+      playBtn.innerHTML = m.playing ? '<i class="bi bi-pause-fill"></i>' : '<i class="bi bi-play-fill"></i>';
+      playBtn.onclick = () => togglePlay(key);
+      controls.appendChild(playBtn);
+      // Renew (restart) button
+      const renewBtn = document.createElement('button');
+      renewBtn.className = 'btn btn-outline-secondary wn-mix-renew-toggle';
+      renewBtn.title = _('Restart from beginning');
+      renewBtn.setAttribute('aria-label', _('Restart from beginning'));
+      renewBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
+      renewBtn.onclick = () => restartSound(key);
+      controls.appendChild(renewBtn);
+      // Only show remove if more than one sound in mix
+      if (keys.length > 1) {
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn btn-outline-secondary wn-mix-remove-toggle';
+        removeBtn.title = _('Remove from mix');
+        removeBtn.innerHTML = '<i class="bi bi-x-circle"></i>';
+        removeBtn.onclick = () => removeFromMix(key);
+        controls.appendChild(removeBtn);
+      }
+      card.appendChild(controls);
+      // Sliders with labels and values
+      const sliderGroup = document.createElement('div');
+      sliderGroup.className = 'wn-mix-slider-group';
+      // Volume
+      const volLabel = document.createElement('span');
+      volLabel.className = 'wn-mix-slider-label';
+      volLabel.innerText = _('Volume');
+      sliderGroup.appendChild(volLabel);
+      const vol = document.createElement('input');
+      vol.type = 'range';
+      vol.min = 0; vol.max = 1; vol.step = 0.01;
+      vol.value = m.volume;
+      vol.className = 'wn-mix-volume';
+      vol.title = _('Volume');
+      vol.setAttribute('aria-label', _('Volume'));
+      vol.oninput = () => { setVolume(key, parseFloat(vol.value)); volValue.innerText = Math.round(vol.value * 100) + '%'; };
+      sliderGroup.appendChild(vol);
+      const volValue = document.createElement('span');
+      volValue.className = 'wn-mix-slider-value';
+      volValue.innerText = Math.round(m.volume * 100) + '%';
+      sliderGroup.appendChild(volValue);
+      // Speed
+      const speedLabel = document.createElement('span');
+      speedLabel.className = 'wn-mix-slider-label';
+      speedLabel.innerText = _('Speed');
+      sliderGroup.appendChild(speedLabel);
+      const speed = document.createElement('input');
+      speed.type = 'range';
+      speed.min = 0.5; speed.max = 2; speed.step = 0.01;
+      speed.value = m.speed;
+      speed.className = 'wn-mix-speed';
+      speed.title = _('Playback speed');
+      speed.setAttribute('aria-label', _('Playback speed'));
+      speed.oninput = () => { setSpeed(key, parseFloat(speed.value)); speedValue.innerText = speed.value + 'x'; };
+      sliderGroup.appendChild(speed);
+      const speedValue = document.createElement('span');
+      speedValue.className = 'wn-mix-slider-value';
+      speedValue.innerText = speed.value + 'x';
+      sliderGroup.appendChild(speedValue);
+      card.appendChild(sliderGroup);
+      mixList.appendChild(card);
+    });
+  }
+
+  // --- Mix Logic ---
+  function addToMix(key, playNow=false) {
+    if (mix[key]) {
+      if (playNow) togglePlay(key, true);
+      return;
+    }
+    const snd = wnSounds.find(s=>s.key===key);
+    if (!snd) return;
+    if (ambientLoops[key]) {
+      fetch(ambientLoops[key], {method: 'HEAD'}).then(resp => {
+        if (resp.ok) {
+          const audio = new Audio(ambientLoops[key]);
+          audio.loop = true;
+          audio.volume = globalVolume;
+          audio.playbackRate = 1;
+          mix[key] = { audio, playing: false, volume: 0.7, speed: 1 };
+          audio.onended = () => { mix[key].playing = false; renderMixList(); };
+          if (playNow) togglePlay(key, true);
+          renderMixList();
+        } else {
+          alert(_('Audio file not found for: ') + snd.name);
+        }
+      });
+    } else if (["white","pink","brown"].includes(key)) {
+      // Use Web Audio API for noise
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      let bufferSize = 2 * ctx.sampleRate,
+        noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate),
+        output = noiseBuffer.getChannelData(0);
+      if (key === "white") {
+        for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+      } else if (key === "pink") {
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          let white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.969 * b2 + white * 0.153852;
+          b3 = 0.8665 * b3 + white * 0.3104856;
+          b4 = 0.55 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.016898;
+          output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+          output[i] *= 0.11;
+          b6 = white * 0.115926;
+        }
+      } else if (key === "brown") {
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          let white = Math.random() * 2 - 1;
+          output[i] = (lastOut + 0.02 * white) / 1.02;
+          lastOut = output[i];
+          output[i] *= 3.5;
+        }
+      }
+      const node = ctx.createBufferSource();
+      node.buffer = noiseBuffer;
+      node.loop = true;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.7 * globalVolume;
+      node.connect(gain).connect(ctx.destination);
+      mix[key] = { ctx, node, gain, playing: false, volume: 0.7, speed: 1 };
+      if (playNow) togglePlay(key, true);
+      renderMixList();
     }
   }
+
+  function togglePlay(key, forcePlay=false) {
+    const m = mix[key];
+    if (!m) return;
+    if (ambientLoops[key]) {
+      if (!m.playing || forcePlay) {
+        m.audio.volume = m.volume * globalVolume;
+        m.audio.playbackRate = m.speed;
+        m.audio.play();
+        m.playing = true;
+      } else {
+        m.audio.pause();
+        m.playing = false;
+      }
+    } else if (["white","pink","brown"].includes(key)) {
+      if (!m.playing || forcePlay) {
+        m.node.playbackRate.value = m.speed;
+        m.gain.gain.value = m.volume * globalVolume;
+        m.node.start(0);
+        m.playing = true;
+      } else {
+        try { m.node.stop(); } catch(e){}
+        m.playing = false;
+        // Recreate node for replay
+        addToMix(key);
+      }
+    }
+    renderMixList();
+    updatePlayAllButton();
+  }
+
+  function stopSound(key) {
+    const m = mix[key];
+    if (!m) return;
+    if (ambientLoops[key]) {
+      m.audio.pause();
+      m.audio.currentTime = 0;
+      m.playing = false;
+    } else if (["white","pink","brown"].includes(key)) {
+      try { m.node.stop(); } catch(e){}
+      m.playing = false;
+      if (m.ctx) { m.ctx.close(); }
+      // Recreate node for replay
+      addToMix(key);
+    }
+    renderMixList();
+    updatePlayAllButton();
+  }
+
+  function removeFromMix(key) {
+    stopSound(key);
+    if (mix[key]) {
+      if (ambientLoops[key]) {
+        mix[key].audio = null;
+      } else if (["white","pink","brown"].includes(key)) {
+        if (mix[key].ctx) mix[key].ctx.close();
+      }
+      delete mix[key];
+    }
+    renderMixList();
+    updatePlayAllButton();
+  }
+
+  function setVolume(key, vol) {
+    const m = mix[key];
+    if (!m) return;
+    m.volume = vol;
+    if (ambientLoops[key]) {
+      m.audio.volume = vol * globalVolume;
+    } else if (["white","pink","brown"].includes(key)) {
+      m.gain.gain.value = vol * globalVolume;
+    }
+  }
+
+  function setSpeed(key, speed) {
+    const m = mix[key];
+    if (!m) return;
+    m.speed = speed;
+    if (ambientLoops[key]) {
+      m.audio.playbackRate = speed;
+    } else if (["white","pink","brown"].includes(key)) {
+      m.node.playbackRate.value = speed;
+    }
+  }
+
+  function setGlobalVolume(vol) {
+    globalVolume = vol;
+    Object.keys(mix).forEach(key => setVolume(key, mix[key].volume));
+  }
+
+  function stopAll() {
+    Object.keys(mix).forEach(key => stopSound(key));
+  }
+
+  function playAll() {
+    Object.keys(mix).forEach(key => {
+      if (!mix[key].playing) togglePlay(key, true);
+    });
+  }
+
+  function pauseAll() {
+    Object.keys(mix).forEach(key => {
+      if (mix[key].playing) togglePlay(key, false);
+    });
+  }
+
+  function updatePlayAllButton() {
+    const playAllBtn = document.getElementById('wn-play-all');
+    const playAllIcon = document.getElementById('wn-play-all-icon');
+    const anyPlaying = Object.values(mix).some(m => m.playing);
+    if (anyPlaying) {
+      playAllBtn.classList.remove('btn-outline-primary');
+      playAllBtn.classList.add('btn-primary');
+      playAllIcon.className = 'bi bi-pause-fill';
+      playAllBtn.title = _('Pause all');
+      playAllBtn.setAttribute('aria-label', _('Pause all'));
+    } else {
+      playAllBtn.classList.remove('btn-primary');
+      playAllBtn.classList.add('btn-outline-primary');
+      playAllIcon.className = 'bi bi-play-fill';
+      playAllBtn.title = _('Play all');
+      playAllBtn.setAttribute('aria-label', _('Play all'));
+    }
+  }
+
+  document.getElementById('wn-search').addEventListener('input', function() {
+    renderSoundList(this.value);
+  });
+  document.getElementById('wn-global-volume').addEventListener('input', function() {
+    setGlobalVolume(parseFloat(this.value));
+  });
+  document.getElementById('wn-stop-all').addEventListener('click', stopAll);
+  document.getElementById('wn-play-all').addEventListener('click', function() {
+    const anyPlaying = Object.values(mix).some(m => m.playing);
+    if (anyPlaying) pauseAll();
+    else playAll();
+    updatePlayAllButton();
+  });
+  window.addEventListener('DOMContentLoaded', function() {
+    renderSoundList();
+    renderMixList();
+    updatePlayAllButton();
+  });
 </script>
 {% endblock %}
