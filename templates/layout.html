@@ -38,6 +38,16 @@ if ('serviceWorker' in navigator) {
     <meta name="theme-color" content="#0d6efd" />
 
     <title>NeoBox | {% block title %}{% endblock %}</title>
+    
+    <!-- Initial theme setup to prevent flash -->
+    <script>
+      try {
+        const storedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-bs-theme", storedTheme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-bs-theme", "light");
+      }
+    </script>
   </head>
 
   <body>
@@ -186,40 +196,7 @@ if ('serviceWorker' in navigator) {
       <a href="https://github.com/ars2711">Arsalan</a>
     </div>
   </div>
-  <script src="/static/script.js"></script>
+    <script src="/static/script.js"></script>
 </footer>
-    <script>
-      // Set theme before CSS loads to prevent white flash
-      try {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-bs-theme", "dark");
-        } else {
-          document.documentElement.setAttribute("data-bs-theme", "light");
-        }
-      } catch (e) {}
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.js"></script>
-    <script>
-function setTheme(theme) {
-  if (theme === "auto") {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches)
-      document.documentElement.setAttribute("data-bs-theme", "dark");
-    else
-      document.documentElement.setAttribute("data-bs-theme", "light");
-  } else {
-    document.documentElement.setAttribute("data-bs-theme", theme);
-  }
-}
-document.addEventListener("DOMContentLoaded", function() {
-  {% if g.user and g.user.theme %}
-    setTheme("{{ g.user.theme }}");
-  {% elif session.theme %}
-    setTheme("{{ session.theme }}");
-  {% else %}
-    setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
-  {% endif %}
-});
-    </script>
   </body>
 </html>

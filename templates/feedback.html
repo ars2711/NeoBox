@@ -1,31 +1,210 @@
 {% extends "layout.html" %} {% block title %}Feedback{% endblock %} {% block
 main %}
-<h2>Feedback/Suggestions</h2>
-<p class="lead">
-  We value your feedback and suggestions. Please fill out the form below to help
-  us improve our services.
-</p>
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title mb-3">
+        <i class="bi-chat-right-dots me-2"></i>
+        {{ _('Feedback & Suggestions') }}
+      </h2>
+      <p class="lead text-muted mb-4">
+        {{ _('Help us improve by sharing your thoughts, reporting bugs, or
+        suggesting new features.') }}
+      </p>
 
-<form method="post" class="text-start" style="max-width: 400px; margin: 0 auto">
-  <div class="mb-3">
-    <label class="form-label">Your Email</label>
-    <input name="email" type="email" class="form-control" required />
+      <form
+        method="post"
+        enctype="multipart/form-data"
+        class="needs-validation"
+        novalidate
+      >
+        <div class="row g-3">
+          <!-- Email Field -->
+          <div class="col-md-6">
+            <label class="form-label"
+              >{{ _('Your Email') }} <span class="text-danger">*</span></label
+            >
+            <input
+              name="email"
+              type="email"
+              class="form-control"
+              required
+              value="{{ g.user.email if g.user else '' }}"
+              {%
+              if
+              g.user
+              %}readonly{%
+              endif
+              %}
+            />
+            <div class="invalid-feedback">
+              {{ _('Please enter a valid email address.') }}
+            </div>
+          </div>
+
+          <!-- Category Field -->
+          <div class="col-md-6">
+            <label class="form-label"
+              >{{ _('Category') }} <span class="text-danger">*</span></label
+            >
+            <select name="category" class="form-select" required>
+              <option value="">{{ _('Select a category') }}</option>
+              <option value="bug">{{ _('Bug Report') }}</option>
+              <option value="feature">{{ _('Feature Request') }}</option>
+              <option value="improvement">
+                {{ _('Improvement Suggestion') }}
+              </option>
+              <option value="general">{{ _('General Feedback') }}</option>
+            </select>
+            <div class="invalid-feedback">
+              {{ _('Please select a category.') }}
+            </div>
+          </div>
+          <!-- Rating Field -->
+          <div class="col-12">
+            <label class="form-label text-center d-block"
+              >{{ _('Rating') }} <span class="text-danger">*</span></label
+            >
+            <div class="rating-buttons">
+              {% for i in range(1, 6) %}
+              <input
+                type="radio"
+                class="btn-check"
+                name="rating"
+                id="rating{{ i }}"
+                value="{{ i }}"
+                required
+              />
+              <label class="btn btn-outline-dark" for="rating{{ i }}">
+                {% for _ in range(i) %}
+                <i class="bi-star-fill"></i>
+                {% endfor %}
+              </label>
+              {% endfor %}
+            </div>
+            <div class="invalid-feedback text-center">
+              {{ _('Please select a rating.') }}
+            </div>
+          </div>
+
+          <!-- Message Field -->
+          <div class="col-12">
+            <label class="form-label"
+              >{{ _('Your Feedback') }}
+              <span class="text-danger">*</span></label
+            >
+            <textarea
+              name="message"
+              class="form-control"
+              rows="5"
+              required
+              placeholder="{{ _('Please describe your feedback, issue, or suggestion in detail...') }}"
+            ></textarea>
+            <div class="invalid-feedback">
+              {{ _('Please provide your feedback.') }}
+            </div>
+          </div>
+
+          <!-- Code Field -->
+          <div class="col-12">
+            <label class="form-label"
+              >{{ _('Related Code') }}
+              <small class="text-muted">({{ _('optional') }})</small></label
+            >
+            <textarea
+              name="code"
+              class="form-control font-monospace"
+              rows="4"
+              placeholder="{{ _('If your feedback is about code, paste it here...') }}"
+            ></textarea>
+          </div>
+
+          <!-- Screenshot Field -->
+          <div class="col-12">
+            <label class="form-label">
+              {{ _('Screenshot') }}
+              <small class="text-muted">({{ _('optional') }})</small>
+            </label>
+            <input
+              type="file"
+              name="screenshot"
+              class="form-control"
+              accept="image/*"
+            />
+            <div class="form-text">
+              {{ _('Accepted formats: PNG, JPG, GIF. Max size: 5MB') }}
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi-send me-2"></i>
+              {{ _('Submit Feedback') }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Rating</label>
-    <select name="rating" class="form-select" required>
-      <option value="">Select</option>
-      <option value="5">Excellent</option>
-      <option value="4">Good</option>
-      <option value="3">Average</option>
-      <option value="2">Poor</option>
-      <option value="1">Terrible</option>
-    </select>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Feedback</label>
-    <textarea name="message" class="form-control" rows="5" required></textarea>
-  </div>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+</div>
+
+<style>
+  .rating-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    justify-content: center;
+  }
+  .rating-buttons .btn {
+    min-width: 80px;
+    color: var(--bs-gray-600);
+    border-color: var(--bs-gray-400);
+  }
+  .rating-buttons .btn:hover {
+    background-color: var(--bs-gray-200);
+    border-color: var(--bs-gray-500);
+    color: var(--bs-gray-800);
+  }
+  .btn-check:checked + .btn-outline-dark {
+    background-color: var(--bs-gray-900);
+    border-color: var(--bs-gray-900);
+    color: var(--bs-yellow);
+  }
+  [data-bs-theme="dark"] .btn-check:checked + .btn-outline-dark {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+    color: var(--bs-yellow);
+  }
+  [data-bs-theme="dark"] .rating-buttons .btn {
+    color: var(--bs-gray-400);
+    border-color: var(--bs-gray-600);
+  }
+  [data-bs-theme="dark"] .rating-buttons .btn:hover {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-500);
+    color: var(--bs-gray-200);
+  }
+</style>
+
+<script>
+  // Form validation
+  (function () {
+    "use strict";
+    const forms = document.querySelectorAll(".needs-validation");
+    Array.from(forms).forEach((form) => {
+      form.addEventListener(
+        "submit",
+        (event) => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    });
+  })();
+</script>
 {% endblock %}

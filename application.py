@@ -14,9 +14,8 @@ from datetime import datetime, timezone, timedelta
 
 from flask import (
     Flask, flash, redirect, render_template, request, session, get_flashed_messages,
-    url_for, abort, g, jsonify, send_file
+    url_for, abort, g, jsonify, send_file, Response
 )
-from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from sqlalchemy.dialects.sqlite import JSON
@@ -48,20 +47,24 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # --- Flask App Setup ---
 app = Flask(__name__)
-app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_TYPE"] = "null"  # Use Flask's default cookie-based session
 app.config["SESSION_PERMANENT"] = False
-app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')
-app.config['SESSION_FILE_THRESHOLD'] = 100
-app.config['SESSION_FILE_MODE'] = 0o600
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
 app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
-Session(app)
 
 # --- Database Setup ---
 db = SQLAlchemy()
-db_name = os.path.join(os.path.dirname(__file__), 'users.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
+# Use DATABASE_URL from environment (Render) if available, else default to SQLite
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    # Render may provide postgres://, but SQLAlchemy expects postgresql://
+    if DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+else:
+    db_name = os.path.join(os.path.dirname(__file__), 'users.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
@@ -107,6 +110,11 @@ class User(db.Model):
     gender = db.Column(db.String(10))
     hash = db.Column(db.String(120), nullable=False)
     avatar_url = db.Column(db.String(255))
+    bio = db.Column(db.Text)
+    location = db.Column(db.String(100))
+    website = db.Column(db.String(200))
+    company = db.Column(db.String(100))
+    position = db.Column(db.String(100))
     google_id = db.Column(db.String(128), unique=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     language = db.Column(db.String(10), default='en')
@@ -115,6 +123,9 @@ class User(db.Model):
     verified = db.Column(db.Boolean, default=False)
     verify_token = db.Column(db.String(100), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
+    notifications_enabled = db.Column(db.Boolean, default=True)
+    privacy_level = db.Column(db.String(20), default='public')  # public, private, friends
+    last_active = db.Column(db.DateTime)
     otp = db.Column(db.String(10), nullable=True)
     otp_expiry = db.Column(db.DateTime, nullable=True)
     passkeys = db.Column(JSON, default=list)
@@ -137,7 +148,12 @@ class Feedback(db.Model):
     email = db.Column(db.String(120))
     rating = db.Column(db.Integer)
     message = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50))  # bug, feature, general, etc.
+    screenshot_url = db.Column(db.String(255))  # URL to uploaded screenshot
+    status = db.Column(db.String(20), default='pending')  # pending, reviewed, implemented, rejected
+    admin_response = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -194,7 +210,8 @@ def log_activity(user_id, action, details=""):
 def inject_globals():
     return {
         'now': datetime.now(timezone.utc),
-        'available_languages': AVAILABLE_LANGUAGES
+        'available_languages': AVAILABLE_LANGUAGES,
+        'timedelta': timedelta  # Adding timedelta to template context
     }
 
 @app.after_request
@@ -210,6 +227,14 @@ def load_logged_in_user():
     g.user = User.query.get(user_id) if user_id else None
 
 # --- Routes ---
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
 @app.route("/")
 def index():
     if session.get("user_id"):
@@ -2246,6 +2271,324 @@ WHITE_NOISE_SOUNDS = [
     {"key": "rainwindow", "icon": "bi-shop-window", "name": _(u"Rain on Window"), "desc": _(u"Rain hitting glass"), "file": "rainwindow.mp3"},
     # Add more as you add files to static/media/ ...
 ]
+
+@app.route("/tools/flashcards", methods=["GET", "POST"])
+def flashcards():
+    try:
+        # Initialize session storage for flashcards if not present
+        if "flashcard_sets" not in session:
+            session["flashcard_sets"] = {"Default": []}
+            session["flashcards_current_set"] = "Default"
+            session.modified = True
+        
+        # Get all sets
+        sets = list(session["flashcard_sets"].keys())
+        if not sets:
+            session["flashcard_sets"] = {"Default": []}
+            sets = ["Default"]
+            session.modified = True
+    
+        # Determine current set
+        current_set = None
+        
+        # First try from form data
+        if request.method == "POST":
+            current_set = request.form.get("set")
+        
+        # Then try from session
+        if not current_set:
+            current_set = session.get("flashcards_current_set")
+        
+        # Finally default to "Default"
+        if not current_set or current_set not in sets:
+            current_set = "Default"
+        
+        # Ensure the current set exists in session
+        if current_set not in session["flashcard_sets"]:
+            # Make a copy of the current flashcard_sets
+            flashcard_sets = dict(session["flashcard_sets"])
+            flashcard_sets[current_set] = []
+            session["flashcard_sets"] = flashcard_sets
+            session.modified = True
+        
+        # Initialize variables
+        error = None
+        flashcards = session["flashcard_sets"][current_set].copy()  # Make a copy
+
+        # Log current session state for debugging
+        app.logger.info(f"Current flashcard set: {current_set}")
+        app.logger.info(f"Sets: {sets}")
+        app.logger.info(f"Current set cards: {len(flashcards)}")
+        app.logger.info(f"Session size: {len(str(dict(session)))} bytes")
+
+        if request.method == "POST":
+            # Add new set
+            if request.form.get("new_set"):
+                new_set_name = request.form.get("new_set_name", "").strip()
+                if new_set_name and new_set_name not in sets:
+                    # Make a copy of the current flashcard_sets
+                    flashcard_sets = dict(session["flashcard_sets"])
+                    flashcard_sets[new_set_name] = []
+                    session["flashcard_sets"] = flashcard_sets
+                    session["flashcards_current_set"] = new_set_name
+                    session.modified = True
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": True})
+                    return redirect(url_for("flashcards"))
+                else:
+                    error = _("Set name must be unique and not empty.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 400
+
+            # Delete set
+            elif request.form.get("delete_set"):
+                set_to_delete = request.form.get("set", current_set)
+                if set_to_delete in session["flashcard_sets"]:
+                    if len(session["flashcard_sets"]) <= 1:
+                        error = _("Cannot delete the last set.")
+                        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                            return jsonify({"success": False, "error": error}), 400
+                    else:
+                        # Make a copy of the current flashcard_sets
+                        flashcard_sets = dict(session["flashcard_sets"])
+                        del flashcard_sets[set_to_delete]
+                        
+                        # If we're deleting the current set, switch to another one
+                        if set_to_delete == current_set:
+                            current_set = next(iter(flashcard_sets.keys()))
+                            session["flashcards_current_set"] = current_set
+                        
+                        # Update session
+                        session["flashcard_sets"] = flashcard_sets
+                        session.modified = True
+                        
+                        app.logger.info(f"Deleted set {set_to_delete}, switched to {current_set}")
+                        
+                        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                            return jsonify({"success": True, "new_set": current_set})
+                        return redirect(url_for("flashcards"))
+                else:
+                    error = _("Set not found.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 404
+            
+            # Add card
+            elif request.form.get("front") is not None and request.form.get("back") is not None:
+                front = request.form.get("front", "").strip()
+                back = request.form.get("back", "").strip()
+                target_set = request.form.get("set", current_set)
+
+                if not front or not back:
+                    error = _("Both front and back are required.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 400
+                    return render_template("tools/flashcards.html", sets=sets, current_set=current_set, 
+                                        flashcards=flashcards, error=error)
+
+                # Make a copy of the current flashcard_sets
+                flashcard_sets = dict(session["flashcard_sets"])
+                
+                # Initialize target set if it doesn't exist
+                if target_set not in flashcard_sets:
+                    flashcard_sets[target_set] = []
+                
+                # Add the new card to the set's cards
+                target_cards = flashcard_sets[target_set].copy()
+                target_cards.append({"front": front, "back": back})
+                flashcard_sets[target_set] = target_cards
+                
+                # Update session
+                session["flashcard_sets"] = flashcard_sets
+                session["flashcards_current_set"] = target_set
+                session.modified = True
+                
+                # Log the update
+                app.logger.info(f"Added card to set {target_set}. Set now has {len(target_cards)} cards")
+                
+                # Check session size
+                session_size = len(str(dict(session)))
+                app.logger.info(f"Flashcard session size: {session_size} bytes")
+                if session_size > 3500:
+                    error = _("Too many flashcards! Please clear some cards or sets.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 400
+                    return render_template("tools/flashcards.html", sets=sets, current_set=current_set, 
+                                        flashcards=flashcards, error=error)
+
+                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                    return jsonify({"success": True})
+                return redirect(url_for("flashcards"))
+            
+            # Delete card
+            elif request.form.get("delete_card") is not None:
+                try:
+                    idx = int(request.form.get("delete_card"))
+                    delete_from_set = request.form.get("set", current_set)
+                    
+                    if delete_from_set in session["flashcard_sets"]:
+                        current_cards = session["flashcard_sets"][delete_from_set].copy()
+                        if 0 <= idx < len(current_cards):
+                            # Remove the card
+                            current_cards.pop(idx)
+                            
+                            # Update session
+                            flashcard_sets = dict(session["flashcard_sets"])
+                            flashcard_sets[delete_from_set] = current_cards
+                            session["flashcard_sets"] = flashcard_sets
+                            session.modified = True
+                            
+                            app.logger.info(f"Deleted card {idx} from set {delete_from_set}. Set now has {len(current_cards)} cards")
+                            
+                            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                                return jsonify({"success": True})
+                            return redirect(url_for("flashcards"))
+                        else:
+                            error = _("Invalid card index.")
+                            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                                return jsonify({"success": False, "error": error}), 400
+                    else:
+                        error = _("Invalid set.")
+                        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                            return jsonify({"success": False, "error": error}), 400
+                except (ValueError, TypeError):
+                    error = _("Invalid card index.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 400
+            
+            # Clear set
+            elif request.form.get("clear_set"):
+                if current_set in session["flashcard_sets"]:
+                    # Make a copy of the current flashcard_sets
+                    flashcard_sets = dict(session["flashcard_sets"])
+                    flashcard_sets[current_set] = []
+                    
+                    # Update session
+                    session["flashcard_sets"] = flashcard_sets
+                    session.modified = True
+                    
+                    app.logger.info(f"Cleared set {current_set}")
+                    
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": True})
+                    return redirect(url_for("flashcards"))
+                else:
+                    error = _("Set not found.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 404
+                    flash(error, "danger")
+                    return redirect(url_for("flashcards"))
+
+            # Delete set
+            elif request.form.get("delete_set"):
+                set_to_delete = request.form.get("set", current_set)
+                if set_to_delete in session["flashcard_sets"]:
+                    if len(session["flashcard_sets"]) <= 1:
+                        error = _("Cannot delete the last set.")
+                        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                            return jsonify({"success": False, "error": error}), 400
+                        flash(error, "danger")
+                        return redirect(url_for("flashcards"))
+                    
+                    # Make a copy of the current flashcard_sets
+                    flashcard_sets = dict(session["flashcard_sets"])
+                    # Delete the set
+                    del flashcard_sets[set_to_delete]
+                    
+                    # Update session
+                    session["flashcard_sets"] = flashcard_sets
+                    # If we deleted the current set, switch to the first available set
+                    if set_to_delete == session.get("flashcards_current_set"):
+                        session["flashcards_current_set"] = next(iter(flashcard_sets))
+                    session.modified = True
+                    
+                    app.logger.info(f"Deleted set {set_to_delete}")
+                    
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": True})
+                    return redirect(url_for("flashcards"))
+                else:
+                    error = _("Set not found.")
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                        return jsonify({"success": False, "error": error}), 404
+                    flash(error, "danger")
+                    return redirect(url_for("flashcards"))
+        return render_template(
+            "tools/flashcards.html",
+            sets=sets,
+            current_set=current_set,
+            flashcards=flashcards,
+            error=error
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Error in flashcards: {str(e)}")
+        error = _("An error occurred. Please try again.")
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "error": error}), 500
+        return render_template(
+            "tools/flashcards.html",
+            sets=sets or ["Default"],
+            current_set=current_set or "Default",
+            flashcards=[],
+            error=error
+        )
+
+@app.route("/tools/star-map", methods=["GET", "POST"])
+def star_map():
+    from datetime import datetime
+    lat = request.form.get("lat") or request.args.get("lat") or "0"
+    lon = request.form.get("lon") or request.args.get("lon") or "0"
+    date = request.form.get("date") or request.args.get("date") or datetime.now().strftime("%Y-%m-%d")
+    time = request.form.get("time") or request.args.get("time") or datetime.now().strftime("%H:%M")
+    return render_template("tools/star_map.html", lat=lat, lon=lon, date=date, time=time)
+
+@app.route("/feedback", methods=["GET", "POST"])
+def feedback():
+    if request.method == "POST":
+        email = request.form.get("email")
+        rating = request.form.get("rating")
+        message = request.form.get("message")
+        category = request.form.get("category")
+        code = request.form.get("code")
+        
+        # Basic validation
+        if not email or not rating or not message:
+            flash("All required fields must be filled out.", "danger")
+            return render_template("feedback.html")
+        
+        # File handling
+        screenshot = request.files.get("screenshot")
+        screenshot_url = None
+        
+        if screenshot and allowed_file(screenshot.filename, ["images"]):
+            filename = secure_filename(screenshot.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'feedback', filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            screenshot.save(filepath)
+            screenshot_url = url_for('static', filename=f'uploads/feedback/{filename}')
+        
+        # Create feedback entry
+        feedback = Feedback(
+            user_id=session.get("user_id"),
+            email=email,
+            rating=int(rating),
+            message=message,
+            category=category,
+            screenshot_url=screenshot_url,
+            code=code
+        )
+        
+        db.session.add(feedback)
+        db.session.commit()
+        
+        # Log activity if user is logged in
+        if session.get("user_id"):
+            log_activity(session["user_id"], "submitted_feedback", f"Rating: {rating}")
+        
+        flash("Thank you for your feedback!", "success")
+        return redirect(url_for("feedback"))
+        
+    return render_template("feedback.html")
 
 if __name__ == "__main__":
     with app.app_context():

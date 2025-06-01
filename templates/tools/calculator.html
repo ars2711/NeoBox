@@ -2,126 +2,170 @@
 main %}
 <div class="container py-4" style="max-width: 400px">
   <h2 class="mb-4 text-center">Calculator</h2>
-  <div class="card shadow">
-    <div class="card-body">
+  <div class="card border-0 shadow rounded-4">
+    <div class="card-body p-4">
       <div
+        class="calculator-screen mb-3 fs-2 text-end p-3 rounded-3 bg-body-tertiary"
         id="calc-display"
-        class="form-control calculator-screen mb-3 text-end fs-3 bg-body text-body"
-        readonly
       >
         0
       </div>
-      <!-- Live Preview (optional, for LaTeX/math preview) -->
-      <div class="mb-2">
-        <strong>Live Preview:</strong>
+      <div class="mb-3 d-none">
         <div
           id="calc-preview"
-          class="border rounded bg-body text-body p-2"
+          class="border rounded-3 bg-body-secondary p-2"
         ></div>
       </div>
       <div class="row g-2">
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('7')">
-            7
-          </button>
+        <div class="col-9">
+          <div class="row g-2">
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('7')"
+              >
+                7
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('8')"
+              >
+                8
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('9')"
+              >
+                9
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('4')"
+              >
+                4
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('5')"
+              >
+                5
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('6')"
+              >
+                6
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('1')"
+              >
+                1
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('2')"
+              >
+                2
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('3')"
+              >
+                3
+              </button>
+            </div>
+            <div class="col-8">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('0')"
+              >
+                0
+              </button>
+            </div>
+            <div class="col-4">
+              <button
+                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
+                onclick="press('.')"
+              >
+                .
+              </button>
+            </div>
+          </div>
         </div>
         <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('8')">
-            8
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('9')">
-            9
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-warning w-100 py-3" onclick="press('/')">
-            ÷
-          </button>
-        </div>
-      </div>
-      <div class="row g-2 mt-2">
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('4')">
-            4
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('5')">
-            5
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('6')">
-            6
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-warning w-100 py-3" onclick="press('*')">
-            ×
-          </button>
-        </div>
-      </div>
-      <div class="row g-2 mt-2">
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('1')">
-            1
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('2')">
-            2
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('3')">
-            3
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-warning w-100 py-3" onclick="press('-')">
-            −
-          </button>
-        </div>
-      </div>
-      <div class="row g-2 mt-2">
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('0')">
-            0
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-light w-100 py-3" onclick="press('.')">
-            .
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-danger w-100 py-3" onclick="clearDisplay()">
-            C
-          </button>
-        </div>
-        <div class="col-3">
-          <button class="btn btn-warning w-100 py-3" onclick="press('+')">
-            +
-          </button>
-        </div>
-      </div>
-      <div class="row g-2 mt-2">
-        <div class="col-6">
-          <button class="btn btn-secondary w-100 py-3" onclick="backspace()">
-            ⌫
-          </button>
-        </div>
-        <div class="col-6">
-          <button class="btn btn-success w-100 py-3" onclick="calculate()">
-            =
-          </button>
+          <div class="row g-2 h-100">
+            <div class="col-12">
+              <button
+                class="btn btn-danger w-100 py-3 rounded-3 fs-5"
+                onclick="clearDisplay()"
+              >
+                C
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
+                onclick="press('/')"
+              >
+                ÷
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
+                onclick="press('*')"
+              >
+                ×
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
+                onclick="press('-')"
+              >
+                −
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
+                onclick="press('+')"
+              >
+                +
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                class="btn btn-success w-100 py-3 rounded-3 fs-5"
+                onclick="calculate()"
+              >
+                =
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script>
   let display = document.getElementById("calc-display");

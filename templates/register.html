@@ -1,88 +1,247 @@
-{% extends "layout.html" %} {% block title %} Register {% endblock %} {% block
+{% extends "layout.html" %} {% block title %}Register{% endblock %} {% block
 main %}
-<h1 class="mt-4">Register</h1>
-<p class="lead">Create a new account by filling out the form below.</p>
-<form
-  action="/register"
-  method="post"
-  class="text-start"
-  style="max-width: 400px; margin: 0 auto"
->
-  <div class="mb-3">
-    <label for="username" class="form-label">Username</label>
-    <input
-      id="username"
-      autocomplete="off"
-      autofocus
-      class="form-control"
-      name="username"
-      placeholder="e.g. johndoe"
-      type="text"
-    />
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title mb-3">{{ _('Create Account') }}</h1>
+      <p class="lead text-muted mb-4">
+        {{ _('Join NeoBox by filling out the form below') }}
+      </p>
+      <form
+        method="post"
+        class="needs-validation"
+        novalidate
+        style="max-width: 400px; margin: 0 auto"
+      >
+        <!-- Username -->
+        <div class="mb-3">
+          <label for="username" class="form-label"
+            >{{ _('Username') }} <span class="text-danger">*</span></label
+          >
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-person"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              id="username"
+              name="username"
+              required
+              pattern="^[a-zA-Z0-9_]{3,20}$"
+              placeholder="{{ _('Choose a unique username') }}"
+            />
+          </div>
+          <div class="form-text">
+            {{ _('3-20 characters, letters, numbers, and underscores only') }}
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label"
+            >{{ _('Email') }} <span class="text-danger">*</span></label
+          >
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-envelope"></i></span>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              required
+              placeholder="{{ _('Enter your email address') }}"
+            />
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="mb-3">
+          <label for="phone" class="form-label">{{ _('Phone Number') }}</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-phone"></i></span>
+            <input
+              type="tel"
+              class="form-control"
+              id="phone"
+              name="phone"
+              pattern="^\+?[1-9]\d{1,14}$"
+              placeholder="{{ _('+1234567890') }}"
+            />
+          </div>
+          <div class="form-text">
+            {{ _('Optional, but recommended for account recovery') }}
+          </div>
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="mb-3">
+          <label for="dob" class="form-label"
+            >{{ _('Date of Birth') }} <span class="text-danger">*</span></label
+          >
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-calendar"></i></span>
+            <input
+              type="date"
+              class="form-control"
+              id="dob"
+              name="dob"
+              required
+              max="{{ (now - timedelta(days=365*13)).strftime('%Y-%m-%d') }}"
+            />
+          </div>
+          <div class="form-text">{{ _('Must be at least 13 years old') }}</div>
+        </div>
+
+        <!-- Gender -->
+        <div class="mb-3">
+          <label for="gender" class="form-label">{{ _('Gender') }}</label>
+          <div class="input-group">
+            <span class="input-group-text"
+              ><i class="bi-person-badge"></i
+            ></span>
+            <select class="form-select" id="gender" name="gender">
+              <option value="">{{ _('Prefer not to say') }}</option>
+              <option value="male">{{ _('Male') }}</option>
+              <option value="female">{{ _('Female') }}</option>
+              <option value="other">{{ _('Other') }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label"
+            >{{ _('Password') }} <span class="text-danger">*</span></label
+          >
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-lock"></i></span>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              required
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$"
+              placeholder="{{ _('Create a strong password') }}"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              onclick="togglePassword('password')"
+            >
+              <i class="bi-eye"></i>
+            </button>
+          </div>
+          <div class="form-text">
+            {{ _('At least 8 characters with uppercase, lowercase, and numbers')
+            }}
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-3">
+          <label for="confirmation" class="form-label"
+            >{{ _('Confirm Password') }}
+            <span class="text-danger">*</span></label
+          >
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-shield-lock"></i></span>
+            <input
+              type="password"
+              class="form-control"
+              id="confirmation"
+              name="confirmation"
+              required
+              placeholder="{{ _('Re-enter your password') }}"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              onclick="togglePassword('confirmation')"
+            >
+              <i class="bi-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="mb-3">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="terms"
+              required
+            />
+            <label class="form-check-label" for="terms">
+              {{ _('I agree to the') }}
+              <a href="{{ url_for('terms') }}" target="_blank"
+                >{{ _('Terms of Service') }}</a
+              >
+              {{ _('and') }}
+              <a href="{{ url_for('privacy') }}" target="_blank"
+                >{{ _('Privacy Policy') }}</a
+              >
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" type="submit">
+            <i class="bi-person-plus me-2"></i>{{ _('Create Account') }}
+          </button>
+        </div>
+      </form>
+
+      <hr class="my-4" />
+
+      <div class="text-center">
+        <p class="mb-0">
+          {{ _('Already have an account?') }}
+          <a href="{{ url_for('login') }}">{{ _('Log in here') }}</a>
+        </p>
+      </div>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="email" class="form-label">Email</label>
-    <input
-      id="email"
-      name="email"
-      type="email"
-      class="form-control"
-      placeholder="e.g. johndoe@gmail.com"
-      required
-    />
-  </div>
-  <div class="mb-3">
-    <label for="phone" class="form-label">Phone Number</label>
-    <input
-      id="phone"
-      name="phone"
-      type="tel"
-      class="form-control"
-      placeholder="e.g. +1234567890"
-      title="Please enter a valid phone number."
-    />
-  </div>
-  <div class="mb-3">
-    <label for="dob" class="form-label">Date of Birth</label>
-    <input id="dob" name="dob" type="date" class="form-control" />
-  </div>
-  <div class="mb-3">
-    <label for="gender" class="form-label">Gender</label>
-    <select id="gender" name="gender" class="form-select">
-      <option value="">Prefer not to say</option>
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-      <option value="other">Other</option>
-    </select>
-  </div>
-  <div class="mb-3">
-    <label for="password" class="form-label">Password</label>
-    <input
-      id="password"
-      class="form-control"
-      name="password"
-      autocomplete="new-password"
-      placeholder="At least 8 characters"
-      type="password"
-    />
-  </div>
-  <div class="mb-3">
-    <label for="confirmation" class="form-label">Confirm Password</label>
-    <input
-      id="confirmation"
-      class="form-control"
-      name="confirmation"
-      autocomplete="new-password"
-      placeholder="Re-enter your password"
-      type="password"
-    />
-  </div>
-  <button class="btn btn-primary" type="submit">Register</button>
-</form>
-<!--
-<a href="{{ url_for('google.login') }}" class="btn btn-danger mt-3">
-  <i class="bi bi-google"></i> Sign up with Google
-</a>
--->
-<p class="mt-3">Already have an account? <a href="/login">Log in here</a>.</p>
+</div>
+
+<script>
+  function togglePassword(id) {
+    const input = document.getElementById(id);
+    const type = input.type === "password" ? "text" : "password";
+    input.type = type;
+    const icon = event.currentTarget.querySelector("i");
+    icon.className = type === "password" ? "bi-eye" : "bi-eye-slash";
+  }
+
+  (function () {
+    "use strict";
+    const forms = document.querySelectorAll(".needs-validation");
+    Array.from(forms).forEach((form) => {
+      form.addEventListener(
+        "submit",
+        (event) => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+
+          // Custom password match validation
+          const password = form.querySelector("#password");
+          const confirmation = form.querySelector("#confirmation");
+          if (password.value !== confirmation.value) {
+            confirmation.setCustomValidity("Passwords must match");
+            event.preventDefault();
+            event.stopPropagation();
+          } else {
+            confirmation.setCustomValidity("");
+          }
+
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    });
+  })();
+</script>
 {% endblock %}

@@ -1,4 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
+	// Set up theme handling
+	const themeIcon = document.getElementById("theme-icon");
+	const themeToggle = document.getElementById("theme-toggle");
+
+	function setTheme(theme) {
+		document.documentElement.setAttribute("data-bs-theme", theme);
+		localStorage.setItem("theme", theme);
+		if (themeIcon) {
+			themeIcon.className = theme === "dark" ? "bi bi-sun" : "bi bi-moon";
+		}
+	}
+
+	// Initialize theme
+	let currentTheme = localStorage.getItem("theme");
+	if (!currentTheme) {
+		currentTheme = "light"; // Default to light theme
+		localStorage.setItem("theme", currentTheme);
+	}
+	setTheme(currentTheme);
+
+	// Set up theme toggle
+	if (themeToggle) {
+		themeToggle.onclick = function () {
+			const newTheme =
+				document.documentElement.getAttribute("data-bs-theme") === "dark"
+					? "light"
+					: "dark";
+			setTheme(newTheme);
+		};
+	}
+
 	const validatorInput = document.querySelector(
 		'form[action="https://validator.w3.org/check"] > input[name="fragment"]'
 	);
@@ -20,24 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		validatorInput.value = html;
 	}
 });
-
-// On page load, set theme from localStorage
-if (localStorage.getItem("theme") === "dark") {
-	document.documentElement.setAttribute("data-bs-theme", "dark");
-	document.getElementById("theme-icon").className = "bi bi-sun";
-} else {
-	document.documentElement.setAttribute("data-bs-theme", "light");
-	document.getElementById("theme-icon").className = "bi bi-moon";
-}
-
-document.getElementById("theme-toggle").onclick = function () {
-	const current = document.documentElement.getAttribute("data-bs-theme");
-	const next = current === "dark" ? "light" : "dark";
-	document.documentElement.setAttribute("data-bs-theme", next);
-	localStorage.setItem("theme", next);
-	document.getElementById("theme-icon").className =
-		next === "dark" ? "bi bi-sun" : "bi bi-moon";
-};
 
 // Fade out on link click
 document.addEventListener("DOMContentLoaded", function () {
@@ -83,25 +96,46 @@ document.addEventListener("DOMContentLoaded", function () {
 		card.classList.remove("hide");
 		card.style.display = "";
 	});
-
 	function filterTools() {
 		const q = searchInput.value.trim().toLowerCase();
+		const delay = 30; // Slightly faster delay for better responsiveness
+		let visibleCount = 0;
+
+		// First, add 'hide' class to all cards that should be hidden
 		cards.forEach((card) => {
 			const name = card.dataset.name ? card.dataset.name.toLowerCase() : "";
-			if (!q || name.includes(q)) {
-				// Show card
-				if (card.classList.contains("hide")) {
-					card.style.display = "";
-					// Force reflow to restart transition
-					void card.offsetWidth;
-					card.classList.remove("hide");
-				}
-			} else {
-				if (!card.classList.contains("hide")) {
-					card.classList.add("hide");
-				}
+			const category = card.dataset.category
+				? card.dataset.category.toLowerCase()
+				: "";
+			const shouldShow = !q || name.includes(q) || category.includes(q);
+
+			if (!shouldShow && !card.classList.contains("hide")) {
+				card.classList.add("hide");
 			}
 		});
+
+		// Then, after a brief delay, show cards that should be visible
+		setTimeout(() => {
+			cards.forEach((card, index) => {
+				const name = card.dataset.name ? card.dataset.name.toLowerCase() : "";
+				const category = card.dataset.category
+					? card.dataset.category.toLowerCase()
+					: "";
+				const shouldShow = !q || name.includes(q) || category.includes(q);
+
+				if (shouldShow) {
+					visibleCount++;
+					setTimeout(() => {
+						if (card.classList.contains("hide")) {
+							card.style.display = "";
+							// Force reflow to restart transition
+							void card.offsetWidth;
+							card.classList.remove("hide");
+						}
+					}, index * delay);
+				}
+			});
+		}, 100);
 	}
 
 	// After fade-out transition, set display:none

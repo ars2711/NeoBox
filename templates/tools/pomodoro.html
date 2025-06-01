@@ -3,7 +3,7 @@ block main %}
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <div class="card shadow text-center">
+      <div class="card timer-card shadow text-center squircle">
         <div class="card-body">
           <h3 class="card-title mb-3">
             <i class="bi bi-hourglass-split"></i> Pomodoro Timer
@@ -15,7 +15,7 @@ block main %}
                 cy="70"
                 r="60"
                 stroke="#e9ecef"
-                stroke-width="12"
+                stroke-width="10"
                 fill="none"
               />
               <circle
@@ -23,8 +23,8 @@ block main %}
                 cx="70"
                 cy="70"
                 r="60"
-                stroke="#0d6efd"
-                stroke-width="12"
+                stroke="#2196f3"
+                stroke-width="10"
                 fill="none"
                 stroke-linecap="round"
                 stroke-dasharray="377"
@@ -33,10 +33,11 @@ block main %}
               <text
                 id="pomodoroTimeText"
                 x="70"
-                y="80"
+                y="83"
                 text-anchor="middle"
-                font-size="2em"
-                fill="#212529"
+                font-size="2.1em"
+                fill="currentColor"
+                style="font-weight: 600"
               >
                 25:00
               </text>
@@ -47,27 +48,34 @@ block main %}
           >
             <button
               class="btn btn-outline-secondary btn-sm"
-              onclick="adjustPomodoro(-5)"
+              id="pomodoroMinusBtn"
+              type="button"
             >
               <i class="bi bi-dash"></i> 5 min
             </button>
             <span id="pomodoroLength" class="fw-bold">25</span> min
             <button
               class="btn btn-outline-secondary btn-sm"
-              onclick="adjustPomodoro(5)"
+              id="pomodoroPlusBtn"
+              type="button"
             >
               <i class="bi bi-plus"></i> 5 min
             </button>
           </div>
-          <div class="mb-3">
+          <div class="mb-3 d-flex justify-content-center gap-2">
             <button
-              class="btn btn-primary me-2"
-              onclick="startPomodoro()"
+              class="btn btn-primary btn-lg"
               id="pomodoroStartBtn"
+              type="button"
             >
-              <i class="bi bi-play-fill"></i> Start
+              <i class="bi bi-play-fill"></i>
+              <span id="pomodoroStartLabel">Start</span>
             </button>
-            <button class="btn btn-secondary" onclick="resetPomodoro()">
+            <button
+              class="btn btn-secondary btn-lg"
+              id="pomodoroResetBtn"
+              type="button"
+            >
               <i class="bi bi-arrow-counterclockwise"></i> Reset
             </button>
           </div>
@@ -78,33 +86,57 @@ block main %}
   </div>
 </div>
 <script>
-  let pomodoroTime = 25 * 60,
+  // --- Pomodoro Timer Logic ---
+  const POMODORO_MIN = 5,
+    POMODORO_MAX = 120;
+  let pomodoroLength = 25, // minutes
+    pomodoroTime = pomodoroLength * 60, // seconds
     timeLeft = pomodoroTime,
-    interval,
-    running = false;
-  let breakTimes = [5, 10, 15],
-    breakIndex = 0,
+    interval = null,
+    running = false,
     onBreak = false,
+    breakTimes = [5, 10, 15],
+    breakIndex = 0,
     sessionCount = 0;
+
   function updatePomodoroUI() {
+    // Update time text
     let min = Math.floor(timeLeft / 60),
       sec = timeLeft % 60;
     document.getElementById("pomodoroTimeText").textContent = `${min
       .toString()
-      .padStart(2, 0)}:${sec.toString().padStart(2, 0)}`;
-    let percent =
-      timeLeft / (onBreak ? breakTimes[breakIndex - 1] * 60 : pomodoroTime);
+      .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    // Progress ring
+    let total = onBreak
+      ? breakTimes[(breakIndex - 1 + breakTimes.length) % breakTimes.length] *
+        60
+      : pomodoroLength * 60;
+    let percent = timeLeft / total;
     let offset = 377 * (1 - percent);
     document
       .getElementById("pomodoroProgress")
       .setAttribute("stroke-dashoffset", offset);
-    document.getElementById("pomodoroLength").textContent = Math.floor(
-      pomodoroTime / 60
-    );
+    // Update length display
+    document.getElementById("pomodoroLength").textContent = pomodoroLength;
+    // Button state
+    document.getElementById("pomodoroMinusBtn").disabled =
+      running || onBreak || pomodoroLength <= POMODORO_MIN;
+    document.getElementById("pomodoroPlusBtn").disabled =
+      running || onBreak || pomodoroLength >= POMODORO_MAX;
+    document.getElementById("pomodoroStartBtn").disabled = running;
+    document.getElementById("pomodoroResetBtn").disabled =
+      !running && !onBreak && timeLeft === pomodoroLength * 60;
+    document.getElementById("pomodoroStartLabel").textContent = running
+      ? "Running"
+      : "Start";
   }
   function adjustPomodoro(mins) {
     if (running || onBreak) return;
-    pomodoroTime = Math.max(5, Math.min(120, pomodoroTime / 60 + mins)) * 60;
+    pomodoroLength = Math.max(
+      POMODORO_MIN,
+      Math.min(POMODORO_MAX, pomodoroLength + mins)
+    );
+    pomodoroTime = pomodoroLength * 60;
     timeLeft = pomodoroTime;
     updatePomodoroUI();
   }
@@ -112,6 +144,11 @@ block main %}
     if (running) return;
     running = true;
     document.getElementById("pomodoroStartBtn").disabled = true;
+    document.getElementById("pomodoroStatus").textContent = onBreak
+      ? `Break time! (${
+          breakTimes[(breakIndex - 1 + breakTimes.length) % breakTimes.length]
+        } min)`
+      : "";
     interval = setInterval(() => {
       if (timeLeft > 0) {
         timeLeft--;
@@ -123,18 +160,20 @@ block main %}
         if (!onBreak) {
           sessionCount++;
           onBreak = true;
-          breakIndex = breakIndex % 3;
+          breakIndex = breakIndex % breakTimes.length;
           timeLeft = breakTimes[breakIndex] * 60;
           document.getElementById(
             "pomodoroStatus"
           ).textContent = `Break time! (${breakTimes[breakIndex]} min)`;
           breakIndex++;
-          startPomodoro();
+          updatePomodoroUI();
+          setTimeout(startPomodoro, 800); // auto-start break
         } else {
           onBreak = false;
-          timeLeft = pomodoroTime;
+          timeLeft = pomodoroLength * 60;
           document.getElementById("pomodoroStatus").textContent =
             "Pomodoro complete! Start again?";
+          updatePomodoroUI();
         }
       }
     }, 1000);
@@ -144,11 +183,20 @@ block main %}
     running = false;
     onBreak = false;
     breakIndex = 0;
-    timeLeft = pomodoroTime;
-    document.getElementById("pomodoroStartBtn").disabled = false;
+    timeLeft = pomodoroLength * 60;
     document.getElementById("pomodoroStatus").textContent = "";
     updatePomodoroUI();
   }
-  updatePomodoroUI();
+  // Button event listeners
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("pomodoroMinusBtn").onclick = () =>
+      adjustPomodoro(-5);
+    document.getElementById("pomodoroPlusBtn").onclick = () =>
+      adjustPomodoro(5);
+    document.getElementById("pomodoroStartBtn").onclick = startPomodoro;
+    document.getElementById("pomodoroResetBtn").onclick = resetPomodoro;
+    updatePomodoroUI();
+  });
+  // --- End Pomodoro Timer Logic ---
 </script>
 {% endblock %}

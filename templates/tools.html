@@ -2,11 +2,10 @@
 {% block title %}Tools{% endblock %}
 {% block main %}
 <div class="container mt-1">
-  <h1>Tools</h1>
-  <div class="mb-3">
-    <div class="d-flex flex-nowrap overflow-auto" id="categoryTabs" style="gap: 0.5rem;">
+  <h1>Tools</h1>  <div class="mb-3">
+    <div class="d-flex overflow-auto" id="categoryTabs">
       {% for cat in tool_categories %}
-        <button class="btn btn-outline-primary btn-sm category-tab" data-category="{{ cat.key }}">{{ cat.name }}</button>
+        <button class="btn btn-outline-primary category-tab" data-category="{{ cat.key }}">{{ cat.name }}</button>
       {% endfor %}
     </div>
   </div>

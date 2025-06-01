@@ -5,117 +5,486 @@
 <div class="container py-4">
   <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <h2 class="card-title mb-2"><i class="bi-card-list me-2"></i>{{ _('Flashcards') }}</h2>
-      <p class="card-text text-muted">{{ _('Create, flip, and study your own flashcards. Organize them into sets for different subjects.') }}</p>
-      <form method="post" class="row g-2 align-items-end mb-3">
-        <div class="col">
-          <label for="front" class="form-label">{{ _('Front') }}</label>
-          <input id="front" name="front" class="form-control" placeholder="{{ _('Enter your question or term') }}" />
+      <!-- Header Section -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h2 class="card-title mb-1"><i class="bi-card-list me-2"></i>{{ _('Flashcards') }}</h2>
+          <p class="text-muted mb-0">{{ _('Create, flip, and study your own flashcards. Organize them into sets for different subjects.') }}</p>
         </div>
-        <div class="col">
-          <label for="back" class="form-label">{{ _('Back') }}</label>
-          <input id="back" name="back" class="form-control" placeholder="{{ _('Enter the answer or definition') }}" />
+        <!-- Set Management Section -->
+        <div class="d-flex gap-2 align-items-start">
+          <form method="post" class="d-flex gap-2" id="setManagementForm">
+            <select name="set" id="set" class="form-select" style="min-width: 150px;" onchange="this.form.submit()">
+              {% for set in sets %}
+              <option value="{{ set }}" {% if set == current_set %}selected{% endif %}>{{ set }}</option>
+              {% endfor %}
+            </select>
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#newSetForm">
+              <i class="bi-plus-circle"></i> {{ _('New Set') }}
+            </button>
+            {% if sets|length > 1 %}
+            <button type="submit" name="delete_set" value="1" class="btn btn-outline-danger" onclick="return confirmDeleteSet()">
+              <i class="bi-trash"></i> {{ _('Delete Set') }}
+            </button>
+            {% endif %}
+          </form>
         </div>
-        <div class="col-auto">
-          <button class="btn btn-primary"><i class="bi-plus"></i> {{ _('Add') }}</button>
+      </div>
+
+      <!-- New Set Form (Collapsible) -->
+      <div class="collapse mb-4" id="newSetForm">
+        <div class="card card-body bg-light">
+          <form method="post" class="d-flex gap-2 align-items-center">
+            <div class="flex-grow-1">
+              <label for="new_set_name" class="form-label small">{{ _('New Set Name') }}</label>
+              <input name="new_set_name" id="new_set_name" class="form-control" placeholder="{{ _('Enter set name...') }}" required />
+            </div>
+            <div class="align-self-end">
+              <button name="new_set" value="1" class="btn btn-primary">{{ _('Create Set') }}</button>
+            </div>
+          </form>
         </div>
-        <div class="col-auto">
-          <button name="shuffle" value="1" class="btn btn-secondary"><i class="bi-shuffle"></i> {{ _('Shuffle') }}</button>
-        </div>
-        <div class="col-auto">
-          <label for="set" class="form-label">{{ _('Set') }}</label>
-          <select name="set" id="set" class="form-select" onchange="this.form.submit()">
-            {% for set in sets %}
-            <option value="{{ set }}" {% if set == current_set %}selected{% endif %}>{{ set }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-auto">
-          <label for="new_set_name" class="form-label">{{ _('New Set') }}</label>
-          <input name="new_set_name" id="new_set_name" class="form-control" placeholder="{{ _('New Set Name') }}" />
-          <button name="new_set" value="1" class="btn btn-outline-primary btn-sm mt-1"><i class="bi-plus-circle"></i> {{ _('Add Set') }}</button>
-        </div>
-      </form>
+      </div> 
+      <!-- Add Card Form -->
+      <div class="card card-body bg-light mb-4">
+        <form method="post" class="row g-3" id="addCardForm">
+          <input type="hidden" name="set" value="{{ current_set }}" />
+          <div class="col-md-5">
+            <label for="front" class="form-label">{{ _('Front (Question/Term)') }}</label>
+            <input id="front" name="front" class="form-control" placeholder="{{ _('Enter your question or term') }}" required autocomplete="off" />
+          </div>
+          <div class="col-md-5">
+            <label for="back" class="form-label">{{ _('Back (Answer/Definition)') }}</label>
+            <input id="back" name="back" class="form-control" placeholder="{{ _('Enter the answer or definition') }}" required autocomplete="off" />
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100" onclick="return validateAddCard(this.form)"><i class="bi-plus-lg"></i> {{ _('Add Card') }}</button>
+          </div>
+        </form>
+      </div>
+
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <!-- Flashcards Grid -->
       {% if flashcards %}
-      <div class="row g-3 justify-content-center">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex gap-2">
+          <form method="post" class="d-inline">
+            <button name="shuffle" value="1" class="btn btn-outline-primary" onclick="shuffleCards(); return false;">
+              <i class="bi-shuffle"></i> {{ _('Shuffle') }}
+            </button>
+          </form>
+          <form method="post" class="d-inline">
+            <button name="export_set" value="1" class="btn btn-outline-success">
+              <i class="bi-download"></i> {{ _('Export') }}
+            </button>
+          </form>
+        </div>
+        <form method="post" class="d-inline">
+          <button name="clear_set" value="1" class="btn btn-outline-danger" 
+                  onclick="return confirm('{{ _('Are you sure you want to clear this set?') }}')">
+            <i class="bi-trash"></i> {{ _('Clear Set') }}
+          </button>
+        </form>
+      </div>
+
+      <div class="row g-3" id="flashcards-grid">
         {% for card in flashcards %}
-        <div class="col-lg-3 col-md-4 col-6 mb-3">
-          <div class="flashcard-wrapper position-relative">
-            <div class="card p-3 text-center flashcard-flip flashcard" onclick="this.classList.toggle('flipped')">
-              <div class="flashcard-inner" style="min-height: 100px;">
-                <div class="flashcard-front" style="font-weight: bold">
-                  {{ card.front }}
-                  <div class="small text-muted mt-2">({{ _('Click to flip') }})</div>
+        <div class="col-lg-3 col-md-4 col-sm-6 flashcard-col">
+          <div class="flashcard-wrapper">
+            <div class="flashcard-flip" onclick="this.classList.toggle('flipped')">
+              <div class="flashcard-inner">
+                <div class="flashcard-front">
+                  <div class="flashcard-content">
+                    {{ card.front }}
+                  </div>
+                  <div class="flashcard-footer">
+                    <i class="bi-arrow-repeat"></i> {{ _('Click to flip') }}
+                  </div>
                 </div>
                 <div class="flashcard-back">
-                  {{ card.back }}
-                  <div class="small text-muted mt-2">({{ _('Click to flip back') }})</div>
+                  <div class="flashcard-content">
+                    {{ card.back }}
+                  </div>
+                  <div class="flashcard-footer">
+                    <i class="bi-arrow-repeat"></i> {{ _('Click to flip back') }}
+                  </div>
                 </div>
               </div>
             </div>
-            <form method="post" class="delete-flashcard-form position-absolute top-0 end-0 m-1">
+            <form method="post" class="delete-flashcard-form">
               <input type="hidden" name="delete_card" value="{{ loop.index0 }}" />
-              <button class="btn btn-sm btn-danger" title="Delete"><i class="bi-trash"></i></button>
+              <button type="submit" class="btn btn-sm btn-danger" title="{{ _('Delete Card') }}"
+                      onclick="return confirm('{{ _('Delete this card?') }}')">
+                <i class="bi-trash"></i>
+              </button>
+              <input type="hidden" name="set" value="{{ current_set }}" />
             </form>
           </div>
         </div>
         {% endfor %}
       </div>
-      <div class="d-flex justify-content-center mt-3 gap-2">
-        <form method="post"><button name="clear_set" value="1" class="btn btn-outline-danger btn-sm"><i class="bi-x-circle"></i> {{ _('Clear Set') }}</button></form>
-        <form method="post"><button name="export_set" value="1" class="btn btn-outline-success btn-sm"><i class="bi-download"></i> {{ _('Export Set') }}</button></form>
-      </div>
       {% else %}
-      <p class="text-muted text-center">{{ _('No flashcards yet. Add some above!') }}</p>
+      <div class="text-center text-muted py-5">
+        <i class="bi-card-list display-4 mb-3 d-block"></i>
+        <p class="mb-0">{{ _('No flashcards yet. Add some above!') }}</p>
+      </div>
       {% endif %}
-    </div>
-  </div>
-</div>
+
 <style>
-.flashcard-wrapper { min-height: 140px; }
-.flashcard-flip {
-  perspective: 800px;
-  cursor: pointer;
-  min-height: 120px;
-  transition: box-shadow 0.2s;
-}
-.flashcard-inner {
-  transition: transform 0.5s;
-  transform-style: preserve-3d;
+.flashcard-wrapper {
+  min-height: 200px;
   position: relative;
+  perspective: 1000px;
 }
-.flashcard-flip.flipped .flashcard-inner {
+
+.flashcard-flip {
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flashcard-flip.flipped {
   transform: rotateY(180deg);
 }
-.flashcard-front, .flashcard-back {
-  backface-visibility: hidden;
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.flashcard-front,
+.flashcard-back {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, rgba(0,0,0,0.1));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  min-height: 100px;
+  justify-content: space-between;
+  padding: 1.5rem;
 }
+
 .flashcard-back {
   transform: rotateY(180deg);
   background: var(--bs-secondary-bg, #f8f9fa);
-  color: var(--bs-body-color, #333);
 }
-.flashcard-front {
-  background: var(--bs-body-bg, #fff);
-  color: var(--bs-body-color, #222);
+
+.flashcard-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  padding: 0.5rem;
 }
+
+.flashcard-footer {
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+  margin-top: 1rem;
+}
+
+.delete-flashcard-form {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.flashcard-wrapper:hover .delete-flashcard-form {
+  opacity: 1;
+}
+
+/* Dark mode support */
 [data-bs-theme="dark"] .flashcard-front {
-  background: #23272b;
-  color: #fff;
+  background: #2b3035;
+  border-color: #444;
 }
+
 [data-bs-theme="dark"] .flashcard-back {
   background: #343a40;
-  color: #fff;
+  border-color: #444;
 }
-.delete-flashcard-form { z-index: 2; }
+
+/* Animations */
+.flashcard-flip {
+  animation: appear 0.3s ease-out;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects */
+.flashcard-wrapper:hover .flashcard-flip:not(.flipped) .flashcard-front,
+.flashcard-wrapper:hover .flashcard-flip.flipped .flashcard-back {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currentSet = document.getElementById('set').value;
+    
+    // Handle set maintenance for all forms
+    document.querySelectorAll('form').forEach(form => {
+        // Skip forms that already have a set field
+        if (!form.querySelector('input[name="set"]') && !form.querySelector('select[name="set"]')) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'set';
+            input.value = currentSet;
+            form.appendChild(input);
+        }
+    });
+
+    // Add AJAX handling for card deletion
+    document.querySelectorAll('.delete-flashcard-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (confirm("{{ _('Delete this card?') }}")) {
+                const formData = new FormData(this);                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new TypeError("Received non-JSON response from server");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const card = this.closest('.flashcard-col');
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            // If no cards left, refresh to show empty state
+                            if (document.querySelectorAll('.flashcard-col').length === 0) {
+                                window.location.reload();
+                            }
+                        }, 300);
+                    } else {
+                        alert(data.error || "{{ _('Failed to delete card') }}");
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("{{ _('An error occurred. Please try again.') }}");
+                    window.location.reload();
+                });
+            }
+        });
+    });
+
+    // Add AJAX handling for adding cards
+    const addCardForm = document.getElementById('addCardForm');
+    if (addCardForm) {
+        addCardForm.addEventListener('submit', function(e) {
+            e.preventDefault();            const front = this.querySelector('input[name="front"]');
+            const back = this.querySelector('input[name="back"]');
+            
+            if (!front.value.trim() || !back.value.trim()) {
+                alert("{{ _('Both front and back are required.') }}");
+                return false;
+            }            const formData = new FormData(this);
+            fetch(window.location.pathname, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new TypeError("Received non-JSON response from server");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Clear form
+                    front.value = '';
+                    back.value = '';
+                    // Refresh page to show new card
+                    window.location.reload();
+                } else {
+                    alert(data.error || "{{ _('Failed to add card') }}");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("{{ _('An error occurred. Please try again.') }}");
+            });
+    }
+    
+    // Add validation for new set form
+    const newSetForm = document.querySelector('#newSetForm form');
+    if (newSetForm) {
+        newSetForm.addEventListener('submit', function(e) {
+            const input = this.querySelector('input[name="new_set_name"]');
+            const value = input.value.trim();
+            if (!value) {
+                e.preventDefault();
+                alert("{{ _('Set name cannot be empty.') }}");
+                return false;
+            }
+            const existingSets = Array.from(document.getElementById('set').options).map(opt => opt.value);
+            if (existingSets.includes(value)) {
+                e.preventDefault();
+                alert("{{ _('A set with this name already exists.') }}");
+                return false;
+            }
+        });
+    }
+
+    // Add clear set handling
+    const clearSetBtn = document.querySelector('button[name="clear_set"]');
+    if (clearSetBtn) {
+        clearSetBtn.addEventListener('click', function(e) {
+            if (!confirm("{{ _('Are you sure you want to clear this set?') }}")) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+});
+
+function shuffleCards() {
+    const grid = document.getElementById('flashcards-grid');
+    const cards = Array.from(grid.getElementsByClassName('flashcard-col'));
+    
+    // Fisher-Yates shuffle implementation
+    for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        if (i !== j) {
+            grid.insertBefore(cards[i], cards[j]);
+        }
+    }
+    
+    // Reset any flipped cards
+    cards.forEach(card => {
+        const flashcard = card.querySelector('.flashcard-flip');
+        if (flashcard.classList.contains('flipped')) {
+            flashcard.classList.remove('flipped');
+        }
+    });
+}
+
+function validateAddCard(form) {
+    const front = form.querySelector('input[name="front"]').value.trim();
+    const back = form.querySelector('input[name="back"]').value.trim();
+    const set = form.querySelector('input[name="set"]').value;
+    
+    if (!front || !back) {
+        alert("{{ _('Both front and back are required.') }}");
+        return false;
+    }
+    
+    if (!set) {
+        alert("{{ _('Please select a set first.') }}");
+        return false;
+    }
+    
+    return true;
+}
+
+function confirmDeleteSet() {
+    const currentSet = document.getElementById('set').value;
+    return confirm("{{ _('Are you sure you want to delete the set') }} '" + currentSet + "'?");
+}
+
+// Add AJAX handling for delete set
+document.addEventListener('DOMContentLoaded', function() {
+    const setManagementForm = document.getElementById('setManagementForm');
+    if (setManagementForm) {
+        setManagementForm.addEventListener('submit', function(e) {
+            if (this.querySelector('button[name="delete_set"]')?.clicked) {
+                e.preventDefault();
+                if (confirmDeleteSet()) {
+                    const formData = new FormData(this);
+                    formData.set('delete_set', '1');
+                    fetch(window.location.pathname, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            throw new TypeError("Received non-JSON response from server");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert(data.error || "{{ _('Failed to delete set') }}");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("{{ _('An error occurred. Please try again.') }}");
+                        window.location.reload();
+                    });
+                }
+            }
+        });
+
+        // Track which button was clicked
+        setManagementForm.querySelectorAll('button[type="submit"]').forEach(button => {
+            button.addEventListener('click', function() {
+                this.clicked = true;
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

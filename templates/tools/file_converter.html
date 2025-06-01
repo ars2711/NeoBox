@@ -18,12 +18,9 @@ block main %}
   <form id="convert-form" method="post" enctype="multipart/form-data">
     <input type="hidden" name="category" value="{{ selected_category }}" />
     <div class="mb-3">
-      <div
-        id="drop-area"
-        class="border border-2 border-primary rounded p-4 text-center mb-2"
-        style="background: #f8f9fa"
-      >
-        <p class="mb-2">Drag & drop files here or click to select</p>
+      <div id="drop-area" class="drop-zone mb-3">
+        <i class="bi bi-cloud-arrow-up-fill icon"></i>
+        <p class="mb-2">{{ _('Drag & drop files here or click to select') }}</p>
         <input
           type="file"
           id="fileElem"
@@ -96,15 +93,15 @@ block main %}
   const fileList = document.getElementById("file-list");
   dropArea.addEventListener("dragover", (e) => {
     e.preventDefault();
-    dropArea.classList.add("bg-primary", "text-white");
+    dropArea.classList.add("dragover");
   });
   dropArea.addEventListener("dragleave", (e) => {
     e.preventDefault();
-    dropArea.classList.remove("bg-primary", "text-white");
+    dropArea.classList.remove("dragover");
   });
   dropArea.addEventListener("drop", (e) => {
     e.preventDefault();
-    dropArea.classList.remove("bg-primary", "text-white");
+    dropArea.classList.remove("dragover");
     fileElem.files = e.dataTransfer.files;
     updateFileList();
   });

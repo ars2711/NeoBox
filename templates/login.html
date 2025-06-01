@@ -1,69 +1,170 @@
-{% extends "layout.html" %} {% block title %} Log In {% endblock %} {% block
-main %}
-<h1 class="mt-4">Log In</h1>
-<p class="lead">Please enter your credentials to log in.</p>
-<form
-  action="/login"
-  method="post"
-  class="text-start"
-  style="max-width: 400px; margin: 0 auto"
->
-  <div class="mb-3">
-    <label for="identifier" class="form-label">Username, Email, or Phone</label>
-    <input id="identifier" name="identifier" class="form-control" required />
+{% extends "layout.html" %} {% block title %}{{ _('Log In') }}{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title mb-3">{{ _('Welcome Back') }}</h1>
+      <p class="lead text-muted mb-4">
+        {{ _('Please enter your credentials to log in') }}
+      </p>
+      <form method="post" class="needs-validation login-form" novalidate>
+        <!-- Identifier Field -->
+        <div class="mb-3">
+          <label for="identifier" class="form-label"
+            >{{ _('Username, Email, or Phone') }}</label
+          >
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-person"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              id="identifier"
+              name="identifier"
+              required
+              placeholder="{{ _('Enter your identifier') }}"
+            />
+          </div>
+          <div class="invalid-feedback">
+            {{ _('Please enter your username, email, or phone.') }}
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-3">
+          <label for="password" class="form-label">{{ _('Password') }}</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi-lock"></i></span>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              required
+              placeholder="{{ _('Enter your password') }}"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              onclick="togglePassword('password')"
+            >
+              <i class="bi-eye"></i>
+            </button>
+          </div>
+          <div class="invalid-feedback">
+            {{ _('Please enter your password.') }}
+          </div>
+        </div>
+        <!-- Login Button -->
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi-box-arrow-in-right me-1"></i>{{ _('Log In') }}
+          </button>
+
+          <!-- Passkey Login -->
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            id="login-passkey"
+          >
+            <i class="bi-shield-lock me-1"></i>{{ _('Login with Passkey') }}
+          </button>
+
+          <!-- Google Login (commented out) -->
+          <!--
+                    <a href="{{ url_for('google.login') }}" class="btn btn-danger">
+                        <i class="bi-google me-2"></i>{{ _('Sign in with Google') }}
+                    </a>
+                    -->
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="text-center">
+          <p class="mb-2">
+            {{ _("Don't have an account?") }}
+            <a href="{{ url_for('register') }}">{{ _('Register here') }}</a>
+          </p>
+          <p class="mb-0">
+            <a href="{{ url_for('forgot') }}"
+              >{{ _('Forgot your password?') }}</a
+            >
+          </p>
+        </div>
+      </form>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="password" class="form-label">Password</label>
-    <input
-      id="password"
-      name="password"
-      type="password"
-      class="form-control"
-      required
-    />
-  </div>
-  <button class="btn btn-primary" type="submit">Log In</button>
-</form>
-<!--
-<div class="text-center mt-3">
-  <a href="{{ url_for('google.login') }}" class="btn btn-danger">
-    <i class="bi bi-google"></i> Sign in with Google
-  </a>
 </div>
--->
-<p class="mt-3">
-  Don't have an account? <a href="/register">Register here</a>.
-</p>
-<p>
-  <a href="/forgot">Forgot your password?</a>
-  {% endblock %}
-</p>
-<button type="button" class="btn btn-secondary mt-2" id="login-passkey">
-  Login with Passkey
-</button>
+
 <script>
+  function togglePassword(id) {
+    const input = document.getElementById(id);
+    const type = input.type === "password" ? "text" : "password";
+    input.type = type;
+    const icon = event.currentTarget.querySelector("i");
+    icon.className = type === "password" ? "bi-eye" : "bi-eye-slash";
+  }
+
+  // Form validation
+  (function () {
+    "use strict";
+    const forms = document.querySelectorAll(".needs-validation");
+    Array.from(forms).forEach((form) => {
+      form.addEventListener(
+        "submit",
+        (event) => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    });
+  })();
+
+  // Passkey login
   document.getElementById("login-passkey").onclick = async function () {
     const identifier = document.getElementById("identifier").value;
-    const resp = await fetch("/passkey/login/begin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier }),
-    });
-    if (!resp.ok) return alert("No passkey registered for this user.");
-    const options = await resp.arrayBuffer();
-    const cred = await navigator.credentials.get({
-      publicKey: CBOR.decode(options),
-    });
-    const complete = await fetch("/passkey/login/complete", {
-      method: "POST",
-      body: CBOR.encode({
-        credentialId: cred.rawId,
-        clientDataJSON: cred.response.clientDataJSON,
-        authenticatorData: cred.response.authenticatorData,
-        signature: cred.response.signature,
-      }),
-    });
-    if (complete.ok) window.location = "/";
-    else alert("Passkey login failed.");
+    if (!identifier) {
+      alert("{{ _('Please enter your username, email, or phone first.') }}");
+      return;
+    }
+
+    try {
+      const resp = await fetch("/passkey/login/begin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier }),
+      });
+
+      if (!resp.ok) {
+        throw new Error("{{ _('No passkey registered for this user.') }}");
+      }
+
+      const options = await resp.arrayBuffer();
+      const cred = await navigator.credentials.get({
+        publicKey: CBOR.decode(options),
+      });
+
+      const complete = await fetch("/passkey/login/complete", {
+        method: "POST",
+        body: CBOR.encode({
+          credentialId: cred.rawId,
+          clientDataJSON: cred.response.clientDataJSON,
+          authenticatorData: cred.response.authenticatorData,
+          signature: cred.response.signature,
+        }),
+      });
+
+      if (complete.ok) {
+        window.location = "/";
+      } else {
+        throw new Error("{{ _('Passkey login failed.') }}");
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 </script>
+{% endblock %}
