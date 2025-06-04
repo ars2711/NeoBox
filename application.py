@@ -330,26 +330,49 @@ def verify_otp():
     if not user_id:
         flash("No verification in progress.", "warning")
         return redirect("/login")
+
     user = User.query.get(user_id)
     if not user:
         flash("User not found.", "danger")
         return redirect("/register")
+
     if request.method == "POST":
-        otp = request.form.get("otp").strip()
+        otp = request.form.get("otp", "").strip()
+
+        # Validate input
         if not otp:
             flash("Please enter the OTP.", "danger")
-            return render_template("verify_otp.html")
-        if user.otp != otp or not user.otp_expiry or datetime.now(timezone.utc) > user.otp_expiry:
+            return render_template("verify_otp.html", email=user.email)
+
+        # Normalize OTP expiry (make timezone-aware)
+        otp_expiry = user.otp_expiry
+        if otp_expiry and otp_expiry.tzinfo is None:
+            otp_expiry = otp_expiry.replace(tzinfo=timezone.utc)
+
+        now = datetime.now(timezone.utc)
+
+        # Check if OTP is invalid or expired
+        if (
+            user.otp != otp
+            or not otp_expiry
+            or now > otp_expiry
+        ):
             flash("Invalid or expired OTP.", "danger")
-            return render_template("verify_otp.html")
+            return render_template("verify_otp.html", email=user.email)
+
+        # Mark user as verified
         user.verified = True
         user.otp = None
         user.otp_expiry = None
         db.session.commit()
+
+        # Clean up session
         session.pop("pending_user_id", None)
-        session["user_id"] = user.id  # Log in user
+        session["user_id"] = user.id
+
         flash("Your account has been verified! Welcome!", "success")
         return redirect("/")
+
     return render_template("verify_otp.html", email=user.email)
 
 # --- Resend OTP Route ---
@@ -560,6 +583,17 @@ def profile():
         return redirect("/profile")
     return render_template("profile.html", user=user)
 
+@app.route("/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    user = User.query.get(session["user_id"])
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        session.clear()
+        flash("Account deleted successfully.", "success")
+    return redirect("/register")
+
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -656,10 +690,9 @@ TOOLS = [
 
     # Science
     {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "category": "science", "login_required": False, "description": "Explore elements and their properties."},
-    {"name": "Color Generator", "icon": "bi-palette", "url": "color-generator", "category": "science", "login_required": False, "description": "Generate random colors in HEX, RGB, or HSL."},
     {"name": "Gradient Generator", "icon": "bi-palette2", "url": "gradient-generator", "category": "science", "login_required": False, "description": "Create CSS gradients with multiple colors."},
     {"name": "Palette Generator", "icon": "bi-palette-fill", "url": "palette-generator", "category": "science", "login_required": False, "description": "Generate harmonious color palettes."},
-    {"name": "White Noise Generator", "icon": "bi-volume-mute", "url": "white-noise", "category": "science", "login_required": False, "description": "Play white, pink, brown noise and more."},
+    {"name": "White Noise Generator", "icon": "bi-soundwave", "url": "white-noise", "category": "science", "login_required": False, "description": "Play white, pink, brown noise and more."},
     {"name": "Astrology/Star Map", "icon": "bi-stars", "url": "star-map", "category": "science", "login_required": False, "description": "View the night sky from any location."},
 
     # Other
@@ -2589,6 +2622,21 @@ def feedback():
         return redirect(url_for("feedback"))
         
     return render_template("feedback.html")
+
+@app.route("/tools/reverse-image-search", methods=["GET", "POST"])
+def reverse_image_search():
+    if request.method == "POST":
+        image = request.files.get("image")
+        if image and allowed_file(image.filename, ["images"]):
+            filename = secure_filename(image.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'reverse_image_search', filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            image.save(filepath)
+            # Here you would implement the reverse image search logic
+            flash("Image uploaded successfully! Now implement the search logic.", "success")
+        else:
+            flash("Please upload a valid image file.", "danger")
+    return render_template("tools/reverse_image_search.html")
 
 if __name__ == "__main__":
     with app.app_context():

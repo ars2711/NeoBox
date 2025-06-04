@@ -1,150 +1,182 @@
-# 📦NeoBox
+# NeoBox
 
-> Your all-in-one productivity toolkit — Swiss Army Knife for the web. Built as a CS50 Final Project.
-
-NeoBox is a sleek, modern, and powerful web app that consolidates dozens of everyday tools into one unified platform. Whether you're a student, professional, or just someone who loves productivity, NeoBox is your companion for staying organized, focused, and efficient.
+NeoBox is your digital Swiss Army knife for productivity. Developed as my final project for **CS50x 2024** , NeoBox brings together a wide array of everyday tools into a single elegant web application. Whether you're a student, professional, or curious learner, NeoBox is designed to save you time, reduce clutter, and streamline your digital life.
 
 ---
 
-## 🎓 CS50 Final Project
+## 🌟 Key Features
 
-This project was created as part of **CS50 — Harvard University's Introduction to Computer Science** . It reflects months of learning, experimenting, building, and dreaming.
+### ✅ Implemented Features
 
-**Note on Assistance:**
+- **User Authentication**
+  - Registration, login, logout
+  - Password reset via email
+  - Language & theme preferences
+- **Productivity Tools**
+  - Calculator
+  - Unit Converter
+  - Currency Converter (using live exchange rates)
+  - Notes (persistent storage)
+  - Pomodoro Timer
+  - File Converter
+  - Color Palette & Gradient Generator
+- **User Experience**
+  - Flash messaging
+  - Theme toggler (light/dark)
+  - Language switching (i18n)
+  - Daily quotes and questions for motivation
+  - Responsive design with Bootstrap 5
+- **Security**
+  - Hashed password storage
+  - Session-based login system
+  - Input validation and sanitation
 
-Some parts of this project were developed using **GitHub Copilot** and **ChatGPT** for generating ideas, boilerplate code, and enhancing functionality. All code was reviewed, customized, and authored by me (Arsalan), in full accordance with CS50's [Academic Honesty Policy](https://cs50.harvard.edu/x/2024/honesty/).
+### 🚀 Upcoming Tools (Planned)
 
----
+> Already laid out in the structure but not yet active
 
-## 🔧 Features
-
-### ✅ Core Functionality
-
-- 🧮 Calculator
-- 🔁 Unit Converter
-- 💱 Currency Converter
-- 📝 Notes
-- 🛠️ Tools Directory with Live Search
-- ☁️ Cloud Sync for Registered Users
-- 🌐 Google Login Integration
-- 🔐 Secure User Authentication (Password & OAuth)
-- 🎨 Light/Dark Theme Toggle with Persistence
-- 🌍 Multilingual Support (English, Urdu, Arabic, Español)
-- ✉️ Email Notifications (Password Reset, Account Verification)
-- 🔔 Notifications System (Admin/User)
-- 📊 Admin Panel
-
----
-
-## 🧠 Upcoming Tools (planned)
-
-NeoBox is constantly evolving. Here's what we're cooking up:
-
-| Name                  | Description                  |
-| --------------------- | ---------------------------- |
-| File Converter        | Convert between file formats |
-| AI Chatbot            | Interact with AI responses   |
-| Image Tools           | Crop, Resize, Compress       |
-| PDF Tools             | Merge, Split, Annotate       |
-| Flashcards            | Study smarter                |
-| Pomodoro Timer        | Stay focused in bursts       |
-| Habit Tracker         | Build lasting habits         |
-| Budget Tracker        | Track finances easily        |
-| World Clock & Planner | Schedule meetings globally   |
-| Voice Tools           | Text-to-speech & vice versa  |
-| Color Tools           | Gradient/Palette Generator   |
-
-_(+ over 50 more upcoming mini-tools!)_
+- Weather Tool
+- PDF Tools (merge, compress, etc.)
+- QR Generator & Scanner
+- AI Prompt Tool
+- Voice to Text / Text to Speech
+- Mind Map & Flowchart Tool
+- To-Do Lists, Calendars, Reminders
+- Health & Habit Trackers
+- Stock Market Tracker
+- Chatbot integration
+- Many more... (see application.py code for full list)
 
 ---
 
-## 🛠️ Tech Stack
+## 🧠 Design Decisions
 
-- **Backend:** Python, Flask, SQLAlchemy, SQLite
-- **Frontend:** HTML, CSS, Bootstrap, JavaScript
-- **Auth:** Google OAuth2, Flask-Session, Werkzeug
-- **Localization:** Flask-Babel
-- **Email:** Flask-Mail (Gmail SMTP)
-- **PWA Ready:** Coming soon 🚀
+### Why Flask + SQLite?
+
+Due to CS50's lectures and simply their simplicity and understanding - it made them such an easy choice.
+
+### UI/UX
+
+- Bootstrap 5.3 with custom CSS for a clean, minimal aesthetic.
+- Responsive grid-based card layout for tools.
+- Integrated dark mode with saved preferences via `localStorage`.
+
+### User Data Handling
+
+- Passwords hashed with Werkzeug's `generate_password_hash` (Inspired by CS50's Problem Set 9)
+- Sessions securely managed using `flask-session`
+- Email-based verification & reset via `Flask-Mail`
 
 ---
 
-## 🚀 Running Locally
+## 🛠 File Structure Overview
 
-### Prerequisites
+- `app.py` — Main Flask app, routing, models, logic
+- `templates/` — All HTML templates (Jinja2)
+- `static/` — Custom CSS, JS, logos, manifest
+- `translations/` — `.po` and `.mo` files for i18n
+- `helpers.py` — Utility functions (login_required, apology, etc.)
+- `.env` — Environment variables (not committed)
+- `requirements.txt` — Required packages
+- `.gitignore` — Excludes sensitive/runtime files
 
-- Python 3.10+
-- `pipenv` or `venv`
-- Node.js (optional, for frontend builds)
+---
 
-### Setup
+## 🚧 Limitations
+
+- Tool data and logs are not yet fully implemented
+- Email templates are currently plain-text
+- Heavy reliance on GitHub Copilot (see below)
+
+---
+
+## 🤖 About Copilot & Contributions
+
+Large portions of this project were accelerated using **GitHub Copilot** , particularly during UI scaffolding, form handling, and tool stubs. However, each section was manually reviewed, tested, and understood before integration.
+
+> This project would not exist without CS50, but Copilot greatly improved development efficiency.
+
+---
+
+## 🧾 License
+
+This project is licensed under the [MIT License](https://chatgpt.com/c/LICENSE).
+
+---
+
+## 🙏 Acknowledgements
+
+- [CS50x](https://cs50.harvard.edu/x) by Harvard University & David Malan
+- [Bootstrap 5](https://getbootstrap.com/)
+- [Flask](https://flask.palletsprojects.com/)
+- [Google OAuth](https://developers.google.com/identity)
+- [Flask-Mail](https://pythonhosted.org/Flask-Mail/)
+- [Undraw.co](https://undraw.co/) for illustrations
+- GitHub Copilot
+- ChatGPT
+
+---
+
+## 📦 Installation & Setup
 
 ```bash
 # Clone the repo
-$ git clone https://github.com/ars2711/neobox.git
-$ cd neobox
+git clone https://github.com/yourusername/neobox.git
+cd neobox
 
-# Create virtual environment
-$ python3 -m venv .venv
-$ source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+# Set up virtual environment
+python3 -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 
 # Install dependencies
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 
-# Set up environment variables (create .env file)
-SECRET_KEY=your-secret-key
-MAIL_USERNAME=your@gmail.com
+# Set environment variables (create a .env file)
+FLASK_APP=app.py
+SECRET_KEY=your-secret
+MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-password
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_CLIENT_ID=xxxxx
+GOOGLE_CLIENT_SECRET=xxxxx
+
+# Initialize the DB
+flask shell
+>>> from app import db
+>>> db.create_all()
+>>> exit()
 
 # Run the app
-$ flask run
+flask run
 ```
 
 ---
 
-## 🌍 Deployment
+## 📖 A Note from the Creator
 
-- Can be deployed to **Render** , **Vercel (via FastAPI Gateway)** , **Heroku** , or **Replit** .
-- Supports SQLite but can be upgraded to PostgreSQL easily.
+Hey there! I'm Arsalan - the creator of **NeoBox**, and this web app has been my journey through learning and building with Flask, Python, and a whole lot of curiosity. NeoBox started off as just an idea for **CS50's Final Project**, but along the way, it grew to be way more and something that I thought many students and proffesionals alike would highly benefit from.
 
----
+This project was never about writing perfect code. With the help of Github's Copilot (and some ChatGPT for general things), I was able to learn and write code more efficiently while being on the peak of my creative flow. I made sure to **understand**, **break**, and **fix** everything it suggested because after all; this was _my_ vision. And as I worked, I realized something powerful: building is learning, and sharing is growing, so I present this to you as a gift.
 
-## 🤝 Contributing
+> "It ain't much but it's honest work."
 
-Contributions are welcome! Please:
+Is NeoBox "done"? Not yet. But it's functional, ambitious, and built with love — and that’s more than enough for me to hit submit proudly.
 
-1. Fork this repo
-2. Create a branch (`feature/awesome`)
-3. Commit your changes
-4. Push & open a PR
+Thank you CS50 team for giving me a real reason to chase a dream I didn’t even know I had. This isn’t the end — it’s just the start.
+
+— _Arsalan, 2025_
 
 ---
 
-## 📜 License
+## 🙋‍♂️ Want to Contribute?
 
-MIT License © Arsalan — [@ars2711](https://github.com/ars2711)
-
----
-
-## 💡 Inspiration
-
-NeoBox was born from a simple idea: **"One place for everything useful on the web."**
-
-Inspired by tools like Notion, Google Keep, and online converters, but built to be privacy-focused, distraction-free, and totally yours.
-
-> “If you’re building the future, why not make it beautiful, helpful, and open-source?”
+Pull requests are welcome. If you'd like to contribute a tool, feature, or language translation, open an issue or start a discussion!
 
 ---
 
-## 🧠 Want to Learn More?
+## 💬 Final Notes
 
-- CS50: [cs50.harvard.edu/x](https://cs50.harvard.edu/x)
-- Flask: [https://flask.palletsprojects.com/](https://flask.palletsprojects.com/)
-- Bootstrap: [https://getbootstrap.com/](https://getbootstrap.com/)
-- Babel: [https://python-babel.github.io/](https://python-babel.github.io/)
+NeoBox is a long-term vision that started as a CS50 project but is slowly evolving into what one (I) can only dream of. While it’s far from perfect today, it’s sprouting to be even bigger and better. Thank you for checking it out!
 
 ---
 
-_This project was built with passion, curiosity, and a lot of midnight coffee. Thanks to CS50 for making computer science feel like art._
+> _"This is only the beginning."_
