@@ -47,7 +47,7 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # --- Flask App Setup ---
 app = Flask(__name__)
-app.config["SESSION_TYPE"] = "null"  # Use Flask's default cookie-based session
+app.config["SESSION_TYPE"] = "null"
 app.config["SESSION_PERMANENT"] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
@@ -124,7 +124,7 @@ class User(db.Model):
     verify_token = db.Column(db.String(100), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
     notifications_enabled = db.Column(db.Boolean, default=True)
-    privacy_level = db.Column(db.String(20), default='public')  # public, private, friends
+    privacy_level = db.Column(db.String(20), default='public')
     last_active = db.Column(db.DateTime)
     otp = db.Column(db.String(10), nullable=True)
     otp_expiry = db.Column(db.DateTime, nullable=True)
@@ -148,9 +148,9 @@ class Feedback(db.Model):
     email = db.Column(db.String(120))
     rating = db.Column(db.Integer)
     message = db.Column(db.Text, nullable=False)
-    category = db.Column(db.String(50))  # bug, feature, general, etc.
-    screenshot_url = db.Column(db.String(255))  # URL to uploaded screenshot
-    status = db.Column(db.String(20), default='pending')  # pending, reviewed, implemented, rejected
+    category = db.Column(db.String(50))
+    screenshot_url = db.Column(db.String(255))
+    status = db.Column(db.String(20), default='pending')
     admin_response = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -211,7 +211,7 @@ def inject_globals():
     return {
         'now': datetime.now(timezone.utc),
         'available_languages': AVAILABLE_LANGUAGES,
-        'timedelta': timedelta  # Adding timedelta to template context
+        'timedelta': timedelta
     }
 
 @app.after_request
@@ -238,11 +238,9 @@ def privacy():
 @app.route("/")
 def index():
     if session.get("user_id"):
-        # Example: show first 3 tools as frequent (replace with real logic)
         frequent_tools = TOOLS[:3]
         # Get notifications for user
         notifications = Notification.query.filter_by(user_id=session["user_id"]).order_by(Notification.created_at.desc()).all()
-        # Pick a random quote/question
         import random
         daily_quote = random.choice(DAILY_QUOTES)
         daily_question = random.choice(DAILY_QUESTIONS)
@@ -571,7 +569,6 @@ def profile():
         phone = request.form.get("phone")
         dob = request.form.get("dob")
         gender = request.form.get("gender")
-        # Uniqueness check for phone
         if phone and User.query.filter(User.phone == phone, User.id != user.id).first():
             flash("Phone number already in use.", "danger")
             return redirect("/profile")
@@ -606,7 +603,7 @@ def settings():
         )
         db.session.commit()
         session["lang"] = language
-        session["theme"] = theme  # Optional: for instant theme switching
+        session["theme"] = theme
         flash("Settings updated!", "success")
         return redirect("/settings")
     user = db.session.execute(
@@ -678,6 +675,7 @@ TOOLS = [
 
     # AI
     {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "category": "ai", "login_required": False, "description": "Translate text between languages."},
+    # WIP
     #{"name": "AI Prompt", "icon": "bi-chat-right-dots", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
     #{"name": "Text Summarizer", "icon": "bi-body-text", "url": "ai-summarizer", "category": "ai", "login_required": False, "description": "Summarize long text using AI."},
     #{"name": "Text Paraphraser", "icon": "bi-list-columns-reverse", "url": "ai-paraphraser", "category": "ai", "login_required": False, "description": "Paraphrase text using AI."},
@@ -767,7 +765,7 @@ UPCOMING_TOOLS = [
       {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "soon": "Prompting soon"},
       {"name": "Daily Affirmations", "icon": "bi-chat-left-text", "soon": "Affirming soon"},
       {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
-    # ... more upcoming tools ...
+    # more upcoming tools here
 ]
 
 TOOL_CATEGORIES = [
@@ -787,7 +785,6 @@ ALLOWED_EXTENSIONS = {
     "pdf": {"pdf"},
     "text": {"txt", "md", "csv"},
     "doc": {"docx", "doc"},
-    # Add more as needed
 }
 
 @app.route("/tools/unit-converter", methods=["GET", "POST"])
@@ -821,7 +818,7 @@ def unit_converter():
             "units": {
                 "C": "Celsius", "F": "Fahrenheit", "K": "Kelvin", "R": "Rankine"
             }
-            # No factors, handled specially
+            # No factors needed for temperature conversion
         },
         "Area": {
             "units": {
@@ -948,7 +945,6 @@ def unit_converter():
         try:
             value = float(value)
             if category == "Temperature":
-                # Special handling for temperature
                 if from_unit == to_unit:
                     result = value
                 elif from_unit == "C" and to_unit == "F":
@@ -1323,7 +1319,7 @@ def file_converter():
                 "xls", "xlsx", "ods", "csv", "tsv"
             ]
         },
-        # Add more as needed for your use case!
+        # Add more here
     }
     # Prefer POST form value, fallback to GET param, default to 'images'
     selected_category = request.form.get("category") or request.args.get("category") or "images"
@@ -1646,7 +1642,6 @@ def image_metadata():
                 metadata["Mode"] = img.mode
                 metadata["Dimensions"] = f"{img.width} x {img.height}"
                 metadata["File Size"] = f"{size/1024:.2f} KB"
-                # EXIF
                 exif_data = img.getexif()
                 if exif_data:
                     from PIL.ExifTags import TAGS
@@ -2261,7 +2256,6 @@ WHITE_NOISE_SOUNDS = [
     {"key": "birds", "icon": "bi-egg-fried", "name": _(u"Birds"), "desc": _(u"Morning birds"), "file": "birds.mp3"},
     {"key": "city", "icon": "bi-buildings", "name": _(u"City"), "desc": _(u"Urban ambience"), "file": "city.mp3"},
     {"key": "library", "icon": "bi-journal-bookmark", "name": _(u"Library"), "desc": _(u"Quiet study"), "file": "library.mp3"},
-    # --- Extended options, add files to static/media/ to enable ---
     {"key": "rainroof", "icon": "bi-house", "name": _(u"Rain on Roof"), "desc": _(u"Rain hitting roof"), "file": "rainroof.mp3"},
     {"key": "waves", "icon": "bi-water", "name": _(u"Waves"), "desc": _(u"Sea shore"), "file": "waves.mp3"},
     {"key": "fireplace2", "icon": "bi-fire", "name": _(u"Fireplace 2"), "desc": _(u"Cozy fire"), "file": "fireplace2.mp3"},
@@ -2632,8 +2626,8 @@ def reverse_image_search():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'reverse_image_search', filename)
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             image.save(filepath)
-            # Here you would implement the reverse image search logic
-            flash("Image uploaded successfully! Now implement the search logic.", "success")
+            # TODO: reverse image search logic
+            flash("Image uploaded successfully!Search logic: WIP.", "success")
         else:
             flash("Please upload a valid image file.", "danger")
     return render_template("tools/reverse_image_search.html")

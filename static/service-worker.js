@@ -4,7 +4,7 @@ self.addEventListener("install", (e) => {
 			cache.addAll([
 				"/",
 				"/static/styles.css",
-				// Add more static files as needed
+				// Add more static files here
 			])
 		)
 	);

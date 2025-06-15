@@ -84,7 +84,6 @@ window.addEventListener("pageshow", function () {
 	}
 });
 
-// Tools page instant search/filter with fade transitions and no grid gaps
 document.addEventListener("DOMContentLoaded", function () {
 	const searchInput = document.getElementById("toolSearch");
 	if (!searchInput) return;
@@ -98,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	});
 	function filterTools() {
 		const q = searchInput.value.trim().toLowerCase();
-		const delay = 30; // Slightly faster delay for better responsiveness
+		const delay = 30;
 		let visibleCount = 0;
 
 		// First, add 'hide' class to all cards that should be hidden
@@ -114,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 		});
 
-		// Then, after a brief delay, show cards that should be visible
 		setTimeout(() => {
 			cards.forEach((card, index) => {
 				const name = card.dataset.name ? card.dataset.name.toLowerCase() : "";
@@ -138,7 +136,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		}, 100);
 	}
 
-	// After fade-out transition, set display:none
 	cards.forEach((card) => {
 		card.addEventListener("transitionend", function (e) {
 			if (e.propertyName === "opacity" && card.classList.contains("hide")) {
