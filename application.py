@@ -10,17 +10,19 @@ import base64
 import zipfile
 import csv
 from functools import wraps
+import time
 from datetime import datetime, timezone, timedelta
 
 from flask import (
     Flask, flash, redirect, render_template, request, session, get_flashed_messages,
-    url_for, abort, g, jsonify, send_file, Response
+    url_for, abort, g, jsonify, send_file, Response, after_this_request
 )
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from sqlalchemy.dialects.sqlite import JSON
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+from urllib.parse import quote_plus
 from flask_babel import Babel, gettext as _
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_mail import Mail, Message
@@ -51,6 +53,7 @@ app.config["SESSION_TYPE"] = "null"
 app.config["SESSION_PERMANENT"] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 
 # --- Database Setup ---
@@ -186,8 +189,8 @@ def login_required(f):
     return decorated_function
 
 def allowed_file(filename, types):
-    ext = filename.rsplit('.', 1)[-1].lower()
-    return any(ext in ALLOWED_EXTENSIONS[t] for t in types)
+    ext = filename.rsplit('.', 1)[1].lower()
+    return any(ext in ALLOWED_EXTENSIONS[t] for t in types if t in ALLOWED_EXTENSIONS)
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -781,11 +784,86 @@ TOOL_CATEGORIES = [
 ]
 
 ALLOWED_EXTENSIONS = {
-    "image": {"png", "jpg", "jpeg", "bmp", "gif", "webp"},
+    "image": {"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"},
     "pdf": {"pdf"},
     "text": {"txt", "md", "csv"},
     "doc": {"docx", "doc"},
 }
+
+REVERSE_IMAGE_ENGINES = [
+    {
+        "name": "Google Lens",
+        "url": "https://lens.google.com/upload",
+        "upload": True,
+        "icon": "bi-google"
+    },
+    {
+        "name": "Yandex",
+        "url": "https://yandex.com/images/search?rpt=imageview&url=",
+        "upload": False,
+        "icon": "bi-globe"
+    },
+    {
+        "name": "Bing Visual",
+        "url": "https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=",
+        "upload": False,
+        "icon": "bi-microsoft"
+    },
+    {
+        "name": "TinEye",
+        "url": "https://tineye.com/search/?url=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "IQDB",
+        "url": "https://iqdb.org/?url=",
+        "upload": False,
+        "icon": "bi-image"
+    },
+    {
+        "name": "SauceNAO",
+        "url": "https://saucenao.com/search.php?url=",
+        "upload": False,
+        "icon": "bi-droplet"
+    },
+    {
+        "name": "Picsearch",
+        "url": "https://www.picsearch.com/image?q=",
+        "upload": False,
+        "icon": "bi-image"
+    },
+    {
+        "name": "RevIMG",
+        "url": "https://www.revimg.net/search?q=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Berify",
+        "url": "https://www.berify.com/reverse-image-search/?img=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Image Raider",
+        "url": "https://www.imageraider.com/?q=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Search By Image",
+        "url": "https://www.searchbyimage.com/?url=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Social Searcher",
+        "url": "https://www.social-searcher.com/reverse-image-search/",
+        "upload": True,
+        "icon": "bi-globe"
+    }
+]
 
 @app.route("/tools/unit-converter", methods=["GET", "POST"])
 def unit_converter():
@@ -2617,20 +2695,48 @@ def feedback():
         
     return render_template("feedback.html")
 
-@app.route("/tools/reverse-image-search", methods=["GET", "POST"])
+@app.route("/tools/reverse-image-search", methods=["GET", "POST"]) 
 def reverse_image_search():
+    search_links = []
+    filename = None
+    image_url = None
+
     if request.method == "POST":
         image = request.files.get("image")
-        if image and allowed_file(image.filename, ["images"]):
+
+        if image and image.filename != "" and allowed_file(image.filename, ALLOWED_EXTENSIONS):
             filename = secure_filename(image.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'reverse_image_search', filename)
+
+            # Ensure the directory exists
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             image.save(filepath)
-            # TODO: reverse image search logic
-            flash("Image uploaded successfully!Search logic: WIP.", "success")
+
+            image_url = url_for('static', filename=f"uploads/reverse_image_search/{filename}", _external=True)
+
+            flash("Image uploaded successfully!", "success")
+
+            # Create reverse search URLs
+            for engine in REVERSE_IMAGE_ENGINES:
+                if engine["upload"]:
+                    url = engine["url"]
+                else:
+                    url = f"{engine['url']}{image_url}"
+                search_links.append({
+                    "name": engine["name"],
+                    "url": url,
+                    "icon": engine.get("icon", "bi-search")
+                })
+
         else:
             flash("Please upload a valid image file.", "danger")
-    return render_template("tools/reverse_image_search.html")
+
+    return render_template("tools/reverse_image_search.html", search_links=search_links, filename=filename, image_url=image_url)
+
+
+@app.route("/credit")
+def credits():
+    return render_template("credit.html")
 
 if __name__ == "__main__":
     with app.app_context():

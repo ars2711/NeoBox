@@ -26,17 +26,20 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     />
 
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/static/service-worker.js');
-}
-</script>
+    <link
+      rel="manifest"
+      href="{{ url_for('static', filename='manifest.json') }}"
+    />
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/static/service-worker.js");
+      }
+    </script>
 
     <meta name="theme-color" content="#0d6efd" />
 
     <title>NeoBox | {% block title %}{% endblock %}</title>
-    
+
     <script>
       try {
         const storedTheme = localStorage.getItem("theme") || "light";
@@ -135,46 +138,54 @@ if ('serviceWorker' in navigator) {
     </main>
 
     <footer class="bg-body-tertiary border-top pt-4 mt-auto">
-  <div class="container">
-    <div class="row text-start pb-3">
-      <!-- Column 1: About -->
-      <div class="col-md-3 mb-3">
-        <h5>About NeoBox</h5>
-        <p class="small text-muted">
-          NeoBox is a free and open-source web application designed to help
-          you with your daily tasks. It offers a variety of tools and
-          features to make your life easier.<br>
-          <a href="mailto:arsalancs50@gmail.com">Contact us</a>
-        </p>
-      </div>
-      <!-- Column 2: Site Pages -->
-      <div class="col-md-3 mb-3">
-        <h5>Site Pages</h5>
-        <ul class="list-unstyled">
-          <li><a href="/">Home</a></li>
-          <li><a href="/tools">Tools</a></li>
-          <li><a href="/login">Log In</a></li>
-          <li><a href="/feedback">Feedback</a></li>
-        </ul>
-      </div>
-      <!-- Column 3: My Links -->
-      <div class="col-md-3 mb-3">
-        <h5>My Links</h5>
-        <ul class="list-unstyled">
-          <li>
-            <a href="https://github.com/ars2711" target="_blank">GitHub</a>
-          </li>
-          <li>
-            <a href="https://ko-fi.com/ars27" target="_blank">Buy Me a Coffee</a>
-          </li>
-          <li>
-            <a href="https://www.linkedin.com/in/ars2711/" target="_blank">LinkedIn</a>
-          </li>
-        </ul>
-      </div>
-      <!-- Column 4: Language -->
-      <div class="col-md-3 mb-3">
-        <h5>Language</h5>
+      <div class="container">
+        <div class="row text-start pb-3">
+          <!-- Column 1: About -->
+          <div class="col-md-3 mb-3">
+            <h5>About NeoBox</h5>
+            <p class="small text-muted">
+              NeoBox is a free and open-source web application designed to help
+              you with your daily tasks. It offers a variety of tools and
+              features to make your life easier.<br />
+              <a href="/privacy">Privacy Policy</a>
+              <br />
+              <a href="/terms">Terms and Conditions</a>
+            </p>
+          </div>
+          <!-- Column 2: Site Pages -->
+          <div class="col-md-3 mb-3">
+            <h5>Site Pages</h5>
+            <ul class="list-unstyled">
+              <li><a href="/">Home</a></li>
+              <li><a href="/tools">Tools</a></li>
+              <li><a href="/login">Log In</a></li>
+              <li><a href="/feedback">Feedback</a></li>
+              <li><a href="/credit">Credits</a></li>
+            </ul>
+          </div>
+          <!-- Column 3: My Links -->
+          <div class="col-md-3 mb-3">
+            <h5>My Links</h5>
+            <ul class="list-unstyled">
+              <li>
+                <a href="https://github.com/ars2711" target="_blank">GitHub</a>
+              </li>
+              <li>
+                <a href="https://ko-fi.com/ars27" target="_blank"
+                  >Buy Me a Coffee</a
+                >
+              </li>
+              <li>
+                <a href="https://www.linkedin.com/in/ars2711/" target="_blank"
+                  >LinkedIn</a
+                >
+              </li>
+            </ul>
+          </div>
+          <!-- Column 4: Language -->
+          <div class="col-md-3 mb-3">
+            <h5>Language</h5>
+            <!--
         <form method="get" action="" onChange="if(this.language.value) window.location='/set_language/' + this.language.value;">
           <select name="language" class="form-select form-select-sm" style="max-width: 150px;">
             {% for lang in available_languages %}
@@ -184,16 +195,18 @@ if ('serviceWorker' in navigator) {
             {% endfor %}
           </select>
         </form>
+        -->
+            A language selector will be added soon.
+          </div>
+        </div>
+        <!-- Bottom part: Copyright -->
+        <div class="text-center border-top pt-3 pb-2 small text-muted">
+          &copy; {{ now.year }} NeoBox, Inc. All rights reserved. | Made with
+          &#9829; by
+          <a href="https://github.com/ars2711">Arsalan</a>
+        </div>
       </div>
-    </div>
-    <!-- Bottom part: Copyright -->
-    <div class="text-center border-top pt-3 pb-2 small text-muted">
-      &copy; {{ now.year }} NeoBox, Inc. All rights reserved. | Made with
-      &#9829; by
-      <a href="https://github.com/ars2711">Arsalan</a>
-    </div>
-  </div>
-    <script src="/static/script.js"></script>
-</footer>
+      <script src="/static/script.js"></script>
+    </footer>
   </body>
 </html>

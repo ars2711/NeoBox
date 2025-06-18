@@ -71,14 +71,14 @@ Due to CS50's lectures and simply their simplicity and understanding - it made t
 
 ## 🛠 File Structure Overview
 
-- `app.py` — Main Flask app, routing, models, logic
-- `templates/` — All HTML templates (Jinja2)
-- `static/` — Custom CSS, JS, logos, manifest
-- `translations/` — `.po` and `.mo` files for i18n
-- `helpers.py` — Utility functions (login_required, apology, etc.)
-- `.env` — Environment variables (not committed)
-- `requirements.txt` — Required packages
-- `.gitignore` — Excludes sensitive/runtime files
+- `application.py` : Main Flask app, routing, models, logic
+- `templates/` : All HTML templates (Jinja2)
+- `static/` : Custom CSS, JS, logos, manifest
+- `translations/` : `.po` and `.mo` files for i18n
+- `helpers.py` : Utility functions (login_required, apology, etc.)
+- `.env` : Environment variables (not committed/included)
+- `requirements.txt` : Required packages
+- `.gitignore` : Excludes sensitive/runtime files
 
 ---
 
@@ -92,7 +92,7 @@ Due to CS50's lectures and simply their simplicity and understanding - it made t
 
 ## 🤖 About Copilot & Contributions
 
-Large portions of this project were accelerated using **GitHub Copilot** , particularly during UI scaffolding, form handling, and tool stubs. However, each section was manually reviewed, tested, and understood before integration.
+Large portions of this project were accelerated using **GitHub Copilot**, particularly during UI problems, recurring snippets, form handling, and code bugs. However, each section was manually reviewed, tested, and understood before integration.
 
 > This project would not exist without CS50, but Copilot greatly improved development efficiency.
 
@@ -120,7 +120,7 @@ This project is licensed under the [MIT License](https://chatgpt.com/c/LICENSE).
 ## 📦 Installation & Setup
 
 ```bash
-# Clone the repo
+l# Clone the repo
 git clone https://github.com/yourusername/neobox.git
 cd neobox
 
@@ -132,7 +132,7 @@ source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 
 # Set environment variables (create a .env file)
-FLASK_APP=app.py
+FLASK_APP=application.py
 SECRET_KEY=your-secret
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-password
@@ -153,17 +153,17 @@ flask run
 
 ## 📖 A Note from the Creator
 
-Hey there! I'm Arsalan - the creator of **NeoBox**, and this web app has been my journey through learning and building with Flask, Python, and a whole lot of curiosity. NeoBox started off as just an idea for **CS50's Final Project**, but along the way, it grew to be way more and something that I thought many students and proffesionals alike would highly benefit from.
+Hey there! I'm Arsalan - the creator of **NeoBox**, and this web app has been my journey through learning and building with Flask, Python, and a whole lot of curiosity. NeoBox started off as just an idea for **CS50's Final Project**, but along the way, it grew to be way more and something that I thought many students and proffesionals alike would highly benefit from. While every programmer knows how to make a calculator, I thought of making something a _little_ more...
 
 This project was never about writing perfect code. With the help of Github's Copilot (and some ChatGPT for general things), I was able to learn and write code more efficiently while being on the peak of my creative flow. I made sure to **understand**, **break**, and **fix** everything it suggested because after all; this was _my_ vision. And as I worked, I realized something powerful: building is learning, and sharing is growing, so I present this to you as a gift.
 
 > "It ain't much but it's honest work."
 
-Is NeoBox "done"? Not yet. But it's functional, ambitious, and built with love — and that’s more than enough for me to hit submit proudly.
+Is NeoBox "done"? Not yet. But it's functional, ambitious, and built with love and that’s more than enough for me to hit submit proudly.
 
-Thank you CS50 team for giving me a real reason to chase a dream I didn’t even know I had. This isn’t the end — it’s just the start.
+Thank you CS50 team for giving me a real reason to chase a dream I didn’t even know I had. This isn’t the end; it’s just the start.
 
-— _Arsalan, 2025_
+> _Arsalan, 2025_
 
 ---
 

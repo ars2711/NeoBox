@@ -964,3 +964,8 @@ body {
   color: var(--bs-primary);
   margin-bottom: 1rem;
 }
+
+#dropZone.bg-secondary {
+  background-color: #6c757d; /* Example grey background */
+  border-color: #495057;
+}

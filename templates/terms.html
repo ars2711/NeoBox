@@ -1,69 +1,102 @@
-{% extends "layout.html" %}
-{% block title %}{{ _('Terms of Service') }}{% endblock %}
-{% block main %}
-<div class="container py-4">
-    <div class="terms-content">
-        <h1 class="mb-4">
-            <i class="bi-file-text me-2"></i>{{ _('Terms of Service') }}
-        </h1>
-            
-            <div class="mb-4">
-                <h5>1. {{ _('Acceptance of Terms') }}</h5>
-                <p>{{ _('By accessing and using NeoBox, you accept and agree to be bound by the terms and provision of this agreement.') }}</p>
-            </div>
+{% extends "layout.html" %} {% block title %}{{ _('Terms of Service') }}{%
+endblock %} {% block main %}
+<div class="container py-5 text-start">
+  <h2 class="mb-3">
+    <i class="bi bi-file-earmark-text me-2"></i> {{ _('Terms of Service') }}
+  </h2>
+  <p class="text-muted mb-5">
+    {{ _('Please read these Terms of Service carefully before using NeoBox.') }}
+  </p>
 
-            <div class="mb-4">
-                <h5>2. {{ _('Description of Service') }}</h5>
-                <p>{{ _('NeoBox provides various tools and utilities for productivity, calculations, and data management. We reserve the right to modify or discontinue any service without notice.') }}</p>
-            </div>
+  <section class="mb-4">
+    <h5>1. {{ _('Acceptance of Terms') }}</h5>
+    <p>
+      {{ _('By accessing and using NeoBox, you agree to be bound by these terms
+      and all applicable laws and regulations.') }}
+    </p>
+  </section>
 
-            <div class="mb-4">
-                <h5>3. {{ _('User Accounts') }}</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2">• {{ _('Users must be at least 13 years old to create an account') }}</li>
-                    <li class="mb-2">• {{ _('Users are responsible for maintaining the security of their account') }}</li>
-                    <li class="mb-2">• {{ _('Users must provide accurate and complete information') }}</li>
-                </ul>
-            </div>
+  <section class="mb-4">
+    <h5>2. {{ _('Description of Service') }}</h5>
+    <p>
+      {{ _('NeoBox offers a suite of productivity and utility tools. We reserve
+      the right to modify or discontinue any part of the service at any time.')
+      }}
+    </p>
+  </section>
 
-            <div class="mb-4">
-                <h5>4. {{ _('User Content') }}</h5>
-                <p>{{ _('Users retain all rights to their content. By using NeoBox, you grant us a license to store and process your content as needed to provide our services.') }}</p>
-            </div>
+  <section class="mb-4">
+    <h5>3. {{ _('User Accounts') }}</h5>
+    <ul class="list-group list-group-flush ps-3">
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Minimum age is 13') }}
+      </li>
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('You are responsible for your account’s security') }}
+      </li>
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Information provided must be accurate and up-to-date') }}
+      </li>
+    </ul>
+  </section>
 
-            <div class="mb-4">
-                <h5>5. {{ _('Data Storage') }}</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2">• {{ _('We store user data securely') }}</li>
-                    <li class="mb-2">• {{ _('Data may be deleted after prolonged account inactivity') }}</li>
-                    <li class="mb-2">• {{ _('Regular backups are recommended') }}</li>
-                </ul>
-            </div>
+  <section class="mb-4">
+    <h5>4. {{ _('User Content') }}</h5>
+    <p>
+      {{ _('You retain ownership of your content. By using NeoBox, you grant us
+      permission to store and process your content solely to provide services.')
+      }}
+    </p>
+  </section>
 
-            <div class="mb-4">
-                <h5>6. {{ _('Prohibited Activities') }}</h5>
-                <p>{{ _('Users may not:') }}</p>
-                <ul class="list-unstyled">
-                    <li class="mb-2">• {{ _('Violate any laws or regulations') }}</li>
-                    <li class="mb-2">• {{ _('Interfere with service operation') }}</li>
-                    <li class="mb-2">• {{ _('Share account credentials') }}</li>
-                </ul>
-            </div>
+  <section class="mb-4">
+    <h5>5. {{ _('Data Storage') }}</h5>
+    <ul class="list-group list-group-flush ps-3">
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Data is stored securely and responsibly') }}
+      </li>
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Inactive accounts may be removed after extended periods') }}
+      </li>
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('We recommend backing up your own data regularly') }}
+      </li>
+    </ul>
+  </section>
 
-            <div class="mb-4">
-                <h5>7. {{ _('Termination') }}</h5>
-                <p>{{ _('We reserve the right to terminate accounts that violate these terms or for any other reason at our discretion.') }}</p>
-            </div>
+  <section class="mb-4">
+    <h5>6. {{ _('Prohibited Activities') }}</h5>
+    <p>{{ _('Users are strictly prohibited from:') }}</p>
+    <ul class="list-group list-group-flush ps-3">
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Violating local or international laws') }}
+      </li>
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Disrupting or tampering with service integrity') }}
+      </li>
+      <li class="list-group-item border-0 ps-0">
+        • {{ _('Sharing or selling your account credentials') }}
+      </li>
+    </ul>
+  </section>
 
-            <div class="mb-4">
-                <h5>8. {{ _('Changes to Terms') }}</h5>
-                <p>{{ _('We may modify these terms at any time. Continued use of NeoBox constitutes acceptance of modified terms.') }}</p>
-            </div>
+  <section class="mb-4">
+    <h5>7. {{ _('Termination') }}</h5>
+    <p>
+      {{ _('NeoBox reserves the right to suspend or terminate accounts violating
+      these terms at its sole discretion.') }}
+    </p>
+  </section>
 
-            <hr class="my-4">
+  <section class="mb-4">
+    <h5>8. {{ _('Changes to Terms') }}</h5>
+    <p>
+      {{ _('We may update these Terms of Service from time to time. Continued
+      use of the platform indicates your acceptance of the latest version.') }}
+    </p>
+  </section>
 
-            <p class="text-muted mb-0">{{ _('Last updated: June 1, 2025') }}</p>
-        </div>
-    </div>
+  <hr class="my-4" />
+  <p class="text-muted">{{ _('Last updated: June 15, 2025') }}</p>
 </div>
 {% endblock %}

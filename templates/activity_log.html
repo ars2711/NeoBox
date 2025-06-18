@@ -3,7 +3,7 @@
 <ul class="list-group">
   {% for log in logs %}
   <li class="list-group-item">
-    <b>{{ log.action }}</b> — {{ log.details }}
+    <b>{{ log.action }}</b> : {{ log.details }}
     <span class="text-muted float-end"
       >{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</span
     >

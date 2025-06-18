@@ -154,11 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
 	const btn = document.getElementById("create-passkey");
 
-	if (!btn) {
-		console.error("Button not found!");
-		return;
-	}
-
 	btn.addEventListener("click", async function () {
 		if (!window.PublicKeyCredential) {
 			alert("This browser does not support WebAuthn or Passkeys.");

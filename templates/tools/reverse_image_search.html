@@ -18,16 +18,41 @@
       >
         Drag & drop an image here or click above to select.
       </div>
+      <div class="preview-container mt-3"></div>
+      <div class="form-text text-muted mt-1">
+        Only image files allowed. Max size: 5MB.
+      </div>
     </div>
     <button class="btn btn-primary">Search</button>
   </form>
-  {% if result %}
-  <div class="alert alert-info mt-3">{{ result }}</div>
+
+  {% if search_links %}
+  <hr />
+  <h5 class="mt-4">Search this image on:</h5>
+  <div class="row">
+    {% for link in search_links %}
+    <div class="col-6 col-md-4 mb-3">
+      <a
+        href="{{ link.url }}"
+        target="_blank"
+        class="btn btn-outline-primary w-100 d-flex align-items-center"
+      >
+        <i class="bi {{ link.icon }} me-2"></i> {{ link.name }}
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %} {% if image_url %}
+  <div class="mt-4">
+    <img src="{{ image_url }}" class="img-fluid" alt="Uploaded image" />
+  </div>
   {% endif %}
+
   <div class="alert alert-warning mt-3">
     Uploaded images are stored temporarily and deleted after search.
   </div>
 </div>
+
 <script>
   const dropZone = document.getElementById("dropZone");
   const imageInput = document.getElementById("imageInput");
@@ -44,5 +69,23 @@
     imageInput.files = e.dataTransfer.files;
   });
   dropZone.addEventListener("click", () => imageInput.click());
+
+  // Display image preview before upload
+  imageInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const previewImage = document.createElement("img");
+        previewImage.src = event.target.result;
+        previewImage.classList.add("img-fluid", "mt-3");
+        previewImage.alt = "Image Preview";
+        const previewContainer = document.querySelector(".preview-container");
+        previewContainer.innerHTML = "";
+        previewContainer.appendChild(previewImage);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
 </script>
 {% endblock %}
