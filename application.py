@@ -1,41 +1,62 @@
+# === Load Environment Variables ===
 from dotenv import load_dotenv
 load_dotenv()
 
+# === Standard Library ===
 import os
-import requests
-import random
-import uuid
 import io
-import base64
-import zipfile
 import csv
-from functools import wraps
+import zipfile
+import uuid
 import time
+import base64
+import random
 from datetime import datetime, timezone, timedelta
+from functools import wraps
+from urllib.parse import quote_plus
 
+# === Flask Core ===
 from flask import (
-    Flask, flash, redirect, render_template, request, session, get_flashed_messages,
-    url_for, abort, g, jsonify, send_file, Response, after_this_request
+    Flask, flash, redirect, render_template, request, session, url_for,
+    abort, g, jsonify, send_file, Response, after_this_request, get_flashed_messages
 )
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import text
-from sqlalchemy.dialects.sqlite import JSON
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
-from urllib.parse import quote_plus
+from flask_mail import Mail, Message
 from flask_babel import Babel, gettext as _
 from flask_dance.contrib.google import make_google_blueprint, google
-from flask_mail import Mail, Message
+
+# === Security & File Handling ===
+from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+
+# === Image & PDF ===
 from PIL import Image, ExifTags
 import PyPDF2
-from deep_translator import GoogleTranslator
-from fido2.server import Fido2Server
-from fido2.webauthn import PublicKeyCredentialRpEntity
-from fido2 import cbor
-from markupsafe import Markup
-from sympy import symbols, sympify, integrate, diff, solve, Eq, sin, cos, tan, exp, log, Matrix, asin, acos, atan, acot, asec, acsc, sinh, cosh, tanh, coth, sech, csch, asinh, acosh, atanh, acoth, asech, acsch, cot, sec, csc, pi, E
+
+# === AI & Translation ===
 from openai import OpenAI
 import google.generativeai as genai
+from deep_translator import GoogleTranslator
+
+# === WebAuthn (Passkeys) ===
+from fido2 import cbor
+from fido2.server import Fido2Server
+from fido2.webauthn import PublicKeyCredentialRpEntity
+
+# === Math & Symbolic Computation ===
+from sympy import (
+    symbols, sympify, integrate, diff, solve, Eq,
+    sin, cos, tan, exp, log, Matrix, asin, acos, atan,
+    acot, asec, acsc, sinh, cosh, tanh, coth, sech, csch,
+    asinh, acosh, atanh, acoth, asech, acsch, cot, sec, csc, pi, E
+)
+
+# === SQLAlchemy Extras ===
+from sqlalchemy.sql import text
+from sqlalchemy.dialects.sqlite import JSON
+
+# === HTML/Markup Utilities ===
+from markupsafe import Markup
 
 # --- Configuration ---
 ON_RENDER = os.environ.get('RENDER', None) == 'true'
@@ -208,6 +229,18 @@ def log_activity(user_id, action, details=""):
     db.session.add(log)
     db.session.commit()
 
+# --- OTP Helper Functions ---
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+def send_otp_email(user, otp):
+    msg = Message(
+        subject="Your OTP Verification Code",
+        recipients=[user.email],
+        body=f"Your OTP code is: {otp}\nThis code will expire in 10 minutes."
+    )
+    mail.send(msg)
+
 # --- Context Processors and Hooks ---
 @app.context_processor
 def inject_globals():
@@ -229,15 +262,309 @@ def load_logged_in_user():
     user_id = session.get("user_id")
     g.user = User.query.get(user_id) if user_id else None
 
-# --- Routes ---
-@app.route("/terms")
-def terms():
-    return render_template("terms.html")
+# --- Error Handlers ---
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
 
-@app.route("/privacy")
-def privacy():
-    return render_template("privacy.html")
+# --- Dict Lists ---
+AVAILABLE_LANGUAGES = [
+    {"code": "en", "name": "English"},
+    {"code": "es", "name": "Español"},
+    {"code": "ur", "name": "اردو"},
+    {"code": "ar", "name": "العربية"},
+]
+TOOLS = [
+    # Math & Calculators
+    {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "category": "math", "login_required": False, "description": "Simple arithmetic calculator."},
+    {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "category": "math", "login_required": False, "description": "Advanced calculator for scientific functions."},
+    {"name": "Integration Calculator", "icon": "bi-calculator", "url": "integration-calculator", "category": "math", "login_required": False, "description": "Symbolic and definite integration."},
+    {"name": "Differentiation Calculator", "icon": "bi-calculator", "url": "differentiation-calculator", "category": "math", "login_required": False, "description": "Symbolic differentiation."},
+    {"name": "Equation Solver", "icon": "bi-calculator", "url": "equation-solver", "category": "math", "login_required": False, "description": "Solve algebraic equations."},
+    {"name": "Matrix Calculator", "icon": "bi-grid-3x3-gap", "url": "matrix-calculator", "category": "math", "login_required": False, "description": "Matrix operations (add, multiply, inverse, etc)."},
+    {"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "category": "math", "login_required": False, "description": "Complex number arithmetic."},
+    {"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "category": "math", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
+    {"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "category": "math", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
+    {"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "category": "math", "login_required": False, "description": "Convert numbers between bases."},
+    {"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "category": "math", "login_required": False, "description": "Sine, cosine, tangent, etc."},
+    {"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "category": "math", "login_required": False, "description": "Fraction arithmetic."},
 
+    # Conversion
+    {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "category": "conversion", "login_required": False, "description": "Convert between various units of measurement."},
+    {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "category": "conversion", "login_required": False, "description": "Convert currencies using real-time rates."},
+    {"name": "Flashcards", "icon": "bi-card-list", "url": "flashcards", "category": "productivity", "login_required": False, "description": "Create and study flashcards."},
+
+    # Productivity
+    {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "category": "productivity", "login_required": False, "description": "Boost productivity with Pomodoro sessions."},
+
+    # Time
+    {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "category": "time", "login_required": False, "description": "Set a countdown timer for any task."},
+    {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "category": "time", "login_required": False, "description": "Track elapsed time with a stopwatch."},
+
+    # AI
+    {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "category": "ai", "login_required": False, "description": "Translate text between languages."},
+    
+    # Files
+    {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "category": "files", "login_required": False, "description": "View metadata of uploaded images."},
+
+    # Science
+    {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "category": "science", "login_required": False, "description": "Explore elements and their properties."},
+    {"name": "Gradient Generator", "icon": "bi-palette2", "url": "gradient-generator", "category": "science", "login_required": False, "description": "Create CSS gradients with multiple colors."},
+    {"name": "Palette Generator", "icon": "bi-palette-fill", "url": "palette-generator", "category": "science", "login_required": False, "description": "Generate harmonious color palettes."},
+    {"name": "White Noise Generator", "icon": "bi-soundwave", "url": "white-noise", "category": "science", "login_required": False, "description": "Play white, pink, brown noise and more."},
+    {"name": "Astrology/Star Map", "icon": "bi-stars", "url": "star-map", "category": "science", "login_required": False, "description": "View the night sky from any location."},
+
+    # Other
+    {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "category": "other", "login_required": False, "description": "Quickly search using your favorite search engines."},
+    {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "category": "other", "login_required": False, "description": "Shorten long URLs for easy sharing."},
+    {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "category": "other", "login_required": False, "description": "Create custom redirects for your URLs."},
+]
+WIP_TOOLS = [
+    {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "category": "files", "login_required": False, "description": "Convert files between different formats."},
+    {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "category": "time", "login_required": False, "description": "View current times in cities worldwide."},
+    {"name": "AI Prompt", "icon": "bi-chat-right-dots", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
+    {"name": "Text Summarizer", "icon": "bi-body-text", "url": "ai-summarizer", "category": "ai", "login_required": False, "description": "Summarize long text using AI."},
+    {"name": "Text Paraphraser", "icon": "bi-list-columns-reverse", "url": "ai-paraphraser", "category": "ai", "login_required": False, "description": "Paraphrase text using AI."},
+    {"name": "Code Explainer", "icon": "bi-code-slash", "url": "ai-code-explainer", "category": "ai", "login_required": False, "description": "Explain code using AI."},
+    {"name": "Gemini Prompt", "icon": "bi-google", "url": "ai-gemini-prompt", "category": "ai", "login_required": False, "description": "Ask Gemini (Google AI) anything."},
+    {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "category": "other", "login_required": False, "description": "Find similar images on the web."},
+    {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "category": "productivity", "login_required": True, "description": "Manage your personal tasks and to-dos."},
+    {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "category": "productivity", "login_required": True, "description": "Write and save personal notes."},
+]
+UPCOMING_TOOLS = [
+    {"name": "File Renamer", "icon": "bi-file-earmark-font", "soon": "Renaming soon"},
+    {"name": "Text Encryptor/Decryptor", "icon": "bi-shield-lock", "soon": "Encrypting soon"},
+    {"name": "Image Enlarger", "icon": "bi-arrows-angle-expand", "soon": "Enlarging soon"},
+    {"name": "Daily Routines/Reminders", "icon": "bi-calendar-check", "soon": "Reminding soon"},
+    {"name": "Maps", "icon": "bi-geo-alt", "soon": "Mapping soon"},
+    {"name": "Custom Calendar", "icon": "bi-calendar-range", "soon": "Planning soon"},
+    {"name": "Weather", "icon": "bi-cloud-sun", "soon": "Forecasting soon"},
+    {"name": "Password Manager", "icon": "bi-key", "soon": "Securing soon"},
+    {"name": "QR Code Tools", "icon": "bi-qr-code-scan", "soon": "Scanning soon"},
+    {"name": "Daily Quotes", "icon": "bi-chat-quote", "soon": "Quoting soon"},
+    {"name": "Daily Questions", "icon": "bi-question-circle", "soon": "Questioning soon"},
+    {"name": "PDF Tools", "icon": "bi-file-earmark-pdf", "soon": "PDFing soon"},
+    {"name": "Voice-to-Text", "icon": "bi-mic", "soon": "Listening soon"},
+    {"name": "Text-to-Speech", "icon": "bi-volume-up", "soon": "Speaking soon"},
+    {"name": "Mind-maps/Flowcharts", "icon": "bi-diagram-3", "soon": "Mapping soon"},
+    {"name": "Code Formatter", "icon": "bi-code-slash", "soon": "Formatting soon"},
+    {"name": "Expense Tracker", "icon": "bi-cash-stack", "soon": "Tracking soon"},
+    {"name": "Budget Tracker", "icon": "bi-wallet2", "soon": "Budgeting soon"},
+    {"name": "Habit Tracker", "icon": "bi-check2-circle", "soon": "Habiting soon"},
+    {"name": "Grocery List Manager", "icon": "bi-basket", "soon": "Shopping soon"},
+    {"name": "Health Tracker", "icon": "bi-heart-pulse", "soon": "Monitoring soon"},
+    {"name": "Random Generator", "icon": "bi-shuffle", "soon": "Randomizing soon"},
+    {"name": "Collaborative Notes", "icon": "bi-people", "soon": "Collaborating soon"},
+    {"name": "Basic Drawing", "icon": "bi-brush", "soon": "Drawing soon"},
+    {"name": "Stock/Market Tracker", "icon": "bi-graph-up", "soon": "Analyzing soon"},
+    {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "soon": "Bookmarking soon"},
+    {"name": "World Clock & Meeting Planner", "icon": "bi-globe", "soon": "Planning soon"},
+    {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "soon": "Playing soon"},
+    {"name": "Video/Image Compressor", "icon": "bi-file-earmark-zip", "soon": "Compressing soon"},
+    {"name": "Image Editor", "icon": "bi-image-alt", "soon": "Editing soon"},
+    {"name": "Markdown Editor", "icon": "bi-filetype-md", "soon": "Markdowning soon"},
+    {"name": "JSON Formatter/Validator", "icon": "bi-code-square", "soon": "Validating soon"},
+    {"name": "Text Formatter", "icon": "bi-textarea", "soon": "Formatting soon"},
+    {"name": "Text Reverser", "icon": "bi-arrow-repeat", "soon": "Reversing soon"},
+    {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "soon": "Analyzing soon"},
+    {"name": "Text Expander", "icon": "bi-textarea-t", "soon": "Expanding soon"},
+    {"name": "Text Summarizer", "icon": "bi-textarea-t", "soon": "Summarizing soon"},
+    {"name": "Text Case Converter", "icon": "bi-textarea-resize", "soon": "Converting soon"},
+    {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "soon": "Extracting soon"},
+    {"name": "Focus Session", "icon": "bi-bullseye", "soon": "Focusing soon"},
+    {"name": "Study Laps", "icon": "bi-journal-check", "soon": "Tracking soon"},
+    {"name": "Mood Tracker", "icon": "bi-emoji-smile", "soon": "Mood tracking soon"},
+    {"name": "Screen Color Tool", "icon": "bi-lightbulb", "soon": "Lighting soon"},
+    {"name": "Collaborative Documents", "icon": "bi-file-earmark-text", "soon": "Collaborating soon"},
+    {"name": "Event Planner", "icon": "bi-calendar-event", "soon": "Planning soon"},
+    {"name": "Game Zone", "icon": "bi-controller", "soon": "Gaming soon"},
+    {"name": "Regex Tester", "icon": "bi-slash-square", "soon": "Testing soon"},
+    {"name": "Image Cropper", "icon": "bi-crop", "soon": "Cropping soon"},
+    {"name": "ASCII Art Generator", "icon": "bi-type", "soon": "ASCII soon"},
+    {"name": "BPM Calculator", "icon": "bi-music-note-list", "soon": "Tapping soon"},
+    {"name": "Text Difference Checker", "icon": "bi-file-diff", "soon": "Comparing soon"},
+    {"name": "Age Calculator", "icon": "bi-person-badge", "soon": "Aging soon"},
+    {"name": "Random Quote/Fact Generator", "icon": "bi-lightning", "soon": "Surprising soon"},
+    {"name": "Binary/Hexadecimal Converter", "icon": "bi-123", "soon": "Converting soon"},
+    {"name": "Morse Code Tools", "icon": "bi-dot", "soon": "Morsing soon"},
+    {"name": "Typing Speed Test", "icon": "bi-keyboard", "soon": "Typing soon"},
+    {"name": "Audio Trimmer", "icon": "bi-scissors", "soon": "Trimming soon"},
+    {"name": "HTML Table Generator", "icon": "bi-table", "soon": "Tabling soon"},
+    {"name": "Random Name Picker", "icon": "bi-person-lines-fill", "soon": "Picking soon"},
+    {"name": "Dice", "icon": "bi-dice-5", "soon": "Rolling soon"},
+    {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "soon": "Prompting soon"},
+    {"name": "Daily Affirmations", "icon": "bi-chat-left-text", "soon": "Affirming soon"},
+    {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
+    # TODO: Add more upcoming tools
+]
+TOOL_CATEGORIES = [
+    {"key": "all", "name": "All"},
+    {"key": "math", "name": "Math"},
+    {"key": "science", "name": "Science"},
+    {"key": "productivity", "name": "Productivity"},
+    {"key": "conversion", "name": "Conversion"},
+    {"key": "ai", "name": "AI"},
+    {"key": "files", "name": "Files"},
+    {"key": "time", "name": "Time"},
+    {"key": "other", "name": "Other"},
+]
+ALLOWED_EXTENSIONS = {
+    "image": {"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"},
+    "pdf": {"pdf"},
+    "text": {"txt", "md", "csv"},
+    "doc": {"docx", "doc"},
+}
+REVERSE_IMAGE_ENGINES = [
+    {
+        "name": "Google Lens",
+        "url": "https://lens.google.com/upload",
+        "upload": True,
+        "icon": "bi-google"
+    },
+    {
+        "name": "Yandex",
+        "url": "https://yandex.com/images/search?rpt=imageview&url=",
+        "upload": False,
+        "icon": "bi-globe"
+    },
+    {
+        "name": "Bing Visual",
+        "url": "https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=",
+        "upload": False,
+        "icon": "bi-microsoft"
+    },
+    {
+        "name": "TinEye",
+        "url": "https://tineye.com/search/?url=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "IQDB",
+        "url": "https://iqdb.org/?url=",
+        "upload": False,
+        "icon": "bi-image"
+    },
+    {
+        "name": "SauceNAO",
+        "url": "https://saucenao.com/search.php?url=",
+        "upload": False,
+        "icon": "bi-droplet"
+    },
+    {
+        "name": "Picsearch",
+        "url": "https://www.picsearch.com/image?q=",
+        "upload": False,
+        "icon": "bi-image"
+    },
+    {
+        "name": "RevIMG",
+        "url": "https://www.revimg.net/search?q=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Berify",
+        "url": "https://www.berify.com/reverse-image-search/?img=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Image Raider",
+        "url": "https://www.imageraider.com/?q=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Search By Image",
+        "url": "https://www.searchbyimage.com/?url=",
+        "upload": False,
+        "icon": "bi-search"
+    },
+    {
+        "name": "Social Searcher",
+        "url": "https://www.social-searcher.com/reverse-image-search/",
+        "upload": True,
+        "icon": "bi-globe"
+    }
+    #TODO: Add more reverse image search engines
+]
+WHITE_NOISE_SOUNDS = [
+    {"key": "white", "icon": "bi-soundwave", "name": _(u"White Noise"), "desc": _(u"Classic static"), "file": None},
+    {"key": "pink", "icon": "bi-soundwave", "name": _(u"Pink Noise"), "desc": _(u"Balanced static"), "file": None},
+    {"key": "brown", "icon": "bi-soundwave", "name": _(u"Brown Noise"), "desc": _(u"Deep static"), "file": None},
+    {"key": "rain", "icon": "bi-cloud-drizzle", "name": _(u"Rain"), "desc": _(u"Gentle rain"), "file": "rain.mp3"},
+    {"key": "forest", "icon": "bi-tree", "name": _(u"Forest"), "desc": _(u"Birds & trees"), "file": "forest.mp3"},
+    {"key": "night", "icon": "bi-moon-stars", "name": _(u"Night"), "desc": _(u"Crickets & night air"), "file": "night.mp3"},
+    {"key": "ocean", "icon": "bi-water", "name": _(u"Ocean"), "desc": _(u"Waves"), "file": "ocean.mp3"},
+    {"key": "wind", "icon": "bi-wind", "name": _(u"Wind"), "desc": _(u"Soft wind"), "file": "wind.mp3"},
+    {"key": "fire", "icon": "bi-fire", "name": _(u"Fire"), "desc": _(u"Campfire crackle"), "file": "fire.mp3"},
+    {"key": "thunder", "icon": "bi-cloud-lightning-rain", "name": _(u"Thunderstorm"), "desc": _(u"Rain & thunder"), "file": "thunder.mp3"},
+    {"key": "cafe", "icon": "bi-cup-hot", "name": _(u"Cafe"), "desc": _(u"Coffee shop"), "file": "cafe.mp3"},
+    {"key": "train", "icon": "bi-train-front", "name": _(u"Train"), "desc": _(u"Train ride"), "file": "train.mp3"},
+    {"key": "fan", "icon": "bi-fan", "name": _(u"Fan"), "desc": _(u"Electric fan"), "file": "fan.mp3"},
+    {"key": "fireplace", "icon": "bi-fire", "name": _(u"Fireplace"), "desc": _(u"Indoor fire"), "file": "fireplace.mp3"},
+    {"key": "river", "icon": "bi-droplet", "name": _(u"River"), "desc": _(u"Flowing water"), "file": "river.mp3"},
+    {"key": "birds", "icon": "bi-egg-fried", "name": _(u"Birds"), "desc": _(u"Morning birds"), "file": "birds.mp3"},
+    {"key": "city", "icon": "bi-buildings", "name": _(u"City"), "desc": _(u"Urban ambience"), "file": "city.mp3"},
+    {"key": "library", "icon": "bi-journal-bookmark", "name": _(u"Library"), "desc": _(u"Quiet study"), "file": "library.mp3"},
+    {"key": "rainroof", "icon": "bi-house", "name": _(u"Rain on Roof"), "desc": _(u"Rain hitting roof"), "file": "rainroof.mp3"},
+    {"key": "waves", "icon": "bi-water", "name": _(u"Waves"), "desc": _(u"Sea shore"), "file": "waves.mp3"},
+    {"key": "fireplace2", "icon": "bi-fire", "name": _(u"Fireplace 2"), "desc": _(u"Cozy fire"), "file": "fireplace2.mp3"},
+    {"key": "leaves", "icon": "bi-leaf", "name": _(u"Leaves"), "desc": _(u"Rustling leaves"), "file": "leaves.mp3"},
+    {"key": "stream", "icon": "bi-droplet-half", "name": _(u"Stream"), "desc": _(u"Small creek"), "file": "stream.mp3"},
+    {"key": "waterfall", "icon": "bi-droplet-fill", "name": _(u"Waterfall"), "desc": _(u"Falling water"), "file": "waterfall.mp3"},
+    {"key": "crowd", "icon": "bi-people", "name": _(u"Crowd"), "desc": _(u"People talking"), "file": "crowd.mp3"},
+    {"key": "market", "icon": "bi-shop", "name": _(u"Market"), "desc": _(u"Busy market"), "file": "market.mp3"},
+    {"key": "jungle", "icon": "bi-flower2", "name": _(u"Jungle"), "desc": _(u"Tropical forest"), "file": "jungle.mp3"},
+    {"key": "highway", "icon": "bi-truck", "name": _(u"Highway"), "desc": _(u"Cars passing"), "file": "highway.mp3"},
+    {"key": "subway", "icon": "bi-train-lightrail-front", "name": _(u"Subway"), "desc": _(u"Underground train"), "file": "subway.mp3"},
+    {"key": "trainstation", "icon": "bi-train-freight-front", "name": _(u"Train Station"), "desc": _(u"Station ambience"), "file": "trainstation.mp3"},
+    {"key": "fountain", "icon": "bi-droplet", "name": _(u"Fountain"), "desc": _(u"Water fountain"), "file": "fountain.mp3"},
+    {"key": "windchimes", "icon": "bi-wind", "name": _(u"Wind Chimes"), "desc": _(u"Chimes in wind"), "file": "windchimes.mp3"},
+    {"key": "birdsforest", "icon": "bi-egg-fried", "name": _(u"Birds Forest"), "desc": _(u"Forest birds"), "file": "birdsforest.mp3"},
+    {"key": "night2", "icon": "bi-moon-stars", "name": _(u"Night 2"), "desc": _(u"Night ambience"), "file": "night2.mp3"},
+    {"key": "snow", "icon": "bi-snow", "name": _(u"Snow"), "desc": _(u"Falling snow"), "file": "snow.mp3"},
+    {"key": "typing", "icon": "bi-keyboard", "name": _(u"Typing"), "desc": _(u"Keyboard typing"), "file": "typing.mp3"},
+    {"key": "clock", "icon": "bi-clock", "name": _(u"Clock"), "desc": _(u"Ticking clock"), "file": "clock.mp3"},
+    {"key": "laundry", "icon": "bi-droplet", "name": _(u"Laundry"), "desc": _(u"Washing machine"), "file": "laundry.mp3"},
+    {"key": "vacuum", "icon": "bi-wind", "name": _(u"Vacuum"), "desc": _(u"Vacuum cleaner"), "file": "vacuum.mp3"},
+    {"key": "hairdryer", "icon": "bi-wind", "name": _(u"Hair Dryer"), "desc": _(u"Blowing air"), "file": "hairdryer.mp3"},
+    {"key": "car", "icon": "bi-car-front", "name": _(u"Car Ride"), "desc": _(u"Inside a car"), "file": "car.mp3"},
+    {"key": "plane", "icon": "bi-airplane", "name": _(u"Airplane"), "desc": _(u"In-flight hum"), "file": "plane.mp3"},
+    {"key": "boat", "icon": "bi-water", "name": _(u"Boat"), "desc": _(u"On a boat"), "file": "boat.mp3"},
+    {"key": "heartbeat", "icon": "bi-heart-pulse", "name": _(u"Heartbeat"), "desc": _(u"Heartbeat sound"), "file": "heartbeat.mp3"},
+    {"key": "catpurr", "icon": "bi-emoji-smile", "name": _(u"Cat Purr"), "desc": _(u"Purring cat"), "file": "catpurr.mp3"},
+    {"key": "dogbark", "icon": "bi-emoji-smile", "name": _(u"Dog Bark"), "desc": _(u"Dog barking"), "file": "dogbark.mp3"},
+    {"key": "frog", "icon": "bi-droplet", "name": _(u"Frogs"), "desc": _(u"Frogs croaking"), "file": "frog.mp3"},
+    {"key": "crickets", "icon": "bi-moon-stars", "name": _(u"Crickets"), "desc": _(u"Night crickets"), "file": "crickets.mp3"},
+    {"key": "beach", "icon": "bi-water", "name": _(u"Beach"), "desc": _(u"Beach waves"), "file": "beach.mp3"},
+    {"key": "campfire", "icon": "bi-fire", "name": _(u"Campfire"), "desc": _(u"Outdoor fire"), "file": "campfire.mp3"},
+    {"key": "rainforest", "icon": "bi-tree", "name": _(u"Rainforest"), "desc": _(u"Rainforest ambience"), "file": "rainforest.mp3"},
+    {"key": "windy", "icon": "bi-wind", "name": _(u"Windy"), "desc": _(u"Strong wind"), "file": "windy.mp3"},
+    {"key": "seagulls", "icon": "bi-egg-fried", "name": _(u"Seagulls"), "desc": _(u"Seagulls at sea"), "file": "seagulls.mp3"},
+    {"key": "barn", "icon": "bi-house", "name": _(u"Barn"), "desc": _(u"Barn animals"), "file": "barn.mp3"},
+    {"key": "trainwhistle", "icon": "bi-train-front", "name": _(u"Train Whistle"), "desc": _(u"Train horn"), "file": "trainwhistle.mp3"},
+    {"key": "churchbells", "icon": "bi-bell", "name": _(u"Church Bells"), "desc": _(u"Bells ringing"), "file": "churchbells.mp3"},
+    {"key": "windmill", "icon": "bi-wind", "name": _(u"Windmill"), "desc": _(u"Windmill blades"), "file": "windmill.mp3"},
+    {"key": "rainwindow", "icon": "bi-shop-window", "name": _(u"Rain on Window"), "desc": _(u"Rain hitting glass"), "file": "rainwindow.mp3"},
+    # TODO: Add more white nosie files or sounds
+]
+DAILY_QUOTES = [
+    "Stay positive, work hard, make it happen.",
+    "Success is not for the lazy.",
+    "Dream big and dare to fail.",
+    #TODO: Add more daily quotes
+]
+DAILY_QUESTIONS = [
+    "What is one thing you want to accomplish today?",
+    "What are you grateful for today?",
+    "How will you challenge yourself today?",
+    #TODO: Add more daily questions
+]
+
+# === Routes ===
+# --- Index Route ---
 @app.route("/")
 def index():
     if session.get("user_id"):
@@ -261,6 +588,21 @@ def index():
             db.session.commit()
         count = Visitor.query.count()
         return render_template("landing.html", visitor_count=count, _=_)
+
+# --- Manifest JSON Route ---
+@app.route("/manifest.json")
+def manifest():
+    return send_file("static/manifest.json")
+
+# -- Terms and Conditions Route ---
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+# -- Privacy Policy Route ---
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
 
 # --- Registration Route ---
 @app.route("/register", methods=["GET", "POST"])
@@ -299,7 +641,7 @@ def register():
             username=username,
             email=email,
             phone=phone,
-            dob=dob_obj,  # Use the date object here
+            dob=dob_obj,
             gender=gender,
             hash=hash_pw,
             verified=False,
@@ -308,7 +650,6 @@ def register():
         )
         db.session.add(user)
         db.session.commit()
-        # --- New Verification Logic ---
         verify_token = uuid.uuid4().hex
         user.verify_token = verify_token
         db.session.commit()
@@ -525,12 +866,27 @@ def reset(token):
         return redirect("/login")
     return render_template("reset.html", token=token)
 
+# --- Verify Email Route ---
+@app.route("/verify/<token>")
+def verify(token):
+    user = User.query.filter_by(verify_token=token).first()
+    if user:
+        user.verified = True
+        user.verify_token = None
+        db.session.commit()
+        flash("Email verified! You can now log in.", "success")
+    else:
+        flash("Invalid or expired verification link.", "danger")
+    return redirect("/login")
+
+# --- Logout Route ---
 @app.route("/logout")
 def logout():
     session.clear()
     flash("You have been logged out.", "success")
     return redirect("/login")
 
+# --- Change Password Route ---
 @app.route("/change", methods=["GET", "POST"])
 @login_required
 def change_password():
@@ -564,6 +920,7 @@ def change_password():
 
     return render_template("change.html")
 
+# --- Profile Page Route ---
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
@@ -583,6 +940,26 @@ def profile():
         return redirect("/profile")
     return render_template("profile.html", user=user)
 
+# --- Avatar Upload Route ---
+@app.route("/upload-avatar", methods=["POST"])
+@login_required
+def upload_avatar():
+    user = User.query.get(session["user_id"])
+    if request.method == "POST":
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and allowed_file(file.filename, ['image']):
+                filename = secure_filename(file.filename)
+                path = os.path.join('static/avatars', filename)
+                file.save(path)
+                user.avatar_url = url_for('static', filename=f'avatars/{filename}')
+                db.session.commit()
+                flash("Avatar updated successfully!", "success")
+            else:
+                flash("Invalid file type. Please upload an image.", "danger")
+    return redirect("/profile")
+
+# --- Delete Account Route ---
 @app.route("/delete-account", methods=["POST"])
 @login_required
 def delete_account():
@@ -594,6 +971,140 @@ def delete_account():
         flash("Account deleted successfully.", "success")
     return redirect("/register")
 
+# --- Google OAuth Login Route ---
+@app.route("/login/google")
+def login_google():
+    if not google.authorized:
+        flash("Google authorization failed. Please try again.", "danger")
+        return redirect(url_for("google.login"))
+    resp = google.get("/oauth2/v2/userinfo")
+    if not resp.ok:
+        flash("Failed to fetch user info from Google.", "danger")
+        return redirect("/login")
+    info = resp.json()
+    google_id = info.get("id")
+    email = info.get("email")
+    name = info.get("name")
+    avatar_url = info.get("picture")
+    if not email:
+        flash("Google account did not return an email address.", "danger")
+        return redirect("/login")
+
+    # If user is logged in, link Google account
+    if session.get("user_id"):
+        user = User.query.get(session["user_id"])
+        if user.google_id and user.google_id != google_id:
+            flash("This account is already linked to another Google account.", "danger")
+        else:
+            user.google_id = google_id
+            if avatar_url:
+                user.avatar_url = avatar_url
+            db.session.commit()
+            flash("Google account linked!", "success")
+        return redirect("/profile")
+
+    # If not logged in, try to find user by google_id or email
+    user = User.query.filter((User.google_id == google_id) | (User.email == email)).first()
+    if user:
+        if not user.google_id:
+            user.google_id = google_id
+            db.session.commit()
+        session["user_id"] = user.id
+        flash("Logged in with Google!", "success")
+        return redirect("/")
+    else:
+        # Register new user with Google info
+        username = email.split("@")[0]
+        # Ensure username is unique
+        base_username = username
+        i = 1
+        while User.query.filter_by(username=username).first():
+            username = f"{base_username}{i}"
+            i += 1
+        user = User(
+            username=username,
+            email=email,
+            google_id=google_id,
+            avatar_url=avatar_url,
+            hash=generate_password_hash(os.urandom(16).hex()),  # Dummy password
+            created_at=datetime.now(timezone.utc)
+        )
+        db.session.add(user)
+        db.session.commit()
+        session["user_id"] = user.id
+        flash("Registered and logged in with Google!", "success")
+        return redirect("/")
+
+# --- Notifications Route ---
+@app.route("/notifications")
+@login_required
+def notifications():
+    notes = Notification.query.filter_by(user_id=session["user_id"]).order_by(Notification.created_at.desc()).all()
+    return render_template("notifications.html", notes=notes)
+
+# --- Activity Log Route ---
+@app.route("/activity-log")
+@login_required
+def activity_log():
+    logs = ActivityLog.query.filter_by(user_id=session["user_id"]).order_by(ActivityLog.timestamp.desc()).all()
+    return render_template("activity_log.html", logs=logs)
+
+# --- Admin Routes ---
+@app.route("/admin")
+@login_required
+def admin():
+    user = User.query.get(session["user_id"])
+    if not user.is_admin:
+        abort(403)
+    users = User.query.all()
+    feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
+    return render_template("admin.html", users=users, feedbacks=feedbacks)
+
+@app.route("/admin/promote/<int:user_id>")
+@login_required
+def admin_promote(user_id):
+    user = User.query.get(session["user_id"])
+    if not user.is_admin:
+        abort(403)
+    target = User.query.get(user_id)
+    if target:
+        target.is_admin = True
+        db.session.commit()
+        flash("User promoted to admin.", "success")
+    return redirect("/admin")
+
+@app.route("/admin/demote/<int:user_id>")
+@login_required
+def admin_demote(user_id):
+    user = User.query.get(session["user_id"])
+    if not user.is_admin:
+        abort(403)
+    target = User.query.get(user_id)
+    if target and target.id != user.id:
+        target.is_admin = False
+        db.session.commit()
+        flash("User demoted.", "warning")
+    return redirect("/admin")
+
+@app.route("/admin/delete/<int:user_id>")
+@login_required
+def admin_delete(user_id):
+    user = User.query.get(session["user_id"])
+    if not user.is_admin:
+        abort(403)
+    target = User.query.get(user_id)
+    if target and target.id != user.id:
+        db.session.delete(target)
+        db.session.commit()
+        flash("User deleted.", "danger")
+    return redirect("/admin")
+
+@app.route("/api/user/<int:user_id>")
+def api_user(user_id):
+    user = User.query.get(user_id)
+    return {"username": user.username, "email": user.email}
+
+# --- Settings Route ---
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -615,18 +1126,62 @@ def settings():
     ).mappings().fetchone()
     return render_template("settings.html", user=user)
 
-@app.route("/verify/<token>")
-def verify(token):
-    user = User.query.filter_by(verify_token=token).first()
-    if user:
-        user.verified = True
-        user.verify_token = None
-        db.session.commit()
-        flash("Email verified! You can now log in.", "success")
-    else:
-        flash("Invalid or expired verification link.", "danger")
-    return redirect("/login")
+# --- Passkey Registration and Login Routes ---
+@app.route("/passkey/register/begin", methods=["POST"])
+@login_required
+def passkey_register_begin():
+    user = User.query.get(session["user_id"])
+    user_id = str(user.id).encode()
+    registration_data, state = fido2_server.register_begin(
+        {
+            "id": user_id,
+            "name": user.username,
+            "displayName": user.username,
+        },
+        user.passkeys or [],
+        user_verification="preferred"
+    )
+    session["fido2_state"] = state
+    return cbor.encode(registration_data)
 
+@app.route("/passkey/register/complete", methods=["POST"])
+@login_required
+def passkey_register_complete():
+    user = User.query.get(session["user_id"])
+    data = cbor.decode(request.get_data())
+    state = session.pop("fido2_state")
+    auth_data = fido2_server.register_complete(state, data["clientDataJSON"], data["attestationObject"])
+    # Store credential
+    creds = user.passkeys or []
+    creds.append(auth_data.credential_data.__dict__)
+    user.passkeys = creds
+    db.session.commit()
+    return jsonify({"status": "ok"})
+
+@app.route("/passkey/login/begin", methods=["POST"])
+def passkey_login_begin():
+    identifier = request.json.get("identifier")
+    user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
+    if not user or not user.passkeys:
+        return jsonify({"error": "No passkey registered"}), 400
+    auth_data, state = fido2_server.authenticate_begin(user.passkeys)
+    session["fido2_login_state"] = state
+    session["fido2_login_user"] = user.id
+    return cbor.encode(auth_data)
+
+@app.route("/passkey/login/complete", methods=["POST"])
+def passkey_login_complete():
+    user = User.query.get(session.get("fido2_login_user"))
+    if not user:
+        return jsonify({"error": "User not found"}), 400
+    data = cbor.decode(request.get_data())
+    state = session.pop("fido2_login_state")
+    creds = user.passkeys
+    fido2_server.authenticate_complete(state, creds, data["credentialId"], data["clientDataJSON"], data["authenticatorData"], data["signature"])
+    session["user_id"] = user.id
+    return jsonify({"status": "ok"})
+
+# --- Language Setting Route ---
 @app.route("/set_language/<lang>")
 def set_language(lang):
     session["lang"] = lang
@@ -638,234 +1193,79 @@ def set_language(lang):
         db.session.commit()
     return redirect(request.referrer or "/")
 
-AVAILABLE_LANGUAGES = [
-    {"code": "en", "name": "English"},
-    {"code": "es", "name": "Español"},
-    {"code": "ur", "name": "اردو"},
-    {"code": "ar", "name": "العربية"},
-]
+# --- Feedback (tool) Routes ---
+@app.route("/feedback", methods=["GET", "POST"])
+def feedback():
+    if request.method == "POST":
+        email = request.form.get("email")
+        rating = request.form.get("rating")
+        message = request.form.get("message")
+        category = request.form.get("category")
+        code = request.form.get("code")
+        
+        # Basic validation
+        if not email or not rating or not message:
+            flash("All required fields must be filled out.", "danger")
+            return render_template("feedback.html")
+        
+        # File handling
+        screenshot = request.files.get("screenshot")
+        screenshot_url = None
+        
+        if screenshot and allowed_file(screenshot.filename, ["images"]):
+            filename = secure_filename(screenshot.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'feedback', filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            screenshot.save(filepath)
+            screenshot_url = url_for('static', filename=f'uploads/feedback/{filename}')
+        
+        # Create feedback entry
+        feedback = Feedback(
+            user_id=session.get("user_id"),
+            email=email,
+            rating=int(rating),
+            message=message,
+            category=category,
+            screenshot_url=screenshot_url,
+            code=code
+        )
+        
+        db.session.add(feedback)
+        db.session.commit()
+        
+        # Log activity if user is logged in
+        if session.get("user_id"):
+            log_activity(session["user_id"], "submitted_feedback", f"Rating: {rating}")
+        
+        flash("Thank you for your feedback!", "success")
+        return redirect(url_for("feedback"))
+        
+    return render_template("feedback.html")
 
-TOOLS = [
-    # Math & Calculators
-    {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "category": "math", "login_required": False, "description": "Simple arithmetic calculator."},
-    {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "category": "math", "login_required": False, "description": "Advanced calculator for scientific functions."},
-    {"name": "Integration Calculator", "icon": "bi-calculator", "url": "integration-calculator", "category": "math", "login_required": False, "description": "Symbolic and definite integration."},
-    {"name": "Differentiation Calculator", "icon": "bi-calculator", "url": "differentiation-calculator", "category": "math", "login_required": False, "description": "Symbolic differentiation."},
-    {"name": "Equation Solver", "icon": "bi-calculator", "url": "equation-solver", "category": "math", "login_required": False, "description": "Solve algebraic equations."},
-    {"name": "Matrix Calculator", "icon": "bi-grid-3x3-gap", "url": "matrix-calculator", "category": "math", "login_required": False, "description": "Matrix operations (add, multiply, inverse, etc)."},
-    {"name": "Complex Number Calculator", "icon": "bi-diagram-3", "url": "complex-calculator", "category": "math", "login_required": False, "description": "Complex number arithmetic."},
-    {"name": "Polynomial Calculator", "icon": "bi-diagram-2", "url": "polynomial-calculator", "category": "math", "login_required": False, "description": "Roots, evaluation, derivative, integral."},
-    {"name": "Statistics Calculator", "icon": "bi-bar-chart", "url": "statistics-calculator", "category": "math", "login_required": False, "description": "Mean, median, mode, stdev, variance."},
-    {"name": "Base Converter", "icon": "bi-123", "url": "base-converter", "category": "math", "login_required": False, "description": "Convert numbers between bases."},
-    {"name": "Trigonometry Calculator", "icon": "bi-activity", "url": "trigonometry-calculator", "category": "math", "login_required": False, "description": "Sine, cosine, tangent, etc."},
-    {"name": "Fraction Calculator", "icon": "bi-slash-square", "url": "fraction-calculator", "category": "math", "login_required": False, "description": "Fraction arithmetic."},
+# --- Credits/Accreditations Route ---
+@app.route("/credit")
+def credits():
+    return render_template("credit.html")
 
-    # Conversion
-    {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "category": "conversion", "login_required": False, "description": "Convert between various units of measurement."},
-    {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "category": "conversion", "login_required": False, "description": "Convert currencies using real-time rates."},
-    {"name": "Flashcards", "icon": "bi-card-list", "url": "flashcards", "category": "productivity", "login_required": False, "description": "Create and study flashcards."},
-
-    # Productivity
-    {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "category": "productivity", "login_required": False, "description": "Boost productivity with Pomodoro sessions."},
-
-    # Time
-    {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "category": "time", "login_required": False, "description": "Set a countdown timer for any task."},
-    {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "category": "time", "login_required": False, "description": "Track elapsed time with a stopwatch."},
-
-    # AI
-    {"name": "Text Translator", "icon": "bi-translate", "url": "translator", "category": "ai", "login_required": False, "description": "Translate text between languages."},
+# --- Tools Page Route ---
+@app.route("/tools")
+def tools():
+    logged_in = bool(session.get("user_id"))
+    query = request.args.get("q", "").strip().lower()
+    filtered_tools = TOOLS
+    if query:
+        filtered_tools = [tool for tool in TOOLS if query in tool["name"].lower()]
+    return render_template(
+        "tools.html",
+        tools=filtered_tools,
+        upcoming_tools=UPCOMING_TOOLS,
+        wip_tools=WIP_TOOLS,
+        logged_in=logged_in,
+        query=query,
+        tool_categories=TOOL_CATEGORIES
+    )
     
-    # Files
-    {"name": "Image Metadata Viewer", "icon": "bi-info-circle", "url": "image-metadata", "category": "files", "login_required": False, "description": "View metadata of uploaded images."},
-
-    # Science
-    {"name": "Interactive Periodic Table", "icon": "bi-tablet", "url": "periodic-table", "category": "science", "login_required": False, "description": "Explore elements and their properties."},
-    {"name": "Gradient Generator", "icon": "bi-palette2", "url": "gradient-generator", "category": "science", "login_required": False, "description": "Create CSS gradients with multiple colors."},
-    {"name": "Palette Generator", "icon": "bi-palette-fill", "url": "palette-generator", "category": "science", "login_required": False, "description": "Generate harmonious color palettes."},
-    {"name": "White Noise Generator", "icon": "bi-soundwave", "url": "white-noise", "category": "science", "login_required": False, "description": "Play white, pink, brown noise and more."},
-    {"name": "Astrology/Star Map", "icon": "bi-stars", "url": "star-map", "category": "science", "login_required": False, "description": "View the night sky from any location."},
-
-    # Other
-    {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "category": "other", "login_required": False, "description": "Quickly search using your favorite search engines."},
-    {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "category": "other", "login_required": False, "description": "Shorten long URLs for easy sharing."},
-    {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "category": "other", "login_required": False, "description": "Create custom redirects for your URLs."},
-]
-
-WIP_TOOLS = [
-    {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "category": "files", "login_required": False, "description": "Convert files between different formats."},
-    {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "category": "time", "login_required": False, "description": "View current times in cities worldwide."},
-    {"name": "AI Prompt", "icon": "bi-chat-right-dots", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
-    {"name": "Text Summarizer", "icon": "bi-body-text", "url": "ai-summarizer", "category": "ai", "login_required": False, "description": "Summarize long text using AI."},
-    {"name": "Text Paraphraser", "icon": "bi-list-columns-reverse", "url": "ai-paraphraser", "category": "ai", "login_required": False, "description": "Paraphrase text using AI."},
-    {"name": "Code Explainer", "icon": "bi-code-slash", "url": "ai-code-explainer", "category": "ai", "login_required": False, "description": "Explain code using AI."},
-    {"name": "Gemini Prompt", "icon": "bi-google", "url": "ai-gemini-prompt", "category": "ai", "login_required": False, "description": "Ask Gemini (Google AI) anything."},
-    {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "category": "other", "login_required": False, "description": "Find similar images on the web."},
-    {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "category": "productivity", "login_required": True, "description": "Manage your personal tasks and to-dos."},
-    {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "category": "productivity", "login_required": True, "description": "Write and save personal notes."},
-]
-
-UPCOMING_TOOLS = [
-    
-      {"name": "File Renamer", "icon": "bi-file-earmark-font", "soon": "Renaming soon"},
-      {"name": "Text Encryptor/Decryptor", "icon": "bi-shield-lock", "soon": "Encrypting soon"},
-      {"name": "Image Enlarger", "icon": "bi-arrows-angle-expand", "soon": "Enlarging soon"},
-      {"name": "Daily Routines/Reminders", "icon": "bi-calendar-check", "soon": "Reminding soon"},
-      {"name": "Maps", "icon": "bi-geo-alt", "soon": "Mapping soon"},
-      {"name": "Custom Calendar", "icon": "bi-calendar-range", "soon": "Planning soon"},
-      {"name": "Weather", "icon": "bi-cloud-sun", "soon": "Forecasting soon"},
-      {"name": "Password Manager", "icon": "bi-key", "soon": "Securing soon"},
-      {"name": "QR Code Tools", "icon": "bi-qr-code-scan", "soon": "Scanning soon"},
-      {"name": "Daily Quotes", "icon": "bi-chat-quote", "soon": "Quoting soon"},
-      {"name": "Daily Questions", "icon": "bi-question-circle", "soon": "Questioning soon"},
-      {"name": "PDF Tools", "icon": "bi-file-earmark-pdf", "soon": "PDFing soon"},
-      {"name": "Voice-to-Text", "icon": "bi-mic", "soon": "Listening soon"},
-      {"name": "Text-to-Speech", "icon": "bi-volume-up", "soon": "Speaking soon"},
-      {"name": "Mind-maps/Flowcharts", "icon": "bi-diagram-3", "soon": "Mapping soon"},
-      {"name": "Code Formatter", "icon": "bi-code-slash", "soon": "Formatting soon"},
-      {"name": "Expense Tracker", "icon": "bi-cash-stack", "soon": "Tracking soon"},
-      {"name": "Budget Tracker", "icon": "bi-wallet2", "soon": "Budgeting soon"},
-      {"name": "Habit Tracker", "icon": "bi-check2-circle", "soon": "Habiting soon"},
-      {"name": "Grocery List Manager", "icon": "bi-basket", "soon": "Shopping soon"},
-      {"name": "Health Tracker", "icon": "bi-heart-pulse", "soon": "Monitoring soon"},
-      {"name": "Random Generator", "icon": "bi-shuffle", "soon": "Randomizing soon"},
-      {"name": "Collaborative Notes", "icon": "bi-people", "soon": "Collaborating soon"},
-      {"name": "Basic Drawing", "icon": "bi-brush", "soon": "Drawing soon"},
-      {"name": "Stock/Market Tracker", "icon": "bi-graph-up", "soon": "Analyzing soon"},
-      {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "soon": "Bookmarking soon"},
-      {"name": "World Clock & Meeting Planner", "icon": "bi-globe", "soon": "Planning soon"},
-      {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "soon": "Playing soon"},
-      {"name": "Video/Image Compressor", "icon": "bi-file-earmark-zip", "soon": "Compressing soon"},
-      {"name": "Image Editor", "icon": "bi-image-alt", "soon": "Editing soon"},
-      {"name": "Markdown Editor", "icon": "bi-filetype-md", "soon": "Markdowning soon"},
-      {"name": "JSON Formatter/Validator", "icon": "bi-code-square", "soon": "Validating soon"},
-      {"name": "Text Formatter", "icon": "bi-textarea", "soon": "Formatting soon"},
-      {"name": "Text Reverser", "icon": "bi-arrow-repeat", "soon": "Reversing soon"},
-      {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "soon": "Analyzing soon"},
-      {"name": "Text Expander", "icon": "bi-textarea-t", "soon": "Expanding soon"},
-      {"name": "Text Summarizer", "icon": "bi-textarea-t", "soon": "Summarizing soon"},
-      {"name": "Text Case Converter", "icon": "bi-textarea-resize", "soon": "Converting soon"},
-      {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "soon": "Extracting soon"},
-      {"name": "Focus Session", "icon": "bi-bullseye", "soon": "Focusing soon"},
-      {"name": "Study Laps", "icon": "bi-journal-check", "soon": "Tracking soon"},
-      {"name": "Mood Tracker", "icon": "bi-emoji-smile", "soon": "Mood tracking soon"},
-      {"name": "Screen Color Tool", "icon": "bi-lightbulb", "soon": "Lighting soon"},
-      {"name": "Collaborative Documents", "icon": "bi-file-earmark-text", "soon": "Collaborating soon"},
-      {"name": "Event Planner", "icon": "bi-calendar-event", "soon": "Planning soon"},
-      {"name": "Game Zone", "icon": "bi-controller", "soon": "Gaming soon"},
-      {"name": "Regex Tester", "icon": "bi-slash-square", "soon": "Testing soon"},
-      {"name": "Image Cropper", "icon": "bi-crop", "soon": "Cropping soon"},
-      {"name": "ASCII Art Generator", "icon": "bi-type", "soon": "ASCII soon"},
-      {"name": "BPM Calculator", "icon": "bi-music-note-list", "soon": "Tapping soon"},
-      {"name": "Text Difference Checker", "icon": "bi-file-diff", "soon": "Comparing soon"},
-      {"name": "Age Calculator", "icon": "bi-person-badge", "soon": "Aging soon"},
-      {"name": "Random Quote/Fact Generator", "icon": "bi-lightning", "soon": "Surprising soon"},
-      {"name": "Binary/Hexadecimal Converter", "icon": "bi-123", "soon": "Converting soon"},
-      {"name": "Morse Code Tools", "icon": "bi-dot", "soon": "Morsing soon"},
-      {"name": "Typing Speed Test", "icon": "bi-keyboard", "soon": "Typing soon"},
-      {"name": "Audio Trimmer", "icon": "bi-scissors", "soon": "Trimming soon"},
-      {"name": "HTML Table Generator", "icon": "bi-table", "soon": "Tabling soon"},
-      {"name": "Random Name Picker", "icon": "bi-person-lines-fill", "soon": "Picking soon"},
-      {"name": "Dice", "icon": "bi-dice-5", "soon": "Rolling soon"},
-      {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "soon": "Prompting soon"},
-      {"name": "Daily Affirmations", "icon": "bi-chat-left-text", "soon": "Affirming soon"},
-      {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
-    # more upcoming tools here
-]
-
-TOOL_CATEGORIES = [
-    {"key": "all", "name": "All"},
-    {"key": "math", "name": "Math"},
-    {"key": "science", "name": "Science"},
-    {"key": "productivity", "name": "Productivity"},
-    {"key": "conversion", "name": "Conversion"},
-    {"key": "ai", "name": "AI"},
-    {"key": "files", "name": "Files"},
-    {"key": "time", "name": "Time"},
-    {"key": "other", "name": "Other"},
-]
-
-ALLOWED_EXTENSIONS = {
-    "image": {"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"},
-    "pdf": {"pdf"},
-    "text": {"txt", "md", "csv"},
-    "doc": {"docx", "doc"},
-}
-
-REVERSE_IMAGE_ENGINES = [
-    {
-        "name": "Google Lens",
-        "url": "https://lens.google.com/upload",
-        "upload": True,
-        "icon": "bi-google"
-    },
-    {
-        "name": "Yandex",
-        "url": "https://yandex.com/images/search?rpt=imageview&url=",
-        "upload": False,
-        "icon": "bi-globe"
-    },
-    {
-        "name": "Bing Visual",
-        "url": "https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=",
-        "upload": False,
-        "icon": "bi-microsoft"
-    },
-    {
-        "name": "TinEye",
-        "url": "https://tineye.com/search/?url=",
-        "upload": False,
-        "icon": "bi-search"
-    },
-    {
-        "name": "IQDB",
-        "url": "https://iqdb.org/?url=",
-        "upload": False,
-        "icon": "bi-image"
-    },
-    {
-        "name": "SauceNAO",
-        "url": "https://saucenao.com/search.php?url=",
-        "upload": False,
-        "icon": "bi-droplet"
-    },
-    {
-        "name": "Picsearch",
-        "url": "https://www.picsearch.com/image?q=",
-        "upload": False,
-        "icon": "bi-image"
-    },
-    {
-        "name": "RevIMG",
-        "url": "https://www.revimg.net/search?q=",
-        "upload": False,
-        "icon": "bi-search"
-    },
-    {
-        "name": "Berify",
-        "url": "https://www.berify.com/reverse-image-search/?img=",
-        "upload": False,
-        "icon": "bi-search"
-    },
-    {
-        "name": "Image Raider",
-        "url": "https://www.imageraider.com/?q=",
-        "upload": False,
-        "icon": "bi-search"
-    },
-    {
-        "name": "Search By Image",
-        "url": "https://www.searchbyimage.com/?url=",
-        "upload": False,
-        "icon": "bi-search"
-    },
-    {
-        "name": "Social Searcher",
-        "url": "https://www.social-searcher.com/reverse-image-search/",
-        "upload": True,
-        "icon": "bi-globe"
-    }
-]
-
+# --- Unit Converter (tool) Route ---
 @app.route("/tools/unit-converter", methods=["GET", "POST"])
 def unit_converter():
     categories = {
@@ -1076,6 +1476,7 @@ def unit_converter():
 
 import requests
 
+# --- Currency Converter (tool) Route ---
 @app.route("/tools/currency-converter", methods=["GET", "POST"])
 def currency_converter():
     currencies = []
@@ -1105,10 +1506,12 @@ def currency_converter():
         currencies=currencies
     )
 
+# --- Scientific Calculator (tool) Route ---
 @app.route("/tools/scientific-calculator")
 def scientific_calculator():
     return render_template("tools/scientific_calculator.html")
 
+# --- To-Do List (tool) Route ---
 @app.route("/tools/todo", methods=["GET", "POST"])
 @login_required
 def todo():
@@ -1121,6 +1524,7 @@ def todo():
     todos = Todo.query.filter_by(user_id=session["user_id"]).order_by(Todo.due_date).all()
     return render_template("tools/todo.html", todos=todos)
 
+# --- Note-taking (tool) Route ---
 @app.route("/tools/notes", methods=["GET", "POST"])
 @login_required
 def notes():
@@ -1132,6 +1536,7 @@ def notes():
     notes = Note.query.filter_by(user_id=session["user_id"]).order_by(Note.created_at.desc()).all()
     return render_template("tools/notes.html", notes=notes)
 
+# --- Notes and To-Do Export Routes ---
 @app.route("/export/notes")
 @login_required
 def export_notes():
@@ -1156,162 +1561,39 @@ def export_todos():
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="todos.csv", mimetype="text/csv")
 
-@app.route("/tools")
-def tools():
-    logged_in = bool(session.get("user_id"))
-    query = request.args.get("q", "").strip().lower()
-    filtered_tools = TOOLS
-    if query:
-        filtered_tools = [tool for tool in TOOLS if query in tool["name"].lower()]
-    return render_template(
-        "tools.html",
-        tools=filtered_tools,
-        upcoming_tools=UPCOMING_TOOLS,
-        wip_tools=WIP_TOOLS,
-        logged_in=logged_in,
-        query=query,
-        tool_categories=TOOL_CATEGORIES
-    )
-
-@app.route("/login/google")
-def login_google():
-    if not google.authorized:
-        flash("Google authorization failed. Please try again.", "danger")
-        return redirect(url_for("google.login"))
-    resp = google.get("/oauth2/v2/userinfo")
-    if not resp.ok:
-        flash("Failed to fetch user info from Google.", "danger")
-        return redirect("/login")
-    info = resp.json()
-    google_id = info.get("id")
-    email = info.get("email")
-    name = info.get("name")
-    avatar_url = info.get("picture")
-    if not email:
-        flash("Google account did not return an email address.", "danger")
-        return redirect("/login")
-
-    # If user is logged in, link Google account
-    if session.get("user_id"):
-        user = User.query.get(session["user_id"])
-        if user.google_id and user.google_id != google_id:
-            flash("This account is already linked to another Google account.", "danger")
-        else:
-            user.google_id = google_id
-            if avatar_url:
-                user.avatar_url = avatar_url
-            db.session.commit()
-            flash("Google account linked!", "success")
-        return redirect("/profile")
-
-    # If not logged in, try to find user by google_id or email
-    user = User.query.filter((User.google_id == google_id) | (User.email == email)).first()
-    if user:
-        if not user.google_id:
-            user.google_id = google_id
-            db.session.commit()
-        session["user_id"] = user.id
-        flash("Logged in with Google!", "success")
-        return redirect("/")
-    else:
-        # Register new user with Google info
-        username = email.split("@")[0]
-        # Ensure username is unique
-        base_username = username
-        i = 1
-        while User.query.filter_by(username=username).first():
-            username = f"{base_username}{i}"
-            i += 1
-        user = User(
-            username=username,
-            email=email,
-            google_id=google_id,
-            avatar_url=avatar_url,
-            hash=generate_password_hash(os.urandom(16).hex()),  # Dummy password
-            created_at=datetime.now(timezone.utc)
-        )
-        db.session.add(user)
+# --- Notes and To-Do Import Routes ---
+@app.route("/import/notes", methods=["POST"])
+@login_required
+def import_notes():
+    file = request.files.get("file")
+    if file:
+        reader = csv.DictReader(io.StringIO(file.read().decode()))
+        for row in reader:
+            note = Note(user_id=session["user_id"], content=row["content"])
+            db.session.add(note)
         db.session.commit()
-        session["user_id"] = user.id
-        flash("Registered and logged in with Google!", "success")
-        return redirect("/")
+        flash("Notes imported!", "success")
+    return redirect("/tools/notes")
 
-@app.route("/notifications")
+@app.route("/import/todos", methods=["POST"])
 @login_required
-def notifications():
-    notes = Notification.query.filter_by(user_id=session["user_id"]).order_by(Notification.created_at.desc()).all()
-    return render_template("notifications.html", notes=notes)
-
-@app.route("/admin")
-@login_required
-def admin():
-    user = User.query.get(session["user_id"])
-    if not user.is_admin:
-        abort(403)
-    users = User.query.all()
-    feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
-    return render_template("admin.html", users=users, feedbacks=feedbacks)
-
-@app.route("/admin/promote/<int:user_id>")
-@login_required
-def admin_promote(user_id):
-    user = User.query.get(session["user_id"])
-    if not user.is_admin:
-        abort(403)
-    target = User.query.get(user_id)
-    if target:
-        target.is_admin = True
+def import_todos():
+    file = request.files.get("file")
+    if file:
+        reader = csv.DictReader(io.StringIO(file.read().decode()))
+        for row in reader:
+            todo = Todo(
+                user_id=session["user_id"],
+                content=row["content"],
+                due_date=row.get("due_date"),
+                completed=row.get("completed") == "True"
+            )
+            db.session.add(todo)
         db.session.commit()
-        flash("User promoted to admin.", "success")
-    return redirect("/admin")
+        flash("Todos imported!", "success")
+    return redirect("/tools/todo")
 
-@app.route("/admin/demote/<int:user_id>")
-@login_required
-def admin_demote(user_id):
-    user = User.query.get(session["user_id"])
-    if not user.is_admin:
-        abort(403)
-    target = User.query.get(user_id)
-    if target and target.id != user.id:
-        target.is_admin = False
-        db.session.commit()
-        flash("User demoted.", "warning")
-    return redirect("/admin")
-
-@app.route("/admin/delete/<int:user_id>")
-@login_required
-def admin_delete(user_id):
-    user = User.query.get(session["user_id"])
-    if not user.is_admin:
-        abort(403)
-    target = User.query.get(user_id)
-    if target and target.id != user.id:
-        db.session.delete(target)
-        db.session.commit()
-        flash("User deleted.", "danger")
-    return redirect("/admin")
-
-@app.route("/api/user/<int:user_id>")
-def api_user(user_id):
-    user = User.query.get(user_id)
-    return {"username": user.username, "email": user.email}
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("404.html"), 404
-
-# --- OTP Helper Functions ---
-def generate_otp():
-    return str(random.randint(100000, 999999))
-
-def send_otp_email(user, otp):
-    msg = Message(
-        subject="Your OTP Verification Code",
-        recipients=[user.email],
-        body=f"Your OTP code is: {otp}\nThis code will expire in 10 minutes."
-    )
-    mail.send(msg)
-
+# --- Basic Calculator (tool) Route ---
 @app.route("/tools/calculator", methods=["GET", "POST"])
 def calculator():
     result = None
@@ -1334,6 +1616,7 @@ def calculator():
             result = f"Error: {e}"
     return render_template("tools/calculator.html", result=result)
 
+# --- File Converter (tool) Route ---
 @app.route("/tools/file-converter", methods=["GET", "POST"])
 def file_converter():
     result = []
@@ -1399,9 +1682,8 @@ def file_converter():
                 "xls", "xlsx", "ods", "csv", "tsv"
             ]
         },
-        # Add more here
+        #TODO: Add more categories as needed
     }
-    # Prefer POST form value, fallback to GET param, default to 'images'
     selected_category = request.form.get("category") or request.args.get("category") or "images"
     if request.method == "POST":
         files = request.files.getlist("files")
@@ -1436,6 +1718,41 @@ def file_converter():
         zip_url=zip_url
     )
 
+@app.route("/tools/file-converter/download/<zip_id>")
+def download_zip(zip_id):
+    files = session.get(f"zip_{zip_id}")
+    if not files:
+        abort(404)
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zipf:
+        for fname, b64data in files:
+            zipf.writestr(fname, base64.b64decode(b64data))
+    zip_buffer.seek(0)
+    # Remove from session after download to free memory
+    session.pop(f"zip_{zip_id}", None)
+    return send_file(
+        zip_buffer,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name="converted_files.zip"
+    )
+
+@app.route("/tools/file-converter/download-file/<zip_id>/<filename>")
+def download_file(zip_id, filename):
+    files = session.get(f"zip_{zip_id}")
+    if not files:
+        abort(404)
+    for fname, b64data in files:
+        if fname == filename:
+            file_bytes = base64.b64decode(b64data)
+            return send_file(
+                io.BytesIO(file_bytes),
+                as_attachment=True,
+                download_name=fname
+            )
+    abort(404)
+
+# --- Text Translator API Route ---
 @app.route("/api/translate", methods=["POST"])
 def api_translate():
     from deep_translator import GoogleTranslator
@@ -1454,6 +1771,7 @@ def api_translate():
             result = f"Error: {e}"
     return jsonify({"result": result, "detected": detected})
 
+# --- Text Translator (tool) Route ---
 @app.route("/tools/translator", methods=["GET", "POST"])
 def translator():
     text = request.form.get("text", "")
@@ -1496,6 +1814,7 @@ def translator():
         language_choices=language_choices
     )
 
+# --- Search Engline Prompt (tool) Route ---
 @app.route("/tools/search", methods=["GET", "POST"])
 def search():
     search_engines = [
@@ -1509,61 +1828,17 @@ def search():
         {"key": "qwant", "name": "Qwant", "icon": "bi-search", "url": "https://www.qwant.com/?q="},
         {"key": "mojeek", "name": "Mojeek", "icon": "bi-search", "url": "https://www.mojeek.com/search?q="},
         {"key": "gigablast", "name": "Gigablast", "icon": "bi-search", "url": "https://www.gigablast.com/search?q="},
-        # Add more as needed
+        # TODO: Add more search engines as needed
     ]
     query = request.form.get("query", "")
     return render_template("tools/search.html", search_engines=search_engines, query=query)
 
-# Example daily quotes/questions (replace with DB or API as needed)
-DAILY_QUOTES = [
-    "Stay positive, work hard, make it happen.",
-    "Success is not for the lazy.",
-    "Dream big and dare to fail.",
-]
-DAILY_QUESTIONS = [
-    "What is one thing you want to accomplish today?",
-    "What are you grateful for today?",
-    "How will you challenge yourself today?",
-]
-
-@app.route("/tools/file-converter/download/<zip_id>")
-def download_zip(zip_id):
-    files = session.get(f"zip_{zip_id}")
-    if not files:
-        abort(404)
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w") as zipf:
-        for fname, b64data in files:
-            zipf.writestr(fname, base64.b64decode(b64data))
-    zip_buffer.seek(0)
-    # Remove from session after download to free memory
-    session.pop(f"zip_{zip_id}", None)
-    return send_file(
-        zip_buffer,
-        mimetype="application/zip",
-        as_attachment=True,
-        download_name="converted_files.zip"
-    )
-
-@app.route("/tools/file-converter/download-file/<zip_id>/<filename>")
-def download_file(zip_id, filename):
-    files = session.get(f"zip_{zip_id}")
-    if not files:
-        abort(404)
-    for fname, b64data in files:
-        if fname == filename:
-            file_bytes = base64.b64decode(b64data)
-            return send_file(
-                io.BytesIO(file_bytes),
-                as_attachment=True,
-                download_name=fname
-            )
-    abort(404)
-
+# --- Pomodoro Timer (tool) Route ---
 @app.route("/tools/pomodoro")
 def pomodoro():
     return render_template("tools/pomodoro.html")
 
+# --- Stopwatch (tool) Routes ---
 @app.route("/tools/stopwatch", methods=["GET", "POST"])
 def stopwatch():
     if "stopwatches" not in session:
@@ -1575,6 +1850,7 @@ def stopwatch():
         session["stopwatches"] = stopwatches
     return render_template("tools/stopwatch.html", stopwatches=stopwatches)
 
+# --- Timer (tool) Routes ---
 @app.route("/tools/timer", methods=["GET", "POST"])
 def timer():
     if "timers" not in session:
@@ -1608,64 +1884,12 @@ def timer():
             error = _("Invalid input. Please enter numbers only.")
     return render_template("tools/timer.html", timers=timers, error=error)
 
+# --- World Clock (tool) Route ---
 @app.route("/tools/world-clock")
 def world_clock():
     return render_template("tools/world_clock.html", bigdatacloud_api_key=BIGDATACLOUD_API_KEY)
 
-@app.route("/passkey/register/begin", methods=["POST"])
-@login_required
-def passkey_register_begin():
-    user = User.query.get(session["user_id"])
-    user_id = str(user.id).encode()
-    registration_data, state = fido2_server.register_begin(
-        {
-            "id": user_id,
-            "name": user.username,
-            "displayName": user.username,
-        },
-        user.passkeys or [],
-        user_verification="preferred"
-    )
-    session["fido2_state"] = state
-    return cbor.encode(registration_data)
-
-@app.route("/passkey/register/complete", methods=["POST"])
-@login_required
-def passkey_register_complete():
-    user = User.query.get(session["user_id"])
-    data = cbor.decode(request.get_data())
-    state = session.pop("fido2_state")
-    auth_data = fido2_server.register_complete(state, data["clientDataJSON"], data["attestationObject"])
-    # Store credential
-    creds = user.passkeys or []
-    creds.append(auth_data.credential_data.__dict__)
-    user.passkeys = creds
-    db.session.commit()
-    return jsonify({"status": "ok"})
-
-@app.route("/passkey/login/begin", methods=["POST"])
-def passkey_login_begin():
-    identifier = request.json.get("identifier")
-    user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
-    if not user or not user.passkeys:
-        return jsonify({"error": "No passkey registered"}), 400
-    auth_data, state = fido2_server.authenticate_begin(user.passkeys)
-    session["fido2_login_state"] = state
-    session["fido2_login_user"] = user.id
-    return cbor.encode(auth_data)
-
-@app.route("/passkey/login/complete", methods=["POST"])
-def passkey_login_complete():
-    user = User.query.get(session.get("fido2_login_user"))
-    if not user:
-        return jsonify({"error": "User not found"}), 400
-    data = cbor.decode(request.get_data())
-    state = session.pop("fido2_login_state")
-    creds = user.passkeys
-    fido2_server.authenticate_complete(state, creds, data["credentialId"], data["clientDataJSON"], data["authenticatorData"], data["signature"])
-    session["user_id"] = user.id
-    return jsonify({"status": "ok"})
-
+# --- Periodic Table (tool) Route ---
 @app.route("/tools/periodic-table")
 def periodic_table():
     import json
@@ -1698,6 +1922,7 @@ def periodic_table():
     }
     return render_template("tools/periodic_table.html", elements=elements, category_colors=category_colors)
 
+# --- Image Metadata (tool) Route ---
 @app.route("/tools/image-metadata", methods=["GET", "POST"])
 def image_metadata():
     metadata = {}
@@ -1738,6 +1963,7 @@ def image_metadata():
 
 short_urls = {}
 
+# --- URL Shortener (tool) Route ---
 @app.route("/tools/url-shortener", methods=["GET", "POST"])
 def url_shortener():
     short_url = None
@@ -1756,6 +1982,7 @@ def url_shortener():
             short_url = request.host_url + "s/" + custom
     return render_template("tools/url_shortener.html", short_url=short_url, error=error)
 
+# --- Redirect Short URL Route ---
 @app.route("/s/<custom>")
 def redirect_short(custom):
     url = short_urls.get(custom)
@@ -1765,6 +1992,7 @@ def redirect_short(custom):
 
 redirects = {}
 
+# --- URL Redirects (tool) Route ---
 @app.route("/tools/url-redirects", methods=["GET", "POST"])
 def url_redirects():
     message = None
@@ -1781,6 +2009,7 @@ def url_redirects():
             message = f"Redirect /go/{path} → {target} created."
     return render_template("tools/url_redirects.html", message=message, error=error, redirects=redirects)
 
+# --- Redirect Route for Short URLs ---
 @app.route("/go/<path>")
 def go_redirect(path):
     url = redirects.get(path)
@@ -1788,6 +2017,7 @@ def go_redirect(path):
         return redirect(url)
     return "Redirect not found", 404
 
+# --- AI Prompt/Chatbox (tool) Routes ---
 @app.route("/tools/ai-prompt", methods=["GET", "POST"])
 def ai_prompt():
     result = None
@@ -1809,6 +2039,7 @@ def ai_prompt():
                 result = f"Error: {e}"
     return render_template("tools/ai_prompt.html", prompt=prompt, result=result)
 
+# --- AI Text Summarizer (tool) Routes ---
 @app.route("/tools/ai-summarizer", methods=["GET", "POST"])
 def ai_summarizer():
     summary = None
@@ -1831,6 +2062,7 @@ def ai_summarizer():
                 summary = f"Error: {e}"
     return render_template("tools/ai-summarizer.html", summary=summary, text=text)
 
+# --- AI Code Explainer (tool) Routes ---
 @app.route("/tools/ai-code-explainer", methods=["GET", "POST"])
 def ai_code_explainer():
     explanation = None
@@ -1853,6 +2085,7 @@ def ai_code_explainer():
                 explanation = f"Error: {e}"
     return render_template("tools/ai_code_explainer.html", explanation=explanation, code=code)
 
+# --- Integration Calculator (tool) Routes ---
 @app.route("/tools/integration-calculator", methods=["GET", "POST"])
 def integration_calculator():
     result = None
@@ -1876,6 +2109,7 @@ def integration_calculator():
             result = f"Error: {e}"
     return render_template("tools/integration_calculator.html", result=result, expr=expr, var=var, lower=lower, upper=upper)
 
+# --- Differentiation Calculator (tool) Routes ---
 @app.route("/tools/differentiation-calculator", methods=["GET", "POST"])
 def differentiation_calculator():
     result = None
@@ -1893,6 +2127,7 @@ def differentiation_calculator():
    
     return render_template("tools/differentiation_calculator.html", result=result, expr=expr, var=var)
 
+# --- Equation Solver (tool) Routes ---
 @app.route("/tools/equation-solver", methods=["GET", "POST"])
 def equation_solver():
     result = None
@@ -1909,6 +2144,7 @@ def equation_solver():
             result = f"Error: {e}"
     return render_template("tools/equation_solver.html", result=result, eqn=eqn, var=var)
 
+# --- Matrix Calculator (tool) Routes ---
 @app.route("/tools/matrix-calculator", methods=["GET", "POST"])
 def matrix_calculator():
     from sympy import Matrix
@@ -1971,6 +2207,7 @@ def matrix_calculator():
         operation=operation
     )
 
+# --- Complex Number Calculator (tool) Routes ---
 @app.route("/tools/complex-calculator", methods=["GET", "POST"])
 def complex_calculator():
     result = None
@@ -1998,6 +2235,7 @@ def complex_calculator():
             result = f"Error: {e}"
     return render_template("tools/complex_calculator.html", result=result, a=a, b=b, op=op)
 
+# --- Polynomial Calculator (tool) Routes ---
 @app.route("/tools/polynomial-calculator", methods=["GET", "POST"])
 def polynomial_calculator():
     result = None
@@ -2026,6 +2264,7 @@ def polynomial_calculator():
             result = f"Error: {e}"
     return render_template("tools/polynomial_calculator.html", result=result, coeffs=coeffs, x_val=x_val, action=action)
 
+# --- Statistics Calculator (tool) Routes ---
 @app.route("/tools/statistics-calculator", methods=["GET", "POST"])
 def statistics_calculator():
     import statistics
@@ -2053,6 +2292,7 @@ def statistics_calculator():
             result = f"Error: {e}"
     return render_template("tools/statistics_calculator.html", result=result, data=data, stat=stat)
 
+# --- Base Converter (tool) Routes ---
 @app.route("/tools/base-converter", methods=["GET", "POST"])
 def base_converter():
     result = None
@@ -2079,6 +2319,7 @@ def base_converter():
             result = f"Error: {e}"
     return render_template("tools/base_converter.html", result=result, number=number, from_base=from_base, to_base=to_base)
 
+# --- Trigonometry Calculator (tool) Routes ---
 @app.route("/tools/trigonometry-calculator", methods=["GET", "POST"])
 def trigonometry_calculator():
     result = None
@@ -2115,6 +2356,7 @@ def trigonometry_calculator():
             result = f"Error: {e}"
     return render_template("tools/trigonometry_calculator.html", result=result, angle=angle, func=func, deg=deg)
 
+# --- Fraction Calculator (tool) Routes ---
 @app.route("/tools/fraction-calculator", methods=["GET", "POST"])
 def fraction_calculator():
     from fractions import Fraction
@@ -2143,61 +2385,7 @@ def fraction_calculator():
             result = f"Error: {e}"
     return render_template("tools/fraction_calculator.html", result=result, a=a, b=b, op=op)
 
-@app.route("/upload-avatar", methods=["POST"])
-@login_required
-def upload_avatar():
-    user = User.query.get(session["user_id"])
-    if request.method == "POST":
-        if 'avatar' in request.files:
-            file = request.files['avatar']
-            if file and allowed_file(file.filename, ['image']):
-                filename = secure_filename(file.filename)
-                path = os.path.join('static/avatars', filename)
-                file.save(path)
-                user.avatar_url = url_for('static', filename=f'avatars/{filename}')
-                db.session.commit()
-                flash("Avatar updated successfully!", "success")
-            else:
-                flash("Invalid file type. Please upload an image.", "danger")
-    return redirect("/profile")
-
-@app.route("/activity-log")
-@login_required
-def activity_log():
-    logs = ActivityLog.query.filter_by(user_id=session["user_id"]).order_by(ActivityLog.timestamp.desc()).all()
-    return render_template("activity_log.html", logs=logs)
-
-@app.route("/import/notes", methods=["POST"])
-@login_required
-def import_notes():
-    file = request.files.get("file")
-    if file:
-        reader = csv.DictReader(io.StringIO(file.read().decode()))
-        for row in reader:
-            note = Note(user_id=session["user_id"], content=row["content"])
-            db.session.add(note)
-        db.session.commit()
-        flash("Notes imported!", "success")
-    return redirect("/tools/notes")
-
-@app.route("/import/todos", methods=["POST"])
-@login_required
-def import_todos():
-    file = request.files.get("file")
-    if file:
-        reader = csv.DictReader(io.StringIO(file.read().decode()))
-        for row in reader:
-            todo = Todo(
-                user_id=session["user_id"],
-                content=row["content"],
-                due_date=row.get("due_date"),
-                completed=row.get("completed") == "True"
-            )
-            db.session.add(todo)
-        db.session.commit()
-        flash("Todos imported!", "success")
-    return redirect("/tools/todo")
-
+# --- AI Gemini Prompt (tool) Routes ---
 @app.route("/tools/ai-gemini-prompt", methods=["GET", "POST"])
 def ai_gemini_prompt():
     result = None
@@ -2213,6 +2401,7 @@ def ai_gemini_prompt():
                 result = f"Error: {e}"
     return render_template("tools/ai_gemini_prompt.html", prompt=prompt, result=result)
 
+# --- AI Text Paraphraser (tool) Routes ---
 @app.route("/tools/ai-paraphraser", methods=["GET", "POST"])
 def ai_paraphraser():
     paraphrased = None
@@ -2235,30 +2424,7 @@ def ai_paraphraser():
                 paraphrased = f"Error: {e}"
     return render_template("tools/ai_paraphraser.html", paraphrased=paraphrased, text=text)
 
-@app.route("/tools/color-generator", methods=["GET", "POST"])
-def color_generator():
-    import random
-    result = []
-    count = int(request.form.get("count", 1))
-    fmt = request.form.get("format", "hex")
-    if request.method == "POST":
-        for _ in range(count):
-            r = random.randint(0, 255)
-            g = random.randint(0, 255)
-            b = random.randint(0, 255)
-            if fmt == "hex":
-                color = "#{:02X}{:02X}{:02X}".format(r, g, b)
-            elif fmt == "rgb":
-                color = f"rgb({r}, {g}, {b})"
-            elif fmt == "hsl":
-                import colorsys
-                h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
-                color = f"hsl({int(h*360)}, {int(s*100)}%, {int(l*100)}%)"
-            else:
-                color = "#{:02X}{:02X}{:02X}".format(r, g, b)
-            result.append(color)
-    return render_template("tools/color_generator.html", result=result, count=count, fmt=fmt)
-
+# --- Gradient Generator (tool) Routes ---
 @app.route("/tools/gradient-generator", methods=["GET", "POST"])
 def gradient_generator():
     colors = request.form.getlist("color") or ["#ff0000", "#0000ff"]
@@ -2272,6 +2438,7 @@ def gradient_generator():
             css = f"radial-gradient(circle, {', '.join(colors)})"
     return render_template("tools/gradient_generator.html", colors=colors, direction=direction, gradient_type=gradient_type, css=css)
 
+# --- Color Palette Generator (tool) Routes ---
 @app.route("/tools/palette-generator", methods=["GET", "POST"])
 def palette_generator():
     import random
@@ -2313,72 +2480,12 @@ def palette_generator():
                 palette.append("#{0:06x}".format(random.randint(0, 0xFFFFFF)).upper())
     return render_template("tools/palette_generator.html", palette=palette, mode=mode, base=base)
 
+# --- White Noise Generator (tool) Route ---
 @app.route("/tools/white-noise")
 def white_noise():
     return render_template("tools/white_noise.html", sounds=WHITE_NOISE_SOUNDS)
 
-WHITE_NOISE_SOUNDS = [
-    {"key": "white", "icon": "bi-soundwave", "name": _(u"White Noise"), "desc": _(u"Classic static"), "file": None},
-    {"key": "pink", "icon": "bi-soundwave", "name": _(u"Pink Noise"), "desc": _(u"Balanced static"), "file": None},
-    {"key": "brown", "icon": "bi-soundwave", "name": _(u"Brown Noise"), "desc": _(u"Deep static"), "file": None},
-    {"key": "rain", "icon": "bi-cloud-drizzle", "name": _(u"Rain"), "desc": _(u"Gentle rain"), "file": "rain.mp3"},
-    {"key": "forest", "icon": "bi-tree", "name": _(u"Forest"), "desc": _(u"Birds & trees"), "file": "forest.mp3"},
-    {"key": "night", "icon": "bi-moon-stars", "name": _(u"Night"), "desc": _(u"Crickets & night air"), "file": "night.mp3"},
-    {"key": "ocean", "icon": "bi-water", "name": _(u"Ocean"), "desc": _(u"Waves"), "file": "ocean.mp3"},
-    {"key": "wind", "icon": "bi-wind", "name": _(u"Wind"), "desc": _(u"Soft wind"), "file": "wind.mp3"},
-    {"key": "fire", "icon": "bi-fire", "name": _(u"Fire"), "desc": _(u"Campfire crackle"), "file": "fire.mp3"},
-    {"key": "thunder", "icon": "bi-cloud-lightning-rain", "name": _(u"Thunderstorm"), "desc": _(u"Rain & thunder"), "file": "thunder.mp3"},
-    {"key": "cafe", "icon": "bi-cup-hot", "name": _(u"Cafe"), "desc": _(u"Coffee shop"), "file": "cafe.mp3"},
-    {"key": "train", "icon": "bi-train-front", "name": _(u"Train"), "desc": _(u"Train ride"), "file": "train.mp3"},
-    {"key": "fan", "icon": "bi-fan", "name": _(u"Fan"), "desc": _(u"Electric fan"), "file": "fan.mp3"},
-    {"key": "fireplace", "icon": "bi-fire", "name": _(u"Fireplace"), "desc": _(u"Indoor fire"), "file": "fireplace.mp3"},
-    {"key": "river", "icon": "bi-droplet", "name": _(u"River"), "desc": _(u"Flowing water"), "file": "river.mp3"},
-    {"key": "birds", "icon": "bi-egg-fried", "name": _(u"Birds"), "desc": _(u"Morning birds"), "file": "birds.mp3"},
-    {"key": "city", "icon": "bi-buildings", "name": _(u"City"), "desc": _(u"Urban ambience"), "file": "city.mp3"},
-    {"key": "library", "icon": "bi-journal-bookmark", "name": _(u"Library"), "desc": _(u"Quiet study"), "file": "library.mp3"},
-    {"key": "rainroof", "icon": "bi-house", "name": _(u"Rain on Roof"), "desc": _(u"Rain hitting roof"), "file": "rainroof.mp3"},
-    {"key": "waves", "icon": "bi-water", "name": _(u"Waves"), "desc": _(u"Sea shore"), "file": "waves.mp3"},
-    {"key": "fireplace2", "icon": "bi-fire", "name": _(u"Fireplace 2"), "desc": _(u"Cozy fire"), "file": "fireplace2.mp3"},
-    {"key": "leaves", "icon": "bi-leaf", "name": _(u"Leaves"), "desc": _(u"Rustling leaves"), "file": "leaves.mp3"},
-    {"key": "stream", "icon": "bi-droplet-half", "name": _(u"Stream"), "desc": _(u"Small creek"), "file": "stream.mp3"},
-    {"key": "waterfall", "icon": "bi-droplet-fill", "name": _(u"Waterfall"), "desc": _(u"Falling water"), "file": "waterfall.mp3"},
-    {"key": "crowd", "icon": "bi-people", "name": _(u"Crowd"), "desc": _(u"People talking"), "file": "crowd.mp3"},
-    {"key": "market", "icon": "bi-shop", "name": _(u"Market"), "desc": _(u"Busy market"), "file": "market.mp3"},
-    {"key": "jungle", "icon": "bi-flower2", "name": _(u"Jungle"), "desc": _(u"Tropical forest"), "file": "jungle.mp3"},
-    {"key": "highway", "icon": "bi-truck", "name": _(u"Highway"), "desc": _(u"Cars passing"), "file": "highway.mp3"},
-    {"key": "subway", "icon": "bi-train-lightrail-front", "name": _(u"Subway"), "desc": _(u"Underground train"), "file": "subway.mp3"},
-    {"key": "trainstation", "icon": "bi-train-freight-front", "name": _(u"Train Station"), "desc": _(u"Station ambience"), "file": "trainstation.mp3"},
-    {"key": "fountain", "icon": "bi-droplet", "name": _(u"Fountain"), "desc": _(u"Water fountain"), "file": "fountain.mp3"},
-    {"key": "windchimes", "icon": "bi-wind", "name": _(u"Wind Chimes"), "desc": _(u"Chimes in wind"), "file": "windchimes.mp3"},
-    {"key": "birdsforest", "icon": "bi-egg-fried", "name": _(u"Birds Forest"), "desc": _(u"Forest birds"), "file": "birdsforest.mp3"},
-    {"key": "night2", "icon": "bi-moon-stars", "name": _(u"Night 2"), "desc": _(u"Night ambience"), "file": "night2.mp3"},
-    {"key": "snow", "icon": "bi-snow", "name": _(u"Snow"), "desc": _(u"Falling snow"), "file": "snow.mp3"},
-    {"key": "typing", "icon": "bi-keyboard", "name": _(u"Typing"), "desc": _(u"Keyboard typing"), "file": "typing.mp3"},
-    {"key": "clock", "icon": "bi-clock", "name": _(u"Clock"), "desc": _(u"Ticking clock"), "file": "clock.mp3"},
-    {"key": "laundry", "icon": "bi-droplet", "name": _(u"Laundry"), "desc": _(u"Washing machine"), "file": "laundry.mp3"},
-    {"key": "vacuum", "icon": "bi-wind", "name": _(u"Vacuum"), "desc": _(u"Vacuum cleaner"), "file": "vacuum.mp3"},
-    {"key": "hairdryer", "icon": "bi-wind", "name": _(u"Hair Dryer"), "desc": _(u"Blowing air"), "file": "hairdryer.mp3"},
-    {"key": "car", "icon": "bi-car-front", "name": _(u"Car Ride"), "desc": _(u"Inside a car"), "file": "car.mp3"},
-    {"key": "plane", "icon": "bi-airplane", "name": _(u"Airplane"), "desc": _(u"In-flight hum"), "file": "plane.mp3"},
-    {"key": "boat", "icon": "bi-water", "name": _(u"Boat"), "desc": _(u"On a boat"), "file": "boat.mp3"},
-    {"key": "heartbeat", "icon": "bi-heart-pulse", "name": _(u"Heartbeat"), "desc": _(u"Heartbeat sound"), "file": "heartbeat.mp3"},
-    {"key": "catpurr", "icon": "bi-emoji-smile", "name": _(u"Cat Purr"), "desc": _(u"Purring cat"), "file": "catpurr.mp3"},
-    {"key": "dogbark", "icon": "bi-emoji-smile", "name": _(u"Dog Bark"), "desc": _(u"Dog barking"), "file": "dogbark.mp3"},
-    {"key": "frog", "icon": "bi-droplet", "name": _(u"Frogs"), "desc": _(u"Frogs croaking"), "file": "frog.mp3"},
-    {"key": "crickets", "icon": "bi-moon-stars", "name": _(u"Crickets"), "desc": _(u"Night crickets"), "file": "crickets.mp3"},
-    {"key": "beach", "icon": "bi-water", "name": _(u"Beach"), "desc": _(u"Beach waves"), "file": "beach.mp3"},
-    {"key": "campfire", "icon": "bi-fire", "name": _(u"Campfire"), "desc": _(u"Outdoor fire"), "file": "campfire.mp3"},
-    {"key": "rainforest", "icon": "bi-tree", "name": _(u"Rainforest"), "desc": _(u"Rainforest ambience"), "file": "rainforest.mp3"},
-    {"key": "windy", "icon": "bi-wind", "name": _(u"Windy"), "desc": _(u"Strong wind"), "file": "windy.mp3"},
-    {"key": "seagulls", "icon": "bi-egg-fried", "name": _(u"Seagulls"), "desc": _(u"Seagulls at sea"), "file": "seagulls.mp3"},
-    {"key": "barn", "icon": "bi-house", "name": _(u"Barn"), "desc": _(u"Barn animals"), "file": "barn.mp3"},
-    {"key": "trainwhistle", "icon": "bi-train-front", "name": _(u"Train Whistle"), "desc": _(u"Train horn"), "file": "trainwhistle.mp3"},
-    {"key": "churchbells", "icon": "bi-bell", "name": _(u"Church Bells"), "desc": _(u"Bells ringing"), "file": "churchbells.mp3"},
-    {"key": "windmill", "icon": "bi-wind", "name": _(u"Windmill"), "desc": _(u"Windmill blades"), "file": "windmill.mp3"},
-    {"key": "rainwindow", "icon": "bi-shop-window", "name": _(u"Rain on Window"), "desc": _(u"Rain hitting glass"), "file": "rainwindow.mp3"},
-    # Add more as you add files to static/media/ ...
-]
-
+# --- Flashcards (tool) Routes ---
 @app.route("/tools/flashcards", methods=["GET", "POST"])
 def flashcards():
     try:
@@ -2640,6 +2747,7 @@ def flashcards():
             error=error
         )
 
+# --- Astrology/Star Map (tool) Routes ---
 @app.route("/tools/star-map", methods=["GET", "POST"])
 def star_map():
     from datetime import datetime
@@ -2649,54 +2757,7 @@ def star_map():
     time = request.form.get("time") or request.args.get("time") or datetime.now().strftime("%H:%M")
     return render_template("tools/star_map.html", lat=lat, lon=lon, date=date, time=time)
 
-@app.route("/feedback", methods=["GET", "POST"])
-def feedback():
-    if request.method == "POST":
-        email = request.form.get("email")
-        rating = request.form.get("rating")
-        message = request.form.get("message")
-        category = request.form.get("category")
-        code = request.form.get("code")
-        
-        # Basic validation
-        if not email or not rating or not message:
-            flash("All required fields must be filled out.", "danger")
-            return render_template("feedback.html")
-        
-        # File handling
-        screenshot = request.files.get("screenshot")
-        screenshot_url = None
-        
-        if screenshot and allowed_file(screenshot.filename, ["images"]):
-            filename = secure_filename(screenshot.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'feedback', filename)
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
-            screenshot.save(filepath)
-            screenshot_url = url_for('static', filename=f'uploads/feedback/{filename}')
-        
-        # Create feedback entry
-        feedback = Feedback(
-            user_id=session.get("user_id"),
-            email=email,
-            rating=int(rating),
-            message=message,
-            category=category,
-            screenshot_url=screenshot_url,
-            code=code
-        )
-        
-        db.session.add(feedback)
-        db.session.commit()
-        
-        # Log activity if user is logged in
-        if session.get("user_id"):
-            log_activity(session["user_id"], "submitted_feedback", f"Rating: {rating}")
-        
-        flash("Thank you for your feedback!", "success")
-        return redirect(url_for("feedback"))
-        
-    return render_template("feedback.html")
-
+# --- Reverse Image Search (tool) Routes ---
 @app.route("/tools/reverse-image-search", methods=["GET", "POST"]) 
 def reverse_image_search():
     search_links = []
@@ -2735,11 +2796,7 @@ def reverse_image_search():
 
     return render_template("tools/reverse_image_search.html", search_links=search_links, filename=filename, image_url=image_url)
 
-
-@app.route("/credit")
-def credits():
-    return render_template("credit.html")
-
+# --- Main Application Setup ---
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
