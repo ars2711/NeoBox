@@ -38,21 +38,23 @@
     </div>
     {% endfor %}
   </div>
-  <h2 class="mt-5">WIP Tools</h2>
-  <p class="text-muted">These tools are currently under development and will be available soon.</p>
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-    {% for tool in wip_tools %}
-    <div class="col">
-      <div class="card h-100 text-center shadow-sm opacity-50" style="pointer-events: none; cursor: not-allowed;">
-        <div class="card-body">
-          <i class="bi {{ tool.icon }}" style="font-size:2rem; color: #888;"></i>
-          <h5 class="card-title mt-2">{{ tool.name }}</h5>
-          <div class="small text-muted">{{ tool.description }}</div>
+  {% if wip_tools %}
+    <h2 class="mt-5">WIP Tools</h2>
+    <p class="text-muted">These tools are currently under development and may not be fully functional.</p>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="wip-tools" data-wip-locked="1">
+      {% for tool in wip_tools %}
+      <div class="col">
+        <div class="card h-100 text-center shadow-sm wip-locked" data-tool-url="/tools/{{ tool.url if tool.url else '#' }}">
+          <div class="card-body">
+            <i class="bi {{ tool.icon }}" style="font-size:2rem; color: #888;"></i>
+            <h5 class="card-title mt-2">{{ tool.name }}</h5>
+            <div class="small text-muted">{{ tool.description }}</div>
+          </div>
         </div>
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
+  {% endif %}
   <h2 class="mt-5">Upcoming Tools</h2>
   <p class="text-muted">These tools are currently planned for future release.</p>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
@@ -98,5 +100,56 @@ searchInput.addEventListener('input', filterTools);
 
 // Set "All" as active by default
 categoryTabs[0].classList.add('active');
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  let unlocked = false;
+  const SECRET_KEY = "letmein";
+
+  function showFlash(message, type="success") {
+    let flashDiv = document.createElement("div");
+    flashDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    flashDiv.style.zIndex = 2000;
+    flashDiv.role = "alert";
+    flashDiv.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(flashDiv);
+    setTimeout(() => {
+      flashDiv.classList.remove("show");
+      setTimeout(() => flashDiv.remove(), 500);
+    }, 3500);
+  }
+
+  // Secret: Alt+Shift+W
+  document.addEventListener("keydown", function(e) {
+    if (e.altKey && e.shiftKey && e.key.toLowerCase() === "w" && !unlocked) {
+      const entered = prompt("Enter the secret key to unlock WIP tools:");
+      if (entered === SECRET_KEY) {
+        unlocked = true;
+        document.getElementById("wip-tools").setAttribute("data-wip-locked", "0");
+        document.querySelectorAll("#wip-tools .card").forEach(card => {
+          card.classList.remove("wip-locked");
+          card.classList.add("wip-unlocked");
+          card.style.pointerEvents = "auto";
+        });
+        showFlash("WIP tools unlocked!", "success");
+      } else if (entered !== null) {
+        showFlash("Incorrect key. WIP tools remain locked.", "danger");
+      }
+    }
+  });
+
+  // Make WIP tool cards clickable only if unlocked
+  document.querySelectorAll("#wip-tools .card").forEach(card => {
+    card.addEventListener("click", function() {
+      if (unlocked) {
+        const url = card.getAttribute("data-tool-url");
+        if (url && url !== "#") window.location.href = url;
+      }
+    });
+  });
+});
 </script>
 {% endblock %}

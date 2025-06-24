@@ -1,0 +1,64 @@
+{% extends "layout.html" %} {% block title %}Dice Roller{% endblock %} {% block
+main %}
+<div class="container py-4">
+  <h2 class="mb-3"><i class="bi bi-dice-5"></i> Dice Roller</h2>
+  <form method="POST" class="mb-3 d-flex gap-2 align-items-center">
+    <label
+      >Dice:
+      <input
+        type="number"
+        name="num"
+        min="1"
+        max="5"
+        value="{{ num }}"
+        class="form-control d-inline-block"
+        style="width: 60px"
+    /></label>
+    <label
+      >Sides:
+      <input
+        type="number"
+        name="sides"
+        min="2"
+        max="100"
+        value="{{ sides }}"
+        class="form-control d-inline-block"
+        style="width: 60px"
+    /></label>
+    <button class="btn btn-primary" type="submit">Roll</button>
+  </form>
+  <div class="d-flex gap-3">
+    {% for roll in rolls %}
+    <div
+      class="dice-anim"
+      style="
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px #0001;
+      "
+    >
+      {{ roll }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+  document.querySelectorAll(".dice-anim").forEach((dice) => {
+    dice.animate(
+      [
+        { transform: "scale(1.2)" },
+        { transform: "scale(1)" },
+        { transform: "scale(1.1)" },
+        { transform: "scale(1)" },
+      ],
+      { duration: 600 }
+    );
+  });
+</script>
+{% endblock %}

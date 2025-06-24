@@ -1,0 +1,38 @@
+{% extends "layout.html" %} {% block title %}Text/Code Difference Checker{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-3">
+    <i class="bi bi-file-diff"></i> Text/Code Difference Checker
+  </h2>
+  <form method="POST" class="mb-3 row g-2">
+    <div class="col-md-6">
+      <textarea
+        name="a"
+        rows="8"
+        class="form-control"
+        placeholder="Original..."
+      >
+{{ a }}</textarea
+      >
+    </div>
+    <div class="col-md-6">
+      <textarea
+        name="b"
+        rows="8"
+        class="form-control"
+        placeholder="Modified..."
+      >
+{{ b }}</textarea
+      >
+    </div>
+    <div class="col-12">
+      <button class="btn btn-primary mt-2" type="submit">Compare</button>
+    </div>
+  </form>
+  {% if diff %}
+  <pre class="bg-light p-3 rounded border" style="overflow-x: auto">
+{{ diff }}</pre
+  >
+  {% endif %}
+</div>
+{% endblock %}

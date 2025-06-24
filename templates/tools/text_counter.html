@@ -1,0 +1,71 @@
+{% extends "layout.html" %} {% block title %}Text Counter{% endblock %} {% block
+main %}
+<div class="container py-4">
+  <h2 class="mb-3"><i class="bi bi-bar-chart-line"></i> Text Counter</h2>
+  <form method="POST" enctype="multipart/form-data" class="mb-3">
+    <textarea
+      id="counter-text"
+      name="text"
+      rows="8"
+      class="form-control mb-2"
+      placeholder="Paste or type your text here..."
+    >
+{{ text }}</textarea
+    >
+    <div class="d-flex align-items-center gap-2">
+      <input
+        type="file"
+        name="file"
+        accept=".txt"
+        class="form-control"
+        style="max-width: 200px"
+      />
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-upload"></i> Upload
+      </button>
+    </div>
+  </form>
+  <div class="row g-3 mt-3" id="counter-results">
+    <!-- JS will fill this -->
+  </div>
+</div>
+<script>
+  function countStats(text) {
+    const stats = {};
+    stats.characters = text.length;
+    stats.letters = (text.match(/[a-zA-Z]/g) || []).length;
+    stats.vowels = (text.match(/[aeiouAEIOU]/g) || []).length;
+    stats.words = (text.match(/\b\w+\b/g) || []).length;
+    stats.sentences = (text.match(/[\.\!\?]+/g) || []).length;
+    stats.paragraphs = (text.match(/\n\s*\n/g) || []).length + 1;
+    stats.numbers = (text.match(/\d+/g) || []).length;
+    stats.punctuation = (
+      text.match(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g) || []
+    ).length;
+    stats.emoji = (text.match(/[\u{1F600}-\u{1F64F}]/gu) || []).length;
+    stats.titles = (text.match(/(^|\n)[A-Z][^\n]{5,}/g) || []).length;
+    stats.subheadings = (text.match(/(^|\n)#+\s+[^\n]+/g) || []).length;
+    return stats;
+  }
+  function renderStats(stats) {
+    const results = document.getElementById("counter-results");
+    results.innerHTML = "";
+    for (const [key, val] of Object.entries(stats)) {
+      const col = document.createElement("div");
+      col.className = "col-6 col-md-3";
+      col.innerHTML = `<div class="card text-center p-3 shadow-sm"><div class="fw-bold fs-4">${val}</div><div class="small text-muted text-capitalize">${key.replace(
+        /_/g,
+        " "
+      )}</div></div>`;
+      results.appendChild(col);
+    }
+  }
+  const textarea = document.getElementById("counter-text");
+  textarea.addEventListener("input", () =>
+    renderStats(countStats(textarea.value))
+  );
+  window.addEventListener("DOMContentLoaded", () =>
+    renderStats(countStats(textarea.value))
+  );
+</script>
+{% endblock %}

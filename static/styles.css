@@ -99,6 +99,18 @@ body {
   visibility: hidden;
 }
 
+.wip-locked {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+.wip-unlocked {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
 /* Search styles */
 #toolSearch {
   max-width: 300px;
@@ -287,8 +299,6 @@ body {
 }
 .card {
   border-radius: 1.25rem;
-}
-.card-body {
 }
 .live-preview #math-preview {
   background: #f8f9fa;

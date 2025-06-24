@@ -358,7 +358,6 @@ WIP_TOOLS = [
     {"name": "Stock/Market Tracker", "icon": "bi-graph-up", "url": "stock-market-tracker", "category": "productivity", "login_required": True, "description": "Track stocks and market data."},
     {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "url": "bookmark-manager", "category": "productivity", "login_required": True, "description": "Save and organize your bookmarks."},
     {"name": "Text Case Converter", "icon": "bi-textarea-resize", "url": "text-case-convertor", "category": "productivity", "login_required": False, "description": "Convert text between different cases and styles."},
-    
     {"name": "Password Generator", "icon": "bi-key", "url": "password-generator", "category": "security", "login_required": False, "description": "Generate strong, customizable passwords."},
 ]
 UPCOMING_TOOLS = [
@@ -374,7 +373,6 @@ UPCOMING_TOOLS = [
     {"name": "Text Reverser", "icon": "bi-arrow-repeat", "soon": "Reversing soon"},
     {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "soon": "Analyzing soon"},
     {"name": "Text Expander", "icon": "bi-textarea-t", "soon": "Expanding soon"},
-    {"name": "Text Case Converter", "icon": "bi-textarea-resize", "soon": "Converting soon"},
     {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "soon": "Extracting soon"},
     {"name": "Focus Session", "icon": "bi-bullseye", "soon": "Focusing soon"},
     {"name": "Study Laps", "icon": "bi-journal-check", "soon": "Tracking soon"},
@@ -1264,10 +1262,10 @@ def tools():
         "tools.html",
         tools=filtered_tools,
         upcoming_tools=UPCOMING_TOOLS,
-        wip_tools=WIP_TOOLS,
+        wip_tools=WIP_TOOLS,  # Always show WIP tools
         logged_in=logged_in,
         query=query,
-        tool_categories=TOOL_CATEGORIES
+        tool_categories=TOOL_CATEGORIES,
     )
     
 # --- Unit Converter (tool) Route ---
@@ -1514,9 +1512,14 @@ def calculator():
     result = None
     if request.method == "POST":
         try:
-            a = float(request.form.get("a"))
-            b = float(request.form.get("b"))
+            a = request.form.get("a")
+            b = request.form.get("b")
             op = request.form.get("op")
+            if not a or not b or not op:
+                flash("All fields are required.", "danger")
+                return redirect(url_for("calculator"))
+            a = float(a)
+            b = float(b)
             if op == "+":
                 result = a + b
             elif op == "-":
@@ -1524,11 +1527,18 @@ def calculator():
             elif op == "*":
                 result = a * b
             elif op == "/":
-                result = a / b if b != 0 else "Error: Division by zero"
+                if b == 0:
+                    flash("Division by zero is not allowed.", "danger")
+                    result = None
+                else:
+                    result = a / b
             else:
-                result = "Invalid operation"
+                flash("Invalid operation.", "danger")
+                result = None
+            if result is not None:
+                flash("Calculation successful!", "success")
         except Exception as e:
-            result = f"Error: {e}"
+            flash(f"Error: {e}", "danger")
     return render_template("tools/calculator.html", result=result)
 
 # --- File Converter (tool) Route ---
@@ -3200,6 +3210,7 @@ def ai_chatbot():
                 response = f"Error: {e}"
     return render_template("tools/ai_chatbot.html", response=response)
 
+# --- Text Case Convertor (tool) Route ---
 @app.route("/tools/text-case-convertor", methods=["GET", "POST"])
 def text_case_convertor():
     text = ""
@@ -3228,10 +3239,12 @@ def text_case_convertor():
             result = text
     return render_template("tools/text_case_convertor.html", text=text, result=result, _=_)
 
+# --- Markdown Previewer (tool) Route ---
 @app.route("/tools/markdown-previewer")
 def markdown_previewer():
     return render_template("tools/markdown_previewer.html", _=_)
 
+# --- Password Generator (tool) Route ---
 @app.route("/tools/password-generator", methods=["GET", "POST"])
 def password_generator():
     password = ""
@@ -3259,6 +3272,126 @@ def password_generator():
             passwords.append("".join(random.choice(charset) for _ in range(length)))
         password = "\n".join(passwords)
     return render_template("tools/password_generator.html", password=password, length=length, uppercase=uppercase, numbers=numbers, symbols=symbols)
+
+# --- Music/Audio Player (tool) Route ---
+@app.route("/tools/music-audio-player", methods=["GET", "POST"])
+def music_audio_player():
+    if "audio_queue" not in session:
+        session["audio_queue"] = []
+    if request.method == "POST":
+        files = request.files.getlist("audio_files")
+        for file in files:
+            if file and file.filename.lower().endswith((".mp3", ".wav", ".ogg", ".m4a")):
+                filename = secure_filename(file.filename)
+                path = os.path.join(app.config['UPLOAD_FOLDER'], 'music', filename)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                file.save(path)
+                session["audio_queue"].append({
+                    "name": filename,
+                    "url": url_for('static', filename=f"uploads/music/{filename}")
+                })
+        session.modified = True
+        flash("Files uploaded!", "success")
+    return render_template("tools/music_audio_player.html", audio_queue=session["audio_queue"])
+
+# -- Text Counter (tool) Route ---
+@app.route("/tools/text-counter", methods=["GET", "POST"])
+def text_counter():
+    text = ""
+    if request.method == "POST":
+        file = request.files.get("file")
+        if file and file.filename.lower().endswith((".txt",)):
+            text = file.read().decode("utf-8")
+        else:
+            text = request.form.get("text", "")
+    return render_template("tools/text_counter.html", text=text)
+
+# Text Reverser (tool) Route ---
+@app.route("/tools/text-reverser", methods=["GET", "POST"])
+def text_reverser():
+    text = result = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        result = text[::-1]
+    return render_template("tools/text_reverser.html", text=text, result=result)
+
+# --- Text Difference Checker (tool) Route ---
+@app.route("/tools/text-difference-checker", methods=["GET", "POST"])
+def text_difference_checker():
+    a = b = diff = ""
+    if request.method == "POST":
+        a = request.form.get("a", "")
+        b = request.form.get("b", "")
+        import difflib
+        diff = "\n".join(difflib.unified_diff(a.splitlines(), b.splitlines(), lineterm=""))
+    return render_template("tools/text_difference_checker.html", a=a, b=b, diff=diff)
+
+# --- Plagiarism Checker (tool) Route ---
+@app.route("/tools/plagiarism-checker", methods=["GET", "POST"])
+def plagiarism_checker():
+    text = result = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        # For demo: just say "No plagiarism detected"
+        result = "No plagiarism detected (demo)."
+    return render_template("tools/plagiarism_checker.html", text=text, result=result)
+
+# --- AI Checker (tool) Route ---
+@app.route("/tools/ai-checker", methods=["GET", "POST"])
+def ai_checker():
+    text = result = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        # For demo: just say "Likely human-written"
+        result = "Likely human-written (demo)."
+    return render_template("tools/ai_checker.html", text=text, result=result)
+
+# --- Morse Code Tools (tool) Route ---
+@app.route("/tools/morse-code-tools", methods=["GET", "POST"])
+def morse_code_tools():
+    text = result = ""
+    mode = "encode"
+    MORSE = { 'A':'.-', 'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.', 'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---', 'K':'-.-', 'L':'.-..', 'M':'--', 'N':'-.', 'O':'---', 'P':'.--.', 'Q':'--.-', 'R':'.-.', 'S':'...', 'T':'-', 'U':'..-', 'V':'...-', 'W':'.--', 'X':'-..-', 'Y':'-.--', 'Z':'--..', '1':'.----', '2':'..---', '3':'...--', '4':'....-', '5':'.....', '6':'-....', '7':'--...', '8':'---..', '9':'----.', '0':'-----', ', ':'--..--', '.':'.-.-.-', '?':'..--..', '/':'-..-.', '-':'-....-', '(':'-.--.', ')':'-.--.-'}
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        mode = request.form.get("mode", "encode")
+        if mode == "encode":
+            result = " ".join(MORSE.get(c.upper(), c) for c in text)
+        else:
+            inv = {v: k for k, v in MORSE.items()}
+            result = "".join(inv.get(c, c) for c in text.split())
+    return render_template("tools/morse_code_tools.html", text=text, result=result, mode=mode)
+
+# --- Random Name Picker (tool) Route ---
+@app.route("/tools/random-name-picker", methods=["GET", "POST"])
+def random_name_picker():
+    names = result = ""
+    if request.method == "POST":
+        names = request.form.get("names", "")
+        import random
+        name_list = [n.strip() for n in names.split(",") if n.strip()]
+        result = random.choice(name_list) if name_list else ""
+    return render_template("tools/random_name_picker.html", names=names, result=result)
+
+# --- Dice Roller (tool) Route ---
+@app.route("/tools/dice", methods=["GET", "POST"])
+def dice():
+    num = int(request.form.get("num", 1))
+    sides = int(request.form.get("sides", 6))
+    rolls = []
+    if request.method == "POST":
+        import random
+        rolls = [random.randint(1, sides) for _ in range(num)]
+    return render_template("tools/dice.html", num=num, sides=sides, rolls=rolls)
+
+# --- Coin Toss (tool) Route ---
+@app.route("/tools/coin-toss", methods=["GET", "POST"])
+def coin_toss():
+    result = ""
+    if request.method == "POST":
+        import random
+        result = random.choice(["Heads", "Tails"])
+    return render_template("tools/coin_toss.html", result=result)
 
 # --- Main Application Setup ---
 if __name__ == "__main__":

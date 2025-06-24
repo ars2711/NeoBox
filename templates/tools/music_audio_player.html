@@ -1,0 +1,108 @@
+{% extends "layout.html" %} {% block title %}Music/Audio Player{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <h2 class="mb-3">
+    <i class="bi bi-music-note-beamed"></i> Music/Audio Player
+  </h2>
+  <form method="POST" enctype="multipart/form-data" class="mb-4">
+    <div class="input-group">
+      <input
+        type="file"
+        name="audio_files"
+        accept="audio/*"
+        multiple
+        class="form-control"
+        required
+      />
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-upload"></i> Upload
+      </button>
+    </div>
+  </form>
+  <div id="audio-player-ui" class="card p-4 shadow-lg neo-card-hover">
+    <div id="now-playing" class="mb-3">
+      <h5 id="now-playing-title" class="fw-bold"></h5>
+      <audio id="audio-player" controls style="width: 100%"></audio>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="fw-bold">Queue</span>
+      <button class="btn btn-outline-danger btn-sm" id="clear-queue">
+        <i class="bi bi-trash"></i> Clear
+      </button>
+    </div>
+    <ul id="audio-queue" class="list-group mb-2">
+      {% for track in audio_queue %}
+      <li
+        class="list-group-item d-flex align-items-center justify-content-between"
+        data-url="{{ track.url }}"
+      >
+        <span>{{ track.name }}</span>
+        <div>
+          <button class="btn btn-outline-primary btn-sm play-btn">
+            <i class="bi bi-play-fill"></i>
+          </button>
+          <button class="btn btn-outline-danger btn-sm remove-btn">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="mt-3">
+      <input
+        type="text"
+        id="yt-url"
+        class="form-control mb-2"
+        placeholder="Paste YouTube/Spotify URL (demo)"
+      />
+      <button class="btn btn-outline-success" id="add-yt">
+        <i class="bi bi-youtube"></i> Add from YouTube/Spotify
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+  const audioPlayer = document.getElementById("audio-player");
+  const queue = document.getElementById("audio-queue");
+  const nowPlayingTitle = document.getElementById("now-playing-title");
+  let currentIdx = 0;
+  function playTrack(idx) {
+    const items = queue.querySelectorAll("li");
+    if (items.length === 0) return;
+    currentIdx = idx;
+    const item = items[idx];
+    audioPlayer.src = item.dataset.url;
+    nowPlayingTitle.textContent = item.querySelector("span").textContent;
+    audioPlayer.play();
+    items.forEach((li) => li.classList.remove("active"));
+    item.classList.add("active");
+  }
+  queue.addEventListener("click", function (e) {
+    if (e.target.closest(".play-btn")) {
+      const idx = Array.from(queue.children).indexOf(e.target.closest("li"));
+      playTrack(idx);
+    }
+    if (e.target.closest(".remove-btn")) {
+      e.target.closest("li").remove();
+    }
+  });
+  audioPlayer.addEventListener("ended", function () {
+    const items = queue.querySelectorAll("li");
+    if (currentIdx + 1 < items.length) playTrack(currentIdx + 1);
+  });
+  document.getElementById("clear-queue").onclick = () => {
+    queue.innerHTML = "";
+    nowPlayingTitle.textContent = "";
+    audioPlayer.src = "";
+  };
+  document.getElementById("add-yt").onclick = () => {
+    const url = document.getElementById("yt-url").value.trim();
+    if (!url) return;
+    // For demo: just embed as iframe (real implementation: use backend API to fetch audio stream)
+    alert(
+      "YouTube/Spotify playback is a demo. Embed or use a backend API for real playback."
+    );
+  };
+  if (queue.children.length) playTrack(0);
+</script>
+{% endblock %}
