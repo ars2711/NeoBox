@@ -1,0 +1,36 @@
+{% extends "layout.html" %} {% block title %}Text Case Converter{% endblock %}
+{% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Text Case Converter') }}</h2>
+  <form method="post" class="mb-3">
+    <textarea
+      name="text"
+      class="form-control mb-2"
+      rows="5"
+      placeholder="{{ _('Enter your text here...') }}"
+    >
+{{ text or '' }}</textarea
+    >
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+      <button name="case" value="upper" class="btn btn-primary">
+        {{ _('UPPERCASE') }}
+      </button>
+      <button name="case" value="lower" class="btn btn-secondary">
+        {{ _('lowercase') }}
+      </button>
+      <button name="case" value="title" class="btn btn-success">
+        {{ _('Title Case') }}
+      </button>
+      <button name="case" value="sentence" class="btn btn-info">
+        {{ _('Sentence case') }}
+      </button>
+    </div>
+  </form>
+  {% if result %}
+  <div class="alert alert-success mt-3">
+    <strong>{{ _('Result:') }}</strong>
+    <div style="white-space: pre-wrap">{{ result }}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

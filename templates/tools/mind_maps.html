@@ -1,0 +1,107 @@
+{% extends "layout.html" %} {% block title %}{{ _('Mind Maps & Flowcharts') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Mind Maps & Flowcharts') }}</h2>
+  <div class="card shadow-sm p-4">
+    <div id="mindmap-toolbar" class="mb-3 d-flex flex-wrap gap-2">
+      <button class="btn btn-primary" onclick="addNode()">
+        {{ _('Add Node') }}
+      </button>
+      <button class="btn btn-secondary" onclick="addEdge()">
+        {{ _('Add Connection') }}
+      </button>
+      <button class="btn btn-outline-info" onclick="undo()">
+        {{ _('Undo') }}
+      </button>
+      <button class="btn btn-outline-warning" onclick="redo()">
+        {{ _('Redo') }}
+      </button>
+      <button class="btn btn-outline-success" onclick="exportMap()">
+        {{ _('Export as PNG') }}
+      </button>
+      <button class="btn btn-outline-dark" onclick="importMap()">
+        {{ _('Import') }}
+      </button>
+      <input type="file" id="importFile" style="display: none" accept=".json" />
+      <button class="btn btn-outline-danger" onclick="clearMap()">
+        {{ _('Clear') }}
+      </button>
+    </div>
+    <div
+      id="mindmap"
+      style="
+        height: 600px;
+        border: 2px solid #eee;
+        border-radius: 8px;
+        background: #fafbfc;
+      "
+    ></div>
+  </div>
+</div>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/vis-network/styles/vis-network.min.css"
+/>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script>
+  let nodes = new vis.DataSet([{ id: 1, label: "{{ _('Central Idea') }}" }]);
+  let edges = new vis.DataSet([]);
+  let container = document.getElementById("mindmap");
+  let data = { nodes: nodes, edges: edges };
+  let options = {
+    nodes: {
+      shape: "box",
+      color: "#e3f2fd",
+      font: { color: "#1565c0", size: 18 },
+    },
+    edges: { arrows: "to", color: "#90caf9" },
+    physics: { enabled: true },
+  };
+  let network = new vis.Network(container, data, options);
+
+  function addNode() {
+    let label = prompt("{{ _('Enter node label:') }}");
+    if (label) nodes.add({ id: nodes.length + 1, label: label });
+  }
+  function addEdge() {
+    let from = prompt("{{ _('From node ID:') }}");
+    let to = prompt("{{ _('To node ID:') }}");
+    if (from && to) edges.add({ from: Number(from), to: Number(to) });
+  }
+  function undo() {
+    /* Implement undo logic if needed */
+  }
+  function redo() {
+    /* Implement redo logic if needed */
+  }
+  function exportMap() {
+    html2canvas(container).then((canvas) => {
+      let link = document.createElement("a");
+      link.download = "mindmap.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  }
+  function importMap() {
+    document.getElementById("importFile").click();
+  }
+  document.getElementById("importFile").onchange = function (e) {
+    let file = e.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function (evt) {
+      let obj = JSON.parse(evt.target.result);
+      nodes.clear();
+      edges.clear();
+      nodes.add(obj.nodes);
+      edges.add(obj.edges);
+    };
+    reader.readAsText(file);
+  };
+  function clearMap() {
+    nodes.clear();
+    edges.clear();
+  }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "layout.html" %} {% block title %}{{ _('Basic Drawing') }}{% endblock
+%} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Basic Drawing') }}</h2>
+  <div class="card shadow-sm p-4 mx-auto" style="max-width: 800px">
+    <div class="mb-3 d-flex gap-2">
+      <input
+        type="color"
+        id="color"
+        value="#000000"
+        class="form-control form-control-color"
+        title="{{ _('Brush Color') }}"
+      />
+      <input
+        type="range"
+        id="size"
+        min="1"
+        max="30"
+        value="5"
+        class="form-range"
+        style="width: 120px"
+      />
+      <button class="btn btn-outline-secondary" onclick="clearCanvas()">
+        {{ _('Clear') }}
+      </button>
+      <button class="btn btn-outline-success" onclick="downloadCanvas()">
+        {{ _('Download') }}
+      </button>
+    </div>
+    <canvas
+      id="drawCanvas"
+      width="700"
+      height="400"
+      style="
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background: #fff;
+        cursor: crosshair;
+      "
+    ></canvas>
+  </div>
+</div>
+<script>
+  const canvas = document.getElementById("drawCanvas");
+  const ctx = canvas.getContext("2d");
+  let drawing = false;
+  let color = document.getElementById("color").value;
+  let size = document.getElementById("size").value;
+  canvas.onmousedown = (e) => {
+    drawing = true;
+    draw(e);
+  };
+  canvas.onmouseup = () => (drawing = false);
+  canvas.onmouseout = () => (drawing = false);
+  canvas.onmousemove = draw;
+  document.getElementById("color").oninput = (e) => (color = e.target.value);
+  document.getElementById("size").oninput = (e) => (size = e.target.value);
+  function draw(e) {
+    if (!drawing) return;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(e.offsetX, e.offsetY, size / 2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  function downloadCanvas() {
+    let link = document.createElement("a");
+    link.download = "drawing.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "layout.html" %} {% block title %}{{ _('Daily Routines & Reminders')
+}}{% endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Daily Routines & Reminders') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Routine Title') }}</label>
+      <input type="text" name="title" class="form-control" required />
+    </div>
+    <div class="mb-3 row g-2">
+      <div class="col-md-6">
+        <label class="form-label">{{ _('Time') }}</label>
+        <input type="time" name="time" class="form-control" required />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">{{ _('Frequency') }}</label>
+        <select name="frequency" class="form-select">
+          <option value="daily">{{ _('Daily') }}</option>
+          <option value="weekly">{{ _('Weekly') }}</option>
+          <option value="monthly">{{ _('Monthly') }}</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Add Routine') }}
+    </button>
+  </form>
+  <div class="card shadow-sm mx-auto" style="max-width: 600px">
+    <div class="card-header">{{ _('Your Routines') }}</div>
+    <ul class="list-group list-group-flush">
+      {% for routine in routines %}
+      <li
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        <span>
+          <strong>{{ routine.title }}</strong>
+          <span class="text-muted">({{ routine.frequency|capitalize }})</span>
+          <br />
+          <small class="text-muted">{{ routine.time }}</small>
+        </span>
+        <!-- Add edit/delete buttons as needed -->
+      </li>
+      {% else %}
+      <li class="list-group-item text-muted">{{ _('No routines yet.') }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

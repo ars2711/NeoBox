@@ -1,0 +1,91 @@
+{% extends "layout.html" %} {% block title %}Maps & Location{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">Interactive Map</h2>
+  <div class="card shadow-sm p-3">
+    <div class="mb-3 d-flex flex-wrap gap-2 justify-content-between">
+      <input
+        id="searchBox"
+        class="form-control"
+        style="max-width: 250px"
+        placeholder="Search location..."
+      />
+      <select id="mapType" class="form-select" style="max-width: 180px">
+        <option value="osm">Street</option>
+        <option value="satellite">Satellite</option>
+        <option value="terrain">Terrain</option>
+      </select>
+      <button class="btn btn-outline-primary" id="saveSpot">Save Spot</button>
+      <button class="btn btn-outline-secondary" id="showRoutes">
+        Show Routes
+      </button>
+    </div>
+    <div id="map" style="height: 500px; border-radius: 8px"></div>
+    <div class="mt-3">
+      <h5>Saved Spots</h5>
+      <ul id="savedSpots" class="list-group"></ul>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+/>
+<script>
+  let map,
+    marker,
+    savedSpots = [];
+  document.addEventListener("DOMContentLoaded", function () {
+    map = L.map("map").setView([30, 70], 3);
+    let layers = {
+      osm: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }),
+      satellite: L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { attribution: "© Esri" }
+      ),
+      terrain: L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenTopoMap",
+      }),
+    };
+    layers.osm.addTo(map);
+    document.getElementById("mapType").onchange = function () {
+      map.eachLayer((l) => map.removeLayer(l));
+      layers[this.value].addTo(map);
+    };
+    L.Control.geocoder().addTo(map);
+    map.on("click", function (e) {
+      if (marker) map.removeLayer(marker);
+      marker = L.marker(e.latlng)
+        .addTo(map)
+        .bindPopup(
+          "Selected: " +
+            e.latlng.lat.toFixed(4) +
+            ", " +
+            e.latlng.lng.toFixed(4)
+        )
+        .openPopup();
+    });
+    document.getElementById("saveSpot").onclick = function () {
+      if (marker) {
+        savedSpots.push(marker.getLatLng());
+        updateSpots();
+      }
+    };
+    function updateSpots() {
+      let ul = document.getElementById("savedSpots");
+      ul.innerHTML = "";
+      savedSpots.forEach((s, i) => {
+        let li = document.createElement("li");
+        li.className = "list-group-item";
+        li.textContent = s.lat.toFixed(4) + ", " + s.lng.toFixed(4);
+        ul.appendChild(li);
+      });
+    }
+  });
+</script>
+{% endblock %}

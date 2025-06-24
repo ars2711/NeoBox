@@ -1,0 +1,80 @@
+{% extends "layout.html" %} {% block title %}{{ _('Random Generator') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Random Generator') }}</h2>
+  <div class="card shadow-sm p-4 mx-auto" style="max-width: 600px">
+    <div class="mb-3">
+      <label class="form-label">{{ _('Type') }}</label>
+      <select id="randType" class="form-select">
+        <option value="number">{{ _('Random Number') }}</option>
+        <option value="string">{{ _('Random String') }}</option>
+        <option value="color">{{ _('Random Color') }}</option>
+        <option value="coin">{{ _('Coin Toss') }}</option>
+        <option value="dice">{{ _('Dice Roll') }}</option>
+        <option value="password">{{ _('Password') }}</option>
+      </select>
+    </div>
+    <div id="randOptions"></div>
+    <button class="btn btn-primary w-100" onclick="generateRandom()">
+      {{ _('Generate') }}
+    </button>
+    <div class="alert alert-info mt-4 text-center d-none" id="randResult"></div>
+  </div>
+</div>
+<script>
+  function generateRandom() {
+    let type = document.getElementById("randType").value;
+    let result = "";
+    if (type === "number") {
+      let min = parseInt(document.getElementById("min").value) || 0;
+      let max = parseInt(document.getElementById("max").value) || 100;
+      result = Math.floor(Math.random() * (max - min + 1)) + min;
+    } else if (type === "string") {
+      let len = parseInt(document.getElementById("strlen").value) || 8;
+      let chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      result = Array.from(
+        { length: len },
+        () => chars[Math.floor(Math.random() * chars.length)]
+      ).join("");
+    } else if (type === "color") {
+      result =
+        "#" +
+        Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0");
+    } else if (type === "coin") {
+      result = Math.random() < 0.5 ? '{{ _("Heads") }}' : '{{ _("Tails") }}';
+    } else if (type === "dice") {
+      result = Math.floor(Math.random() * 6) + 1;
+    } else if (type === "password") {
+      let len = parseInt(document.getElementById("pwlen").value) || 12;
+      let chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+      result = Array.from(
+        { length: len },
+        () => chars[Math.floor(Math.random() * chars.length)]
+      ).join("");
+    }
+    let resDiv = document.getElementById("randResult");
+    resDiv.textContent = result;
+    resDiv.classList.remove("d-none");
+  }
+  document.getElementById("randType").onchange = function () {
+    let type = this.value;
+    let html = "";
+    if (type === "number") {
+      html = `<div class="row g-2 mb-3">
+      <div class="col"><input type="number" id="min" class="form-control" placeholder="{{ _('Min') }}" value="0"></div>
+      <div class="col"><input type="number" id="max" class="form-control" placeholder="{{ _('Max') }}" value="100"></div>
+    </div>`;
+    } else if (type === "string") {
+      html = `<input type="number" id="strlen" class="form-control mb-3" placeholder="{{ _('Length') }}" value="8">`;
+    } else if (type === "password") {
+      html = `<input type="number" id="pwlen" class="form-control mb-3" placeholder="{{ _('Length') }}" value="12">`;
+    }
+    document.getElementById("randOptions").innerHTML = html;
+  };
+  document.getElementById("randType").dispatchEvent(new Event("change"));
+</script>
+{% endblock %}

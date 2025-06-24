@@ -1,0 +1,76 @@
+{% extends "layout.html" %} {% block title %}{{ _('Expense Tracker') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Expense Tracker') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Date') }}</label>
+      <input type="date" name="date" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Category') }}</label>
+      <select name="category" class="form-select">
+        <option value="food">{{ _('Food') }}</option>
+        <option value="transport">{{ _('Transport') }}</option>
+        <option value="shopping">{{ _('Shopping') }}</option>
+        <option value="bills">{{ _('Bills') }}</option>
+        <option value="entertainment">{{ _('Entertainment') }}</option>
+        <option value="health">{{ _('Health') }}</option>
+        <option value="other">{{ _('Other') }}</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Amount') }}</label>
+      <input
+        type="number"
+        name="amount"
+        class="form-control"
+        step="0.01"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Description') }}</label>
+      <input type="text" name="description" class="form-control" />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Add Expense') }}
+    </button>
+  </form>
+  <div class="card shadow-sm mx-auto" style="max-width: 700px">
+    <div class="card-header">{{ _('Your Expenses') }}</div>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>{{ _('Date') }}</th>
+            <th>{{ _('Category') }}</th>
+            <th>{{ _('Amount') }}</th>
+            <th>{{ _('Description') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exp in expenses %}
+          <tr>
+            <td>{{ exp.date }}</td>
+            <td>{{ exp.category }}</td>
+            <td>{{ exp.amount }}</td>
+            <td>{{ exp.description }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="text-muted text-center">
+              {{ _('No expenses yet.') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -10,157 +10,110 @@ main %}
       >
         0
       </div>
-      <div class="mb-3 d-none">
-        <div
-          id="calc-preview"
-          class="border rounded-3 bg-body-secondary p-2"
-        ></div>
-      </div>
-      <div class="row g-2">
-        <div class="col-9">
-          <div class="row g-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('7')"
-              >
-                7
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('8')"
-              >
-                8
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('9')"
-              >
-                9
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('4')"
-              >
-                4
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('5')"
-              >
-                5
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('6')"
-              >
-                6
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('1')"
-              >
-                1
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('2')"
-              >
-                2
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('3')"
-              >
-                3
-              </button>
-            </div>
-            <div class="col-8">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('0')"
-              >
-                0
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="press('.')"
-              >
-                .
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="col-3">
-          <div class="row g-2 h-100">
-            <div class="col-12">
-              <button
-                class="btn btn-danger w-100 py-3 rounded-3 fs-5"
-                onclick="clearDisplay()"
-              >
-                C
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
-                onclick="press('/')"
-              >
-                ÷
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
-                onclick="press('*')"
-              >
-                ×
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
-                onclick="press('-')"
-              >
-                −
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3 fs-5"
-                onclick="press('+')"
-              >
-                +
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-success w-100 py-3 rounded-3 fs-5"
-                onclick="calculate()"
-              >
-                =
-              </button>
-            </div>
-          </div>
-        </div>
+
+      <div
+        class="d-grid gap-2"
+        style="grid-template-columns: repeat(5, 1fr); display: grid"
+      >
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('7')"
+        >
+          7
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('8')"
+        >
+          8
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('9')"
+        >
+          9
+        </button>
+        <button class="btn btn-warning py-3 fs-5" onclick="press('/')">
+          ÷
+        </button>
+        <button class="btn btn-danger py-3 fs-5" onclick="clearDisplay()">
+          C
+        </button>
+
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('4')"
+        >
+          4
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('5')"
+        >
+          5
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('6')"
+        >
+          6
+        </button>
+        <button class="btn btn-warning py-3 fs-5" onclick="press('*')">
+          ×
+        </button>
+        <button class="btn btn-secondary py-3 fs-5" onclick="backspace()">
+          ←
+        </button>
+
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('1')"
+        >
+          1
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('2')"
+        >
+          2
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('3')"
+        >
+          3
+        </button>
+        <button class="btn btn-warning py-3 fs-5" onclick="press('-')">
+          −
+        </button>
+        <button class="btn btn-secondary py-3 fs-5" onclick="toggleSign()">
+          ±
+        </button>
+
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('0')"
+        >
+          0
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('.')"
+        >
+          .
+        </button>
+        <button
+          class="btn btn-outline-secondary py-3 fs-5"
+          onclick="press('%')"
+        >
+          %
+        </button>
+        <button class="btn btn-warning py-3 fs-5" onclick="press('+')">
+          +
+        </button>
+        <button class="btn btn-success py-3 fs-5" onclick="calculate()">
+          =
+        </button>
       </div>
     </div>
   </div>
@@ -225,6 +178,28 @@ main %}
     let latex = current.replace(/\*/g, "\\times ").replace(/\//g, "\\div ");
     preview.innerHTML = "$$" + latex + "$$";
     if (window.MathJax) MathJax.typesetPromise();
+  }
+  function toggleSign() {
+    if (!current) return;
+
+    try {
+      let num = parseFloat(current);
+      if (!isNaN(num)) {
+        current = (-num).toString();
+      } else {
+        if (current.startsWith("-")) {
+          current = current.substring(1);
+        } else {
+          current = "-" + current;
+        }
+      }
+      display.textContent = current;
+      renderPreview();
+    } catch {
+      display.textContent = "Error";
+      current = "";
+      renderPreview();
+    }
   }
 
   // Keyboard support

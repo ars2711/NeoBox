@@ -1,0 +1,90 @@
+{% extends "layout.html" %} {% block title %}{{ _('File Renamer') }}{% endblock
+%} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('File Renamer & Batch Renamer') }}</h2>
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    class="card p-4 shadow-sm mx-auto"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Select Files') }}</label>
+      <input type="file" name="files" multiple required class="form-control" />
+      <div class="form-text">
+        {{ _('Supports images, documents, and more.') }}
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('New Name Pattern') }}</label>
+      <input
+        type="text"
+        name="new_name"
+        class="form-control"
+        placeholder="{{ _('e.g. Vacation_{num}_{date}') }}"
+      />
+      <div class="form-text">
+        {{ _('Use {num} for numbering, {date} for today, {orig} for original
+        name, {ext} for extension.') }}
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Filters & Options') }}</label>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <select name="filter_ext" class="form-select">
+            <option value="">{{ _('All Extensions') }}</option>
+            <option value="jpg">JPG</option>
+            <option value="png">PNG</option>
+            <option value="pdf">PDF</option>
+            <option value="docx">DOCX</option>
+            <!-- Add more as needed -->
+          </select>
+        </div>
+        <div class="col-md-6">
+          <select name="case" class="form-select">
+            <option value="">{{ _('Keep Case') }}</option>
+            <option value="lower">{{ _('Lowercase') }}</option>
+            <option value="upper">{{ _('UPPERCASE') }}</option>
+            <option value="title">{{ _('Title Case') }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-check mt-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="replace_spaces"
+          id="replace_spaces"
+        />
+        <label class="form-check-label" for="replace_spaces"
+          >{{ _('Replace spaces with underscores') }}</label
+        >
+      </div>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="dry_run"
+          id="dry_run"
+        />
+        <label class="form-check-label" for="dry_run"
+          >{{ _('Preview only (no changes)') }}</label
+        >
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Rename Files') }}
+    </button>
+  </form>
+  {% if results %}
+  <div class="alert alert-info mt-4">
+    <ul class="mb-0">
+      {% for r in results %}
+      <li>{{ r }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

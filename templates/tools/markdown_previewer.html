@@ -1,0 +1,30 @@
+{% extends "layout.html" %} {% block title %}Markdown Previewer{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Markdown Previewer') }}</h2>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">{{ _('Markdown Input') }}</label>
+      <textarea id="markdown-input" class="form-control" rows="12"></textarea>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label">{{ _('Preview') }}</label>
+      <div
+        id="markdown-preview"
+        class="border p-3 bg-light"
+        style="min-height: 200px"
+      ></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  document
+    .getElementById("markdown-input")
+    .addEventListener("input", function () {
+      document.getElementById("markdown-preview").innerHTML = marked.parse(
+        this.value
+      );
+    });
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 {% extends "layout.html" %} {% block title %}Scientific Calculator{% endblock %}
 {% block main %}
-<div class="container py-4" style="max-width: 600px">
+<div class="container py-4" style="max-width: 700px">
   <h2 class="mb-4 text-center">Scientific Calculator</h2>
   <div class="card border-0 shadow rounded-4">
     <div class="card-body p-4">
@@ -31,10 +31,9 @@
       </div>
 
       <div class="row g-2 mb-2">
-        <!-- Constants & Special Functions -->
         <div class="col-3">
           <button
-            class="btn btn-outline-secondary w-100 py-2 rounded-3"
+            class="btn btn-outline-secondary w-100 py-2"
             onclick="sciBtn('pi')"
           >
             π
@@ -42,7 +41,7 @@
         </div>
         <div class="col-3">
           <button
-            class="btn btn-outline-secondary w-100 py-2 rounded-3"
+            class="btn btn-outline-secondary w-100 py-2"
             onclick="sciBtn('e')"
           >
             e
@@ -50,7 +49,7 @@
         </div>
         <div class="col-3">
           <button
-            class="btn btn-outline-warning w-100 py-2 rounded-3"
+            class="btn btn-outline-warning w-100 py-2"
             onclick="sciBtn('^2')"
           >
             x²
@@ -58,259 +57,232 @@
         </div>
         <div class="col-3">
           <button
-            class="btn btn-outline-warning w-100 py-2 rounded-3"
+            class="btn btn-outline-warning w-100 py-2"
             onclick="sciBtn('^')"
           >
             xʸ
           </button>
         </div>
+
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('sin(')"
+          >
+            sin
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('cos(')"
+          >
+            cos
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('tan(')"
+          >
+            tan
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-danger w-100 py-2" onclick="sciClear()">
+            C
+          </button>
+        </div>
+
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('asin(')"
+          >
+            sin⁻¹
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('acos(')"
+          >
+            cos⁻¹
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('atan(')"
+          >
+            tan⁻¹
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-dark w-100 py-2" onclick="sciBackspace()">
+            ⌫
+          </button>
+        </div>
+
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('log(')"
+          >
+            log
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('ln(')"
+          >
+            ln
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-info w-100 py-2"
+            onclick="sciBtn('sqrt(')"
+          >
+            √
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-2" onclick="sciBtn('/')">
+            ÷
+          </button>
+        </div>
       </div>
 
       <div class="row g-2">
-        <div class="col-9">
-          <!-- Basic Trig Functions -->
-          <div class="row g-2 mb-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('sin(')"
-              >
-                sin
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('cos(')"
-              >
-                cos
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('tan(')"
-              >
-                tan
-              </button>
-            </div>
-          </div>
-
-          <!-- Inverse Trig Functions -->
-          <div class="row g-2 mb-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('asin(')"
-              >
-                sin⁻¹
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('acos(')"
-              >
-                cos⁻¹
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('atan(')"
-              >
-                tan⁻¹
-              </button>
-            </div>
-          </div>
-
-          <!-- Advanced Functions -->
-          <div class="row g-2 mb-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('log(')"
-              >
-                log
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('ln(')"
-              >
-                ln
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-info w-100 py-2 rounded-3"
-                onclick="sciBtn('sqrt(')"
-              >
-                √
-              </button>
-            </div>
-          </div>
-
-          <!-- Numbers -->
-          <div class="row g-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('7')"
-              >
-                7
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('8')"
-              >
-                8
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('9')"
-              >
-                9
-              </button>
-            </div>
-          </div>
-          <div class="row g-2 mt-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('4')"
-              >
-                4
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('5')"
-              >
-                5
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('6')"
-              >
-                6
-              </button>
-            </div>
-          </div>
-          <div class="row g-2 mt-2">
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('1')"
-              >
-                1
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('2')"
-              >
-                2
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('3')"
-              >
-                3
-              </button>
-            </div>
-          </div>
-          <div class="row g-2 mt-2">
-            <div class="col-8">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('0')"
-              >
-                0
-              </button>
-            </div>
-            <div class="col-4">
-              <button
-                class="btn btn-outline-secondary w-100 py-3 rounded-3 fs-5 fw-light"
-                onclick="sciBtn('.')"
-              >
-                .
-              </button>
-            </div>
-          </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('7')"
+          >
+            7
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('8')"
+          >
+            8
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('9')"
+          >
+            9
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="sciBtn('*')">
+            ×
+          </button>
         </div>
 
-        <!-- Operators Column -->
         <div class="col-3">
-          <div class="row g-2 h-100">
-            <div class="col-12">
-              <button
-                class="btn btn-danger w-100 py-3 rounded-3"
-                onclick="sciClear()"
-              >
-                C
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-secondary w-100 py-3 rounded-3"
-                onclick="sciBackspace()"
-              >
-                ⌫
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3"
-                onclick="sciBtn('/')"
-              >
-                /
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3"
-                onclick="sciBtn('*')"
-              >
-                ×
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3"
-                onclick="sciBtn('-')"
-              >
-                −
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-warning w-100 py-3 rounded-3"
-                onclick="sciBtn('+')"
-              >
-                +
-              </button>
-            </div>
-            <div class="col-12">
-              <button
-                class="btn btn-success w-100 py-3 rounded-3"
-                onclick="sciCalculate()"
-              >
-                =
-              </button>
-            </div>
-          </div>
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('4')"
+          >
+            4
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('5')"
+          >
+            5
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('6')"
+          >
+            6
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="sciBtn('+')">
+            +
+          </button>
+        </div>
+
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('1')"
+          >
+            1
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('2')"
+          >
+            2
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('3')"
+          >
+            3
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-warning w-100 py-3" onclick="sciBtn('-')">
+            −
+          </button>
+        </div>
+
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('0')"
+          >
+            0
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('.')"
+          >
+            .
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn('(')"
+          >
+            (
+          </button>
+        </div>
+        <div class="col-3">
+          <button
+            class="btn btn-outline-secondary w-100 py-3"
+            onclick="sciBtn(')')"
+          >
+            )
+          </button>
+        </div>
+
+        <div class="col-12 mt-2">
+          <button class="btn btn-success w-100 py-3" onclick="sciCalculate()">
+            =
+          </button>
         </div>
       </div>
     </div>
@@ -345,7 +317,6 @@
   function sciCalculate() {
     try {
       let expr = sciInput.value;
-      // Angle conversion for trig functions
       let unit = document.getElementById("sci-angle-unit").value;
       expr = expr.replace(/([a-z]+)\(([^)]+)\)/g, function (_, fn, arg) {
         if (["sin", "cos", "tan", "asin", "acos", "atan"].includes(fn)) {

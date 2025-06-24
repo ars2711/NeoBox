@@ -11,6 +11,8 @@ import uuid
 import time
 import base64
 import random
+import string
+import requests
 from datetime import datetime, timezone, timedelta
 from functools import wraps
 from urllib.parse import quote_plus
@@ -292,11 +294,17 @@ TOOLS = [
     # Conversion
     {"name": "Unit Converter", "icon": "bi-arrow-left-right", "url": "unit-converter", "category": "conversion", "login_required": False, "description": "Convert between various units of measurement."},
     {"name": "Currency Converter", "icon": "bi-currency-exchange", "url": "currency-converter", "category": "conversion", "login_required": False, "description": "Convert currencies using real-time rates."},
-    {"name": "Flashcards", "icon": "bi-card-list", "url": "flashcards", "category": "productivity", "login_required": False, "description": "Create and study flashcards."},
+    {"name": "Voice-to-Text", "icon": "bi-mic", "url": "voice-to-text", "category": "conversion", "login_required": False, "description": "Convert speech to text with live and file upload options."},
 
     # Productivity
     {"name": "Pomodoro Timer", "icon": "bi-hourglass-split", "url": "pomodoro", "category": "productivity", "login_required": False, "description": "Boost productivity with Pomodoro sessions."},
-
+    {"name": "Text Encryptor/Decryptor", "icon": "bi-shield-lock", "url": "text-encryptor", "category": "productivity", "login_required": False, "description": "Encrypt and decrypt text with custom keys and algorithms."},
+    {"name": "Maps", "icon": "bi-geo-alt", "url": "maps", "category": "productivity", "login_required": False, "description": "Interactive maps with search, routes, filters, and saved spots."},
+    {"name": "Daily Quotes", "icon": "bi-chat-quote", "url": "daily-quotes", "category": "productivity", "login_required": False, "description": "Get a new inspirational quote every day."},
+    {"name": "Daily Questions", "icon": "bi-question-circle", "url": "daily-questions", "category": "productivity", "login_required": False, "description": "Get a new thought-provoking question every day."},
+    {"name": "Flashcards", "icon": "bi-card-list", "url": "flashcards", "category": "productivity", "login_required": False, "description": "Create and study flashcards."},
+    {"name": "Markdown Previewer", "icon": "bi-filetype-md", "url": "markdown-previewer", "category": "productivity", "login_required": False, "description": "Preview and render Markdown text live."},
+    
     # Time
     {"name": "Timer", "icon": "bi-stopwatch", "url": "timer", "category": "time", "login_required": False, "description": "Set a countdown timer for any task."},
     {"name": "Stopwatch", "icon": "bi-stopwatch-fill", "url": "stopwatch", "category": "time", "login_required": False, "description": "Track elapsed time with a stopwatch."},
@@ -318,6 +326,7 @@ TOOLS = [
     {"name": "Search Engine Prompt", "icon": "bi-search", "url": "search", "category": "other", "login_required": False, "description": "Quickly search using your favorite search engines."},
     {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "category": "other", "login_required": False, "description": "Shorten long URLs for easy sharing."},
     {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "category": "other", "login_required": False, "description": "Create custom redirects for your URLs."},
+    {"name": "Random Generator", "icon": "bi-shuffle", "url": "random-generator", "category": "other", "login_required": False, "description": "Generate random numbers, strings, colors, and more."},
 ]
 WIP_TOOLS = [
     {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "category": "files", "login_required": False, "description": "Convert files between different formats."},
@@ -330,34 +339,31 @@ WIP_TOOLS = [
     {"name": "Reverse Image Search", "icon": "bi-image", "url": "reverse-image-search", "category": "other", "login_required": False, "description": "Find similar images on the web."},
     {"name": "To-do List", "icon": "bi-list-check", "url": "todo", "category": "productivity", "login_required": True, "description": "Manage your personal tasks and to-dos."},
     {"name": "Notes", "icon": "bi-journal-text", "url": "notes", "category": "productivity", "login_required": True, "description": "Write and save personal notes."},
+    {"name": "File Renamer", "icon": "bi-file-earmark-font", "url": "file-renamer", "category": "files", "login_required": False, "description": "Rename files in bulk with patterns and rules."},
+    {"name": "Image Enlarger", "icon": "bi-arrows-angle-expand", "url": "image-enlarger", "category": "files", "login_required": False, "description": "Resize, upscale, compress, and convert images in bulk."},
+    {"name": "Daily Routines/Reminders", "icon": "bi-calendar-check", "url": "daily-routines", "category": "productivity", "login_required": True, "description": "Set daily routines and reminders with notifications."},
+    {"name": "Password Manager", "icon": "bi-key", "url": "password-manager", "category": "security", "login_required": True, "description": "Securely store and manage your passwords."},
+    {"name": "QR Code Tools", "icon": "bi-qr-code-scan", "url": "qr-code-tools", "category": "files", "login_required": False, "description": "Generate, customize, and read QR codes with advanced options."},
+    {"name": "PDF Tools", "icon": "bi-file-earmark-pdf", "url": "pdf-tools", "category": "files", "login_required": False, "description": "Merge, split, compress, convert, and secure PDFs."},
+    {"name": "Text-to-Speech", "icon": "bi-volume-up", "url": "text-to-speech", "category": "ai", "login_required": False, "description": "Convert text to speech in multiple languages and accents."},
+    {"name": "Mind-maps/Flowcharts", "icon": "bi-diagram-3", "url": "mind-maps", "category": "productivity", "login_required": False, "description": "Create interactive mind maps and flowcharts."},
+    {"name": "Code Formatter", "icon": "bi-code-slash", "url": "code-formatter", "category": "productivity", "login_required": False, "description": "Format and beautify code in multiple languages."},
+    {"name": "Expense Tracker", "icon": "bi-cash-stack", "url": "expense-tracker", "category": "productivity", "login_required": True, "description": "Track your expenses and spending habits."},
+    {"name": "Budget Tracker", "icon": "bi-wallet2", "url": "budget-tracker", "category": "productivity", "login_required": True, "description": "Plan and monitor your monthly budgets."},
+    {"name": "Habit Tracker", "icon": "bi-check2-circle", "url": "habit-tracker", "category": "productivity", "login_required": True, "description": "Build and track habits with reminders."},
+    {"name": "Grocery List Manager", "icon": "bi-basket", "url": "grocery-list", "category": "productivity", "login_required": True, "description": "Manage your grocery shopping lists."},
+    {"name": "Health Tracker", "icon": "bi-heart-pulse", "url": "health-tracker", "category": "productivity", "login_required": True, "description": "Track your health data and progress."},
+    {"name": "Collaborative Notes", "icon": "bi-people", "url": "collaborative-notes", "category": "productivity", "login_required": True, "description": "Create and share notes collaboratively."},
+    {"name": "Basic Drawing", "icon": "bi-brush", "url": "basic-drawing", "category": "productivity", "login_required": False, "description": "Draw and sketch on a simple canvas."},
+    {"name": "Stock/Market Tracker", "icon": "bi-graph-up", "url": "stock-market-tracker", "category": "productivity", "login_required": True, "description": "Track stocks and market data."},
+    {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "url": "bookmark-manager", "category": "productivity", "login_required": True, "description": "Save and organize your bookmarks."},
+    {"name": "Text Case Converter", "icon": "bi-textarea-resize", "url": "text-case-convertor", "category": "productivity", "login_required": False, "description": "Convert text between different cases and styles."},
+    
+    {"name": "Password Generator", "icon": "bi-key", "url": "password-generator", "category": "security", "login_required": False, "description": "Generate strong, customizable passwords."},
 ]
 UPCOMING_TOOLS = [
-    {"name": "File Renamer", "icon": "bi-file-earmark-font", "soon": "Renaming soon"},
-    {"name": "Text Encryptor/Decryptor", "icon": "bi-shield-lock", "soon": "Encrypting soon"},
-    {"name": "Image Enlarger", "icon": "bi-arrows-angle-expand", "soon": "Enlarging soon"},
-    {"name": "Daily Routines/Reminders", "icon": "bi-calendar-check", "soon": "Reminding soon"},
-    {"name": "Maps", "icon": "bi-geo-alt", "soon": "Mapping soon"},
     {"name": "Custom Calendar", "icon": "bi-calendar-range", "soon": "Planning soon"},
     {"name": "Weather", "icon": "bi-cloud-sun", "soon": "Forecasting soon"},
-    {"name": "Password Manager", "icon": "bi-key", "soon": "Securing soon"},
-    {"name": "QR Code Tools", "icon": "bi-qr-code-scan", "soon": "Scanning soon"},
-    {"name": "Daily Quotes", "icon": "bi-chat-quote", "soon": "Quoting soon"},
-    {"name": "Daily Questions", "icon": "bi-question-circle", "soon": "Questioning soon"},
-    {"name": "PDF Tools", "icon": "bi-file-earmark-pdf", "soon": "PDFing soon"},
-    {"name": "Voice-to-Text", "icon": "bi-mic", "soon": "Listening soon"},
-    {"name": "Text-to-Speech", "icon": "bi-volume-up", "soon": "Speaking soon"},
-    {"name": "Mind-maps/Flowcharts", "icon": "bi-diagram-3", "soon": "Mapping soon"},
-    {"name": "Code Formatter", "icon": "bi-code-slash", "soon": "Formatting soon"},
-    {"name": "Expense Tracker", "icon": "bi-cash-stack", "soon": "Tracking soon"},
-    {"name": "Budget Tracker", "icon": "bi-wallet2", "soon": "Budgeting soon"},
-    {"name": "Habit Tracker", "icon": "bi-check2-circle", "soon": "Habiting soon"},
-    {"name": "Grocery List Manager", "icon": "bi-basket", "soon": "Shopping soon"},
-    {"name": "Health Tracker", "icon": "bi-heart-pulse", "soon": "Monitoring soon"},
-    {"name": "Random Generator", "icon": "bi-shuffle", "soon": "Randomizing soon"},
-    {"name": "Collaborative Notes", "icon": "bi-people", "soon": "Collaborating soon"},
-    {"name": "Basic Drawing", "icon": "bi-brush", "soon": "Drawing soon"},
-    {"name": "Stock/Market Tracker", "icon": "bi-graph-up", "soon": "Analyzing soon"},
-    {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "soon": "Bookmarking soon"},
     {"name": "World Clock & Meeting Planner", "icon": "bi-globe", "soon": "Planning soon"},
     {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "soon": "Playing soon"},
     {"name": "Video/Image Compressor", "icon": "bi-file-earmark-zip", "soon": "Compressing soon"},
@@ -368,7 +374,6 @@ UPCOMING_TOOLS = [
     {"name": "Text Reverser", "icon": "bi-arrow-repeat", "soon": "Reversing soon"},
     {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "soon": "Analyzing soon"},
     {"name": "Text Expander", "icon": "bi-textarea-t", "soon": "Expanding soon"},
-    {"name": "Text Summarizer", "icon": "bi-textarea-t", "soon": "Summarizing soon"},
     {"name": "Text Case Converter", "icon": "bi-textarea-resize", "soon": "Converting soon"},
     {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "soon": "Extracting soon"},
     {"name": "Focus Session", "icon": "bi-bullseye", "soon": "Focusing soon"},
@@ -618,13 +623,13 @@ def register():
         # Validation
         if not username or not email or not password or not confirmation:
             flash("All required fields must be filled.", "danger")
-            return render_template("register.html")
+            return redirect(url_for("register"))
         if password != confirmation:
             flash("Passwords do not match.", "danger")
-            return render_template("register.html")
+            return redirect(url_for("register"))
         if User.query.filter((User.username == username) | (User.email == email) | (User.phone == phone)).first():
             flash("Username, email, or phone already exists.", "danger")
-            return render_template("register.html")
+            return redirect(url_for("register"))
         # Convert dob string to date object
         dob_obj = None
         if dob:
@@ -632,7 +637,7 @@ def register():
                 dob_obj = datetime.strptime(dob, "%Y-%m-%d").date()
             except Exception:
                 flash("Invalid date of birth format.", "danger")
-                return render_template("register.html")
+                return redirect(url_for("register"))
         # Create user (unverified)
         hash_pw = generate_password_hash(password)
         otp = generate_otp()
@@ -700,7 +705,7 @@ def verify_otp():
             or now > otp_expiry
         ):
             flash("Invalid or expired OTP.", "danger")
-            return render_template("verify_otp.html", email=user.email)
+            return render_template("verify_otp", email=user.email)
 
         # Mark user as verified
         user.verified = True
@@ -746,11 +751,11 @@ def login():
         user = User.query.filter((User.username == identifier) | (User.email == identifier) | (User.phone == identifier)).first()
         if not user or not check_password_hash(user.hash, password):
             flash("Invalid credentials.", "danger")
-            return render_template("login.html")
+            return redirect(url_for("login"))
         if not user.verified:
             session["pending_user_id"] = user.id
             flash("Account not verified. Please check your email for the OTP.", "warning")
-            return redirect(url_for("verify_otp"))
+            return render_template("verify_otp")
         session["user_id"] = user.id
         flash("Logged in successfully!", "success")
         return redirect("/")
@@ -764,7 +769,7 @@ def forgot():
         user = User.query.filter_by(email=email).first()
         if not user:
             flash("No account found with that email.", "danger")
-            return render_template("forgot.html")
+            return redirect(url_for("forgot"))
         otp = generate_otp()
         user.otp = otp
         user.otp_expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
@@ -809,10 +814,10 @@ def reset_otp():
         otp = request.form.get("otp").strip()
         if not otp:
             flash("Please enter the OTP.", "danger")
-            return render_template("verify_otp.html")
+            return render_template("verify_otp")
         if user.otp != otp or not user.otp_expiry or datetime.now(timezone.utc) > user.otp_expiry:
             flash("Invalid or expired OTP.", "danger")
-            return render_template("verify_otp.html")
+            return render_template("verify_otp")
         # OTP valid, allow password reset
         session["reset_token"] = os.urandom(24).hex()
         user.reset_token = session["reset_token"]
@@ -853,10 +858,10 @@ def reset(token):
         confirmation = request.form.get("confirmation")
         if not password or not confirmation:
             flash("Please fill out all fields.", "danger")
-            return render_template("reset.html", token=token)
+            return redirect(url_for("reset", token=token))
         if password != confirmation:
             flash("Passwords do not match.", "danger")
-            return render_template("reset.html", token=token)
+            return redirect(url_for("reset", token=token))
         user.hash = generate_password_hash(password)
         user.reset_token = None
         db.session.commit()
@@ -1455,7 +1460,6 @@ def unit_converter():
             else:
                 factors = categories[category]["factors"]
                 if from_unit in factors and to_unit in factors:
-                    # Convert to base, then to target
                     base = value / factors[from_unit]
                     result = base * factors[to_unit]
                 else:
@@ -1473,8 +1477,6 @@ def unit_converter():
         categories=categories,
         units=units
     )
-
-import requests
 
 # --- Currency Converter (tool) Route ---
 @app.route("/tools/currency-converter", methods=["GET", "POST"])
@@ -1505,93 +1507,6 @@ def currency_converter():
         to_currency=to_currency,
         currencies=currencies
     )
-
-# --- Scientific Calculator (tool) Route ---
-@app.route("/tools/scientific-calculator")
-def scientific_calculator():
-    return render_template("tools/scientific_calculator.html")
-
-# --- To-Do List (tool) Route ---
-@app.route("/tools/todo", methods=["GET", "POST"])
-@login_required
-def todo():
-    if request.method == "POST":
-        content = request.form.get("content")
-        due_date = request.form.get("due_date")
-        todo = Todo(user_id=session["user_id"], content=content, due_date=due_date)
-        db.session.add(todo)
-        db.session.commit()
-    todos = Todo.query.filter_by(user_id=session["user_id"]).order_by(Todo.due_date).all()
-    return render_template("tools/todo.html", todos=todos)
-
-# --- Note-taking (tool) Route ---
-@app.route("/tools/notes", methods=["GET", "POST"])
-@login_required
-def notes():
-    if request.method == "POST":
-        content = request.form.get("content")
-        note = Note(user_id=session["user_id"], content=content)
-        db.session.add(note)
-        db.session.commit()
-    notes = Note.query.filter_by(user_id=session["user_id"]).order_by(Note.created_at.desc()).all()
-    return render_template("tools/notes.html", notes=notes)
-
-# --- Notes and To-Do Export Routes ---
-@app.route("/export/notes")
-@login_required
-def export_notes():
-    notes = Note.query.filter_by(user_id=session["user_id"]).all()
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["content", "created_at"])
-    for note in notes:
-        writer.writerow([note.content, note.created_at])
-    output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="notes.csv", mimetype="text/csv")
-
-@app.route("/export/todos")
-@login_required
-def export_todos():
-    todos = Todo.query.filter_by(user_id=session["user_id"]).all()
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["content", "due_date", "completed", "created_at"])
-    for todo in todos:
-        writer.writerow([todo.content, todo.due_date, todo.completed, todo.created_at])
-    output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="todos.csv", mimetype="text/csv")
-
-# --- Notes and To-Do Import Routes ---
-@app.route("/import/notes", methods=["POST"])
-@login_required
-def import_notes():
-    file = request.files.get("file")
-    if file:
-        reader = csv.DictReader(io.StringIO(file.read().decode()))
-        for row in reader:
-            note = Note(user_id=session["user_id"], content=row["content"])
-            db.session.add(note)
-        db.session.commit()
-        flash("Notes imported!", "success")
-    return redirect("/tools/notes")
-
-@app.route("/import/todos", methods=["POST"])
-@login_required
-def import_todos():
-    file = request.files.get("file")
-    if file:
-        reader = csv.DictReader(io.StringIO(file.read().decode()))
-        for row in reader:
-            todo = Todo(
-                user_id=session["user_id"],
-                content=row["content"],
-                due_date=row.get("due_date"),
-                completed=row.get("completed") == "True"
-            )
-            db.session.add(todo)
-        db.session.commit()
-        flash("Todos imported!", "success")
-    return redirect("/tools/todo")
 
 # --- Basic Calculator (tool) Route ---
 @app.route("/tools/calculator", methods=["GET", "POST"])
@@ -1705,7 +1620,6 @@ def file_converter():
                     result.append({"type": "error", "msg": f"Error converting {filename}: {e}"})
             else:
                 result.append({"type": "error", "msg": f"Unsupported file: {filename}"})
-        # Store converted files in session for temporary download
         if converted_files:
             zip_id = uuid.uuid4().hex
             session[f"zip_{zip_id}"] = converted_files
@@ -1717,210 +1631,6 @@ def file_converter():
         selected_category=selected_category,
         zip_url=zip_url
     )
-
-@app.route("/tools/file-converter/download/<zip_id>")
-def download_zip(zip_id):
-    files = session.get(f"zip_{zip_id}")
-    if not files:
-        abort(404)
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w") as zipf:
-        for fname, b64data in files:
-            zipf.writestr(fname, base64.b64decode(b64data))
-    zip_buffer.seek(0)
-    # Remove from session after download to free memory
-    session.pop(f"zip_{zip_id}", None)
-    return send_file(
-        zip_buffer,
-        mimetype="application/zip",
-        as_attachment=True,
-        download_name="converted_files.zip"
-    )
-
-@app.route("/tools/file-converter/download-file/<zip_id>/<filename>")
-def download_file(zip_id, filename):
-    files = session.get(f"zip_{zip_id}")
-    if not files:
-        abort(404)
-    for fname, b64data in files:
-        if fname == filename:
-            file_bytes = base64.b64decode(b64data)
-            return send_file(
-                io.BytesIO(file_bytes),
-                as_attachment=True,
-                download_name=fname
-            )
-    abort(404)
-
-# --- Text Translator API Route ---
-@app.route("/api/translate", methods=["POST"])
-def api_translate():
-    from deep_translator import GoogleTranslator
-    text = request.form.get("text", "")
-    src = request.form.get("src", "auto")
-    dest = request.form.get("dest", "en")
-    result = ""
-    detected = ""
-    if text:
-        try:
-            if src == "auto":
-                detected = GoogleTranslator(source="auto", target=dest).detect(text)
-                src = detected
-            result = GoogleTranslator(source=src, target=dest).translate(text)
-        except Exception as e:
-            result = f"Error: {e}"
-    return jsonify({"result": result, "detected": detected})
-
-# --- Text Translator (tool) Route ---
-@app.route("/tools/translator", methods=["GET", "POST"])
-def translator():
-    text = request.form.get("text", "")
-    src = request.form.get("src", "auto")
-    dest = request.form.get("dest", "en")
-    result = ""
-    # Use a static mapping for language codes to names
-    language_map = {
-        "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic", "hy": "Armenian", "az": "Azerbaijani",
-        "eu": "Basque", "be": "Belarusian", "bn": "Bengali", "bs": "Bosnian", "bg": "Bulgarian", "ca": "Catalan",
-        "ceb": "Cebuano", "ny": "Chichewa", "zh-cn": "Chinese (Simplified)", "zh-tw": "Chinese (Traditional)",
-        "co": "Corsican", "hr": "Croatian", "cs": "Czech", "da": "Danish", "nl": "Dutch", "en": "English",
-        "eo": "Esperanto", "et": "Estonian", "tl": "Filipino", "fi": "Finnish", "fr": "French", "fy": "Frisian",
-        "gl": "Galician", "ka": "Georgian", "de": "German", "el": "Greek", "gu": "Gujarati", "ht": "Haitian Creole",
-        "ha": "Hausa", "haw": "Hawaiian", "iw": "Hebrew", "hi": "Hindi", "hmn": "Hmong", "hu": "Hungarian",
-        "is": "Icelandic", "ig": "Igbo", "id": "Indonesian", "ga": "Irish", "it": "Italian", "ja": "Japanese",
-        "jw": "Javanese", "kn": "Kannada", "kk": "Kazakh", "km": "Khmer", "ko": "Korean", "ku": "Kurdish (Kurmanji)",
-        "ky": "Kyrgyz", "lo": "Lao", "la": "Latin", "lv": "Latvian", "lt": "Lithuanian", "lb": "Luxembourgish",
-        "mk": "Macedonian", "mg": "Malagasy", "ms": "Malay", "ml": "Malayalam", "mt": "Maltese", "mi": "Maori",
-        "mr": "Marathi", "mn": "Mongolian", "my": "Myanmar (Burmese)", "ne": "Nepali", "no": "Norwegian",
-        "ps": "Pashto", "fa": "Persian", "pl": "Polish", "pt": "Portuguese", "pa": "Punjabi", "ro": "Romanian",
-        "ru": "Russian", "sm": "Samoan", "gd": "Scots Gaelic", "sr": "Serbian", "st": "Sesotho", "sn": "Shona",
-        "sd": "Sindhi", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian", "so": "Somali", "es": "Spanish",
-        "su": "Sundanese", "sw": "Swahili", "sv": "Swedish", "tg": "Tajik", "ta": "Tamil", "te": "Telugu",
-        "th": "Thai", "tr": "Turkish", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "vi": "Vietnamese",
-        "cy": "Welsh", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu"
-    }
-    language_choices = sorted(language_map.items(), key=lambda x: x[1])
-    if text:
-        try:
-            result = GoogleTranslator(source=src, target=dest).translate(text)
-        except Exception as e:
-            result = f"Error: {e}"
-    return render_template(
-        "tools/translator.html",
-        text=text,
-        src=src,
-        dest=dest,
-        result=result,
-        language_choices=language_choices
-    )
-
-# --- Search Engline Prompt (tool) Route ---
-@app.route("/tools/search", methods=["GET", "POST"])
-def search():
-    search_engines = [
-        {"key": "google", "name": "Google", "icon": "bi-google", "url": "https://www.google.com/search?q="},
-        {"key": "bing", "name": "Bing", "icon": "bi-microsoft", "url": "https://www.bing.com/search?q="},
-        {"key": "duckduckgo", "name": "DuckDuckGo", "icon": "bi-duck", "url": "https://duckduckgo.com/?q="},
-        {"key": "yahoo", "name": "Yahoo", "icon": "bi-yahoo", "url": "https://search.yahoo.com/search?p="},
-        {"key": "baidu", "name": "Baidu", "icon": "bi-globe", "url": "https://www.baidu.com/s?wd="},
-        {"key": "yandex", "name": "Yandex", "icon": "bi-globe", "url": "https://yandex.com/search/?text="},
-        {"key": "startpage", "name": "StartPage", "icon": "bi-shield-lock", "url": "https://www.startpage.com/do/search?q="},
-        {"key": "qwant", "name": "Qwant", "icon": "bi-search", "url": "https://www.qwant.com/?q="},
-        {"key": "mojeek", "name": "Mojeek", "icon": "bi-search", "url": "https://www.mojeek.com/search?q="},
-        {"key": "gigablast", "name": "Gigablast", "icon": "bi-search", "url": "https://www.gigablast.com/search?q="},
-        # TODO: Add more search engines as needed
-    ]
-    query = request.form.get("query", "")
-    return render_template("tools/search.html", search_engines=search_engines, query=query)
-
-# --- Pomodoro Timer (tool) Route ---
-@app.route("/tools/pomodoro")
-def pomodoro():
-    return render_template("tools/pomodoro.html")
-
-# --- Stopwatch (tool) Routes ---
-@app.route("/tools/stopwatch", methods=["GET", "POST"])
-def stopwatch():
-    if "stopwatches" not in session:
-        session["stopwatches"] = []
-    stopwatches = session["stopwatches"]
-    if request.method == "POST":
-        name = request.form.get("stopwatch_name", f"Stopwatch {len(stopwatches)+1}")
-        stopwatches.append({"name": name, "id": str(uuid.uuid4())})
-        session["stopwatches"] = stopwatches
-    return render_template("tools/stopwatch.html", stopwatches=stopwatches)
-
-# --- Timer (tool) Routes ---
-@app.route("/tools/timer", methods=["GET", "POST"])
-def timer():
-    if "timers" not in session:
-        session["timers"] = []
-    timers = session["timers"]
-    error = None
-    if request.method == "POST":
-        # Handle timer deletion
-        if request.form.get("delete_timer"):
-            del_id = request.form.get("delete_timer")
-            timers = [t for t in timers if str(t.get("id")) != str(del_id)]
-            session["timers"] = timers
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return ("", 204)
-            else:
-                return redirect(request.url)
-        try:
-            name = request.form.get("timer_name", "Timer").strip() or "Timer"
-            minutes_raw = request.form.get("minutes", "0")
-            seconds_raw = request.form.get("seconds", "0")
-            minutes = int(minutes_raw) if minutes_raw.isdigit() else 0
-            seconds = int(seconds_raw) if seconds_raw.isdigit() else 0
-            if minutes < 0 or seconds < 0 or seconds > 59:
-                error = _("Please enter valid non-negative values. Seconds must be 0-59.")
-            elif minutes == 0 and seconds == 0:
-                error = _("Timer must be at least 1 second.")
-            else:
-                timers.append({"name": name, "minutes": minutes, "seconds": seconds, "id": str(uuid.uuid4())})
-                session["timers"] = timers
-        except Exception:
-            error = _("Invalid input. Please enter numbers only.")
-    return render_template("tools/timer.html", timers=timers, error=error)
-
-# --- World Clock (tool) Route ---
-@app.route("/tools/world-clock")
-def world_clock():
-    return render_template("tools/world_clock.html", bigdatacloud_api_key=BIGDATACLOUD_API_KEY)
-
-# --- Periodic Table (tool) Route ---
-@app.route("/tools/periodic-table")
-def periodic_table():
-    import json
-    import requests  # Import the requests library
-
-    try:
-        response = requests.get("https://raw.githubusercontent.com/Bowserinator/Periodic-Table-JSON/master/PeriodicTableJSON.json", timeout=5)  # Fetch the JSON data
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-        data = response.json()  # Parse the JSON data from the response
-        elements = data["elements"]
-    except requests.exceptions.RequestException as e:
-        # Handle potential network errors (e.g., connection refused, timeout)
-        return f"Error fetching data: {e}", 500
-    except json.JSONDecodeError as e:
-        # Handle potential JSON parsing errors
-        return f"Error parsing JSON: {e}", 500
-
-    category_colors = {
-        "alkali metal": "#ffb74d",
-        "alkaline earth metal": "#ffd54f",
-        "transition metal": "#90caf9",
-        "post-transition metal": "#b0bec5",
-        "metalloid": "#a5d6a7",
-        "nonmetal": "#fff176",
-        "noble gas": "#ce93d8",
-        "halogen": "#f06292",
-        "lanthanide": "#80cbc4",
-        "actinide": "#bcaaa4",
-        "unknown": "#eeeeee"
-    }
-    return render_template("tools/periodic_table.html", elements=elements, category_colors=category_colors)
 
 # --- Image Metadata (tool) Route ---
 @app.route("/tools/image-metadata", methods=["GET", "POST"])
@@ -1961,130 +1671,6 @@ def image_metadata():
             error = "No file uploaded."
     return render_template("tools/image_metadata.html", metadata=metadata, error=error, image_preview=image_preview)
 
-short_urls = {}
-
-# --- URL Shortener (tool) Route ---
-@app.route("/tools/url-shortener", methods=["GET", "POST"])
-def url_shortener():
-    short_url = None
-    error = None
-    if request.method == "POST":
-        original = request.form.get("original")
-        custom = request.form.get("custom")
-        expiry_hours = int(request.form.get("expiry", 24))
-        expiry = datetime.now(timezone.utc) + timedelta(hours=expiry_hours)
-        if not original or not custom:
-            error = "Both fields are required."
-        elif custom in short_urls and short_urls[custom][1] > datetime.now(timezone.utc):
-            error = "Custom short URL already taken."
-        else:
-            short_urls[custom] = (original, expiry)
-            short_url = request.host_url + "s/" + custom
-    return render_template("tools/url_shortener.html", short_url=short_url, error=error)
-
-# --- Redirect Short URL Route ---
-@app.route("/s/<custom>")
-def redirect_short(custom):
-    url = short_urls.get(custom)
-    if url:
-        return redirect(url)
-    return "Short URL not found", 404
-
-redirects = {}
-
-# --- URL Redirects (tool) Route ---
-@app.route("/tools/url-redirects", methods=["GET", "POST"])
-def url_redirects():
-    message = None
-    error = None
-    if request.method == "POST":
-        path = request.form.get("path", "").strip()
-        target = request.form.get("target", "").strip()
-        if not path or not target:
-            error = "Both fields are required."
-        elif path in redirects:
-            error = "This path already exists."
-        else:
-            redirects[path] = target
-            message = f"Redirect /go/{path} → {target} created."
-    return render_template("tools/url_redirects.html", message=message, error=error, redirects=redirects)
-
-# --- Redirect Route for Short URLs ---
-@app.route("/go/<path>")
-def go_redirect(path):
-    url = redirects.get(path)
-    if url:
-        return redirect(url)
-    return "Redirect not found", 404
-
-# --- AI Prompt/Chatbox (tool) Routes ---
-@app.route("/tools/ai-prompt", methods=["GET", "POST"])
-def ai_prompt():
-    result = None
-    prompt = ""
-    if request.method == "POST":
-        prompt = request.form.get("prompt", "").strip()
-        if not prompt:
-            result = "Please enter a prompt."
-        else:
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=256,
-                    temperature=0.7,
-                )
-                result = response.choices[0].message.content
-            except Exception as e:
-                result = f"Error: {e}"
-    return render_template("tools/ai_prompt.html", prompt=prompt, result=result)
-
-# --- AI Text Summarizer (tool) Routes ---
-@app.route("/tools/ai-summarizer", methods=["GET", "POST"])
-def ai_summarizer():
-    summary = None
-    text = ""
-    if request.method == "POST":
-        text = request.form.get("text", "")
-        if text:
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "Summarize the following text in a concise way."},
-                        {"role": "user", "content": text}
-                    ],
-                    max_tokens=128,
-                    temperature=0.5,
-                )
-                summary = response.choices[0].message.content
-            except Exception as e:
-                summary = f"Error: {e}"
-    return render_template("tools/ai-summarizer.html", summary=summary, text=text)
-
-# --- AI Code Explainer (tool) Routes ---
-@app.route("/tools/ai-code-explainer", methods=["GET", "POST"])
-def ai_code_explainer():
-    explanation = None
-    code = ""
-    if request.method == "POST":
-        code = request.form.get("code", "")
-        if code:
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "Explain what the following code does in simple terms."},
-                        {"role": "user", "content": code}
-                    ],
-                    max_tokens=256,
-                    temperature=0.5,
-                )
-                explanation = response.choices[0].message.content
-            except Exception as e:
-                explanation = f"Error: {e}"
-    return render_template("tools/ai_code_explainer.html", explanation=explanation, code=code)
-
 # --- Integration Calculator (tool) Routes ---
 @app.route("/tools/integration-calculator", methods=["GET", "POST"])
 def integration_calculator():
@@ -2107,7 +1693,14 @@ def integration_calculator():
                 result = integrate(parsed, x)
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/integration_calculator.html", result=result, expr=expr, var=var, lower=lower, upper=upper)
+    return render_template(
+        "tools/integration_calculator.html",
+        result=result,
+        expr=expr,
+        var=var,
+        lower=lower,
+        upper=upper
+    )
 
 # --- Differentiation Calculator (tool) Routes ---
 @app.route("/tools/differentiation-calculator", methods=["GET", "POST"])
@@ -2124,8 +1717,12 @@ def differentiation_calculator():
             result = diff(parsed, x)
         except Exception as e:
             result = f"Error: {e}"
-   
-    return render_template("tools/differentiation_calculator.html", result=result, expr=expr, var=var)
+    return render_template(
+        "tools/differentiation_calculator.html",
+        result=result,
+        expr=expr,
+        var=var
+    )
 
 # --- Equation Solver (tool) Routes ---
 @app.route("/tools/equation-solver", methods=["GET", "POST"])
@@ -2142,7 +1739,12 @@ def equation_solver():
             result = solve(eq, x)
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/equation_solver.html", result=result, eqn=eqn, var=var)
+    return render_template(
+        "tools/equation_solver.html",
+        result=result,
+        eqn=eqn,
+        var=var
+    )
 
 # --- Matrix Calculator (tool) Routes ---
 @app.route("/tools/matrix-calculator", methods=["GET", "POST"])
@@ -2233,36 +1835,48 @@ def complex_calculator():
                 result = "Invalid operation"
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/complex_calculator.html", result=result, a=a, b=b, op=op)
+    return render_template(
+        "tools/complex_calculator.html",
+        result=result,
+        a=a,
+        b=b,
+        op=op
+    )
 
-# --- Polynomial Calculator (tool) Routes ---
-@app.route("/tools/polynomial-calculator", methods=["GET", "POST"])
-def polynomial_calculator():
+# --- Fraction Calculator (tool) Routes ---
+@app.route("/tools/fraction-calculator", methods=["GET", "POST"])
+def fraction_calculator():
+    from fractions import Fraction
     result = None
-    coeffs = ""
-    x_val = ""
-    action = "roots"
+    a = ""
+    b = ""
+    op = "+"
     if request.method == "POST":
-        coeffs = request.form.get("coeffs", "")
-        x_val = request.form.get("x_val", "")
-        action = request.form.get("action", "roots")
+        a = request.form.get("a", "")
+        b = request.form.get("b", "")
+        op = request.form.get("op", "+")
         try:
-            coeff_list = [float(c) for c in coeffs.split(",")]
-            x = symbols("x")
-            poly = sum(c * x**i for i, c in enumerate(reversed(coeff_list)))
-            if action == "roots":
-                result = solve(poly, x)
-            elif action == "evaluate":
-                result = poly.subs(x, float(x_val))
-            elif action == "derivative":
-                result = diff(poly, x)
-            elif action == "integral":
-                result = integrate(poly, x)
+            fa = Fraction(a)
+            fb = Fraction(b)
+            if op == "+":
+                result = fa + fb
+            elif op == "-":
+                result = fa - fb
+            elif op == "*":
+                result = fa * fb
+            elif op == "/":
+                result = fa / fb
             else:
-                result = "Invalid action"
+                result = "Invalid operation"
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/polynomial_calculator.html", result=result, coeffs=coeffs, x_val=x_val, action=action)
+    return render_template(
+        "tools/fraction_calculator.html",
+        result=result,
+        a=a,
+        b=b,
+        op=op
+    )
 
 # --- Statistics Calculator (tool) Routes ---
 @app.route("/tools/statistics-calculator", methods=["GET", "POST"])
@@ -2290,7 +1904,12 @@ def statistics_calculator():
                 result = "Invalid statistic"
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/statistics_calculator.html", result=result, data=data, stat=stat)
+    return render_template(
+        "tools/statistics_calculator.html",
+        result=result,
+        data=data,
+        stat=stat
+    )
 
 # --- Base Converter (tool) Routes ---
 @app.route("/tools/base-converter", methods=["GET", "POST"])
@@ -2317,7 +1936,13 @@ def base_converter():
                 result = format(n, f"b")  # fallback
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/base_converter.html", result=result, number=number, from_base=from_base, to_base=to_base)
+    return render_template(
+        "tools/base_converter.html",
+        result=result,
+        number=number,
+        from_base=from_base,
+        to_base=to_base
+    )
 
 # --- Trigonometry Calculator (tool) Routes ---
 @app.route("/tools/trigonometry-calculator", methods=["GET", "POST"])
@@ -2354,36 +1979,13 @@ def trigonometry_calculator():
                 result = "Invalid function"
         except Exception as e:
             result = f"Error: {e}"
-    return render_template("tools/trigonometry_calculator.html", result=result, angle=angle, func=func, deg=deg)
-
-# --- Fraction Calculator (tool) Routes ---
-@app.route("/tools/fraction-calculator", methods=["GET", "POST"])
-def fraction_calculator():
-    from fractions import Fraction
-    result = None
-    a = ""
-    b = ""
-    op = "+"
-    if request.method == "POST":
-        a = request.form.get("a", "")
-        b = request.form.get("b", "")
-        op = request.form.get("op", "+")
-        try:
-            fa = Fraction(a)
-            fb = Fraction(b)
-            if op == "+":
-                result = fa + fb
-            elif op == "-":
-                result = fa - fb
-            elif op == "*":
-                result = fa * fb
-            elif op == "/":
-                result = fa / fb
-            else:
-                result = "Invalid operation"
-        except Exception as e:
-            result = f"Error: {e}"
-    return render_template("tools/fraction_calculator.html", result=result, a=a, b=b, op=op)
+    return render_template(
+        "tools/trigonometry_calculator.html",
+        result=result,
+        angle=angle,
+        func=func,
+        deg=deg
+    )
 
 # --- AI Gemini Prompt (tool) Routes ---
 @app.route("/tools/ai-gemini-prompt", methods=["GET", "POST"])
@@ -2399,7 +2001,7 @@ def ai_gemini_prompt():
                 result = response.text
             except Exception as e:
                 result = f"Error: {e}"
-    return render_template("tools/ai_gemini_prompt.html", prompt=prompt, result=result)
+    return redirect(url_for("ai_gemini_prompt", prompt=prompt, result=result))
 
 # --- AI Text Paraphraser (tool) Routes ---
 @app.route("/tools/ai-paraphraser", methods=["GET", "POST"])
@@ -2422,7 +2024,7 @@ def ai_paraphraser():
                 paraphrased = response.choices[0].message.content
             except Exception as e:
                 paraphrased = f"Error: {e}"
-    return render_template("tools/ai_paraphraser.html", paraphrased=paraphrased, text=text)
+    return redirect(url_for("ai_paraphraser", paraphrased=paraphrased, text=text))
 
 # --- Gradient Generator (tool) Routes ---
 @app.route("/tools/gradient-generator", methods=["GET", "POST"])
@@ -2436,7 +2038,7 @@ def gradient_generator():
             css = f"linear-gradient({direction}, {', '.join(colors)})"
         else:
             css = f"radial-gradient(circle, {', '.join(colors)})"
-    return render_template("tools/gradient_generator.html", colors=colors, direction=direction, gradient_type=gradient_type, css=css)
+    return redirect(url_for("gradient_generator", colors=colors, direction=direction, gradient_type=gradient_type, css=css))
 
 # --- Color Palette Generator (tool) Routes ---
 @app.route("/tools/palette-generator", methods=["GET", "POST"])
@@ -2478,7 +2080,7 @@ def palette_generator():
         elif mode == "random":
             for _ in range(5):
                 palette.append("#{0:06x}".format(random.randint(0, 0xFFFFFF)).upper())
-    return render_template("tools/palette_generator.html", palette=palette, mode=mode, base=base)
+    return redirect(url_for("palette_generator", palette=palette, mode=mode, base=base))
 
 # --- White Noise Generator (tool) Route ---
 @app.route("/tools/white-noise")
@@ -2565,6 +2167,7 @@ def flashcards():
                     else:
                         # Make a copy of the current flashcard_sets
                         flashcard_sets = dict(session["flashcard_sets"])
+                        # Delete the set
                         del flashcard_sets[set_to_delete]
                         
                         # If we're deleting the current set, switch to another one
@@ -2596,8 +2199,8 @@ def flashcards():
                     error = _("Both front and back are required.")
                     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                         return jsonify({"success": False, "error": error}), 400
-                    return render_template("tools/flashcards.html", sets=sets, current_set=current_set, 
-                                        flashcards=flashcards, error=error)
+                    return redirect(url_for("flashcards", sets=sets, current_set=current_set, 
+                                        flashcards=flashcards, error=error))
 
                 # Make a copy of the current flashcard_sets
                 flashcard_sets = dict(session["flashcard_sets"])
@@ -2626,8 +2229,8 @@ def flashcards():
                     error = _("Too many flashcards! Please clear some cards or sets.")
                     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                         return jsonify({"success": False, "error": error}), 400
-                    return render_template("tools/flashcards.html", sets=sets, current_set=current_set, 
-                                        flashcards=flashcards, error=error)
+                    return redirect(url_for("flashcards", sets=sets, current_set=current_set, 
+                                        flashcards=flashcards, error=error))
 
                 if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                     return jsonify({"success": True})
@@ -2726,13 +2329,13 @@ def flashcards():
                         return jsonify({"success": False, "error": error}), 404
                     flash(error, "danger")
                     return redirect(url_for("flashcards"))
-        return render_template(
-            "tools/flashcards.html",
+        return redirect(url_for(
+            "flashcards",
             sets=sets,
             current_set=current_set,
             flashcards=flashcards,
             error=error
-        )
+        ))
         
     except Exception as e:
         app.logger.error(f"Error in flashcards: {str(e)}")
@@ -2770,16 +2373,10 @@ def reverse_image_search():
         if image and image.filename != "" and allowed_file(image.filename, ALLOWED_EXTENSIONS):
             filename = secure_filename(image.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'reverse_image_search', filename)
-
-            # Ensure the directory exists
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             image.save(filepath)
-
             image_url = url_for('static', filename=f"uploads/reverse_image_search/{filename}", _external=True)
-
             flash("Image uploaded successfully!", "success")
-
-            # Create reverse search URLs
             for engine in REVERSE_IMAGE_ENGINES:
                 if engine["upload"]:
                     url = engine["url"]
@@ -2790,11 +2387,878 @@ def reverse_image_search():
                     "url": url,
                     "icon": engine.get("icon", "bi-search")
                 })
-
         else:
             flash("Please upload a valid image file.", "danger")
 
-    return render_template("tools/reverse_image_search.html", search_links=search_links, filename=filename, image_url=image_url)
+    return render_template(
+        "tools/reverse_image_search.html",
+        search_links=search_links,
+        filename=filename,
+        image_url=image_url
+    )
+
+# --- Scientific Calculator (tool) Route ---
+@app.route("/tools/scientific-calculator")
+def scientific_calculator():
+    return render_template("tools/scientific_calculator.html")
+
+# --- To-Do List (tool) Route ---
+@app.route("/tools/todo", methods=["GET", "POST"])
+@login_required
+def todo():
+    if request.method == "POST":
+        content = request.form.get("content")
+        due_date = request.form.get("due_date")
+        todo = Todo(user_id=session["user_id"], content=content, due_date=due_date)
+        db.session.add(todo)
+        db.session.commit()
+    todos = Todo.query.filter_by(user_id=session["user_id"]).order_by(Todo.due_date).all()
+    return redirect(url_for("todo", todos=todos))
+
+# --- Note-taking (tool) Route ---
+@app.route("/tools/notes", methods=["GET", "POST"])
+@login_required
+def notes():
+    if request.method == "POST":
+        content = request.form.get("content")
+        note = Note(user_id=session["user_id"], content=content)
+        db.session.add(note)
+        db.session.commit()
+    notes = Note.query.filter_by(user_id=session["user_id"]).order_by(Note.created_at.desc()).all()
+    return redirect(url_for("notes", notes=notes))
+
+# --- Notes and To-Do Export Routes ---
+@app.route("/export/notes")
+@login_required
+def export_notes():
+    notes = Note.query.filter_by(user_id=session["user_id"]).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["content", "created_at"])
+    for note in notes:
+        writer.writerow([note.content, note.created_at])
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="notes.csv", mimetype="text/csv")
+
+@app.route("/export/todos")
+@login_required
+def export_todos():
+    todos = Todo.query.filter_by(user_id=session["user_id"]).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["content", "due_date", "completed", "created_at"])
+    for todo in todos:
+        writer.writerow([todo.content, todo.due_date, todo.completed, todo.created_at])
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode()), as_attachment=True, download_name="todos.csv", mimetype="text/csv")
+
+# --- Notes and To-Do Import Routes ---
+@app.route("/import/notes", methods=["POST"])
+@login_required
+def import_notes():
+    file = request.files.get("file")
+    if file:
+        reader = csv.DictReader(io.StringIO(file.read().decode()))
+        for row in reader:
+            note = Note(user_id=session["user_id"], content=row["content"])
+            db.session.add(note)
+        db.session.commit()
+        flash("Notes imported!", "success")
+    return redirect("/tools/notes")
+
+@app.route("/import/todos", methods=["POST"])
+@login_required
+def import_todos():
+    file = request.files.get("file")
+    if file:
+        reader = csv.DictReader(io.StringIO(file.read().decode()))
+        for row in reader:
+            todo = Todo(
+                user_id=session["user_id"],
+                content=row["content"],
+                due_date=row.get("due_date"),
+                completed=row.get("completed") == "True"
+            )
+            db.session.add(todo)
+        db.session.commit()
+        flash("Todos imported!", "success")
+    return redirect("/tools/todo")
+
+# --- File Renamer (tool) Route ---
+@app.route("/tools/file-renamer", methods=["GET", "POST"])
+def file_renamer():
+    if request.method == "POST":
+        files = request.files.getlist("files")
+        new_name = request.form.get("new_name", "").strip()
+        for file in files:
+            if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
+                original_filename = secure_filename(file.filename)
+                file_ext = os.path.splitext(original_filename)[1]
+                new_filename = new_name + file_ext
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
+                flash(f"Renamed and uploaded: {new_filename}", "success")
+            else:
+                flash("Invalid file type. Please upload an image or document.", "danger")
+    return render_template("tools/file_renamer.html")
+
+# --- Text Encryptor/Decryptor (tool) Route ---
+@app.route("/tools/text-encryptor", methods=["GET", "POST"])
+def text_encryptor():
+    from cryptography.fernet import Fernet
+    key = os.environ.get("FERNET_KEY")
+    if not key:
+        key = Fernet.generate_key().decode()
+    result = None
+    text = ""
+    action = "encrypt"
+    user_key = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        action = request.form.get("action", "encrypt")
+        user_key = request.form.get("user_key", key)
+        try:
+            fernet = Fernet(user_key.encode())
+            if action == "encrypt":
+                result = fernet.encrypt(text.encode()).decode()
+            elif action == "decrypt":
+                result = fernet.decrypt(text.encode()).decode()
+        except Exception as e:
+            result = f"Error: {e}"
+    return render_template(
+        "tools/text_encryptor.html",
+        result=result,
+        text=text,
+        action=action,
+        user_key=user_key or key
+    )
+
+# --- Image Enlarger (tool) Route ---
+@app.route("/tools/image-enlarger", methods=["GET", "POST"])
+def image_enlarger():
+    import base64, io
+    from PIL import Image, ExifTags
+
+    results = []
+    if request.method == "POST":
+        files = request.files.getlist("images")
+        width = request.form.get("width")
+        height = request.form.get("height")
+        scale = float(request.form.get("scale", 100)) / 100
+        fmt = request.form.get("format", "png")
+        quality = int(request.form.get("quality", 90))
+        dpi = int(request.form.get("dpi", 300))
+        preserve_aspect = "preserve_aspect" in request.form
+        strip_metadata = "strip_metadata" in request.form
+
+        for file in files:
+            if file and file.filename:
+                img = Image.open(file)
+                orig_size = img.size
+                # Resize
+                if width and height:
+                    new_size = (int(width), int(height))
+                else:
+                    new_size = (int(img.width * scale), int(img.height * scale))
+                if preserve_aspect:
+                    img.thumbnail(new_size)
+                else:
+                    img = img.resize(new_size)
+                # Strip metadata
+                if strip_metadata:
+                    img.info.pop("exif", None)
+                # Save to buffer
+                buf = io.BytesIO()
+                save_kwargs = {"format": fmt.upper()}
+                if fmt.lower() in ["jpg", "jpeg"]:
+                    save_kwargs["quality"] = quality
+                    save_kwargs["dpi"] = (dpi, dpi)
+                img.save(buf, **save_kwargs)
+                buf.seek(0)
+                results.append({
+                    "format": fmt,
+                    "data": base64.b64encode(buf.read()).decode(),
+                    "size": round(buf.tell() / 1024, 2)
+                })
+    return render_template("tools/image_enlarger.html", results=results, _=_)
+
+# --- Daily Routines/Reminders (tool) Route ---
+@app.route("/tools/daily-routines", methods=["GET", "POST"])
+@login_required
+def daily_routines():
+    if request.method == "POST":
+        title = request.form.get("title")
+        time = request.form.get("time")
+        frequency = request.form.get("frequency")
+        routine = {
+            "title": title,
+            "time": time,
+            "frequency": frequency
+        }
+        # Add to user's routines (JSON field)
+        user = User.query.get(session["user_id"])
+        routines = user.routines or []
+        routines.append(routine)
+        user.routines = routines
+        db.session.commit()
+        flash("Routine added!", "success")
+        return redirect(url_for("daily_routines"))
+    user = User.query.get(session["user_id"])
+    routines = user.routines if user else []
+    return render_template("tools/daily_routines.html", routines=routines)
+
+# --- Maps (tool) Route ---
+@app.route("/tools/maps")
+def maps():
+    return render_template("tools/maps.html")
+
+# --- Password Manager (tool) Route ---
+@app.route("/tools/password-manager", methods=["GET", "POST"])
+@login_required
+def password_manager():
+    if request.method == "POST":
+        site = request.form.get("site")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        # Save to user's password vault (JSON field)
+        user = User.query.get(session["user_id"])
+        vault = user.password_vault or {}
+        vault[site] = {
+            "username": username,
+            "password": password
+        }
+        user.password_vault = vault
+        db.session.commit()
+        flash("Password saved!", "success")
+        return redirect(url_for("password_manager"))
+    user = User.query.get(session["user_id"])
+    vault = user.password_vault if user else {}
+    return render_template("tools/password_manager.html", vault=vault)
+
+# --- QR Code Tools (tool) Route ---
+@app.route("/tools/qr-code-tools", methods=["GET", "POST"])
+def qr_code_tools():
+    import qrcode
+    import qrcode.image.svg
+    import base64
+    import io
+    from PIL import Image, ImageDraw
+    from pyzbar.pyzbar import decode as qr_decode
+
+    img_data = None
+    qr_result = None
+    error = None
+
+    if request.method == "POST":
+        # QR Generation
+        data = request.form.get("data", "")
+        color = request.form.get("color", "#000000")
+        bgcolor = request.form.get("bgcolor", "#ffffff")
+        error_level = request.form.get("error", "M")
+        logo_file = request.files.get("logo")
+        shape = request.form.get("shape", "square")
+        size = int(request.form.get("size", 10))
+        fmt = request.form.get("format", "png")
+        if data:
+            try:
+                qr = qrcode.QRCode(
+                    version=1,
+                    error_correction=getattr(qrcode.constants, f"ERROR_CORRECT_{error_level}"),
+                    box_size=size,
+                    border=4,
+                )
+                qr.add_data(data)
+                qr.make(fit=True)
+                if fmt == "svg":
+                    img = qr.make_image(image_factory=qrcode.image.svg.SvgImage, fill_color=color, back_color=bgcolor)
+                    buf = io.BytesIO()
+                    img.save(buf)
+                    img_data = base64.b64encode(buf.getvalue()).decode()
+                else:
+                    img = qr.make_image(fill_color=color, back_color=bgcolor).convert("RGBA")
+                    # Add logo if provided
+                    if logo_file and logo_file.filename:
+                        logo = Image.open(logo_file).convert("RGBA")
+                        # Resize logo
+                        box = (img.size[0] // 4, img.size[1] // 4)
+                        logo.thumbnail(box)
+                        # Center logo
+                        pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
+                        img.paste(logo, pos, logo)
+                    # Custom shape (circle)
+                    if shape == "circle":
+                        mask = Image.new("L", img.size, 0)
+                        draw = ImageDraw.Draw(mask)
+                        draw.ellipse((0, 0, img.size[0], img.size[1]), fill=255)
+                        img.putalpha(mask)
+                    buf = io.BytesIO()
+                    img.save(buf, format=fmt.upper())
+                    img_data = base64.b64encode(buf.getvalue()).decode()
+            except Exception as e:
+                error = _("Error generating QR code: ") + str(e)
+        # QR Reader
+        elif "qr_image" in request.files:
+            qr_image = request.files["qr_image"]
+            if qr_image and qr_image.filename:
+                try:
+                    img = Image.open(qr_image)
+                    decoded = qr_decode(img)
+                    qr_result = [d.data.decode() for d in decoded] if decoded else [_("No QR code found.")]
+                except Exception as e:
+                    qr_result = [_("Error reading QR code: ") + str(e)]
+        else:
+            error = _("No data or image provided.")
+
+    return render_template(
+        "tools/qr_code_tools.html",
+        img_data=img_data,
+        qr_result=qr_result,
+        error=error,
+        _=_
+    )
+
+# --- Daily Quotes (tool) Route ---
+@app.route("/tools/daily-quotes")
+def daily_quotes():
+    try:
+        r = requests.get("https://zenquotes.io/api/random")
+        quote = r.json()[0]
+        quotes = [f"{quote['q']} — {quote['a']}"]
+    except Exception:
+        quotes = [_("Could not fetch quote. Try again later.")]
+    return render_template("tools/daily_quotes.html", quotes=quotes, _=_)
+
+# --- Daily Questions (tool) Route ---
+@app.route("/tools/daily-questions")
+def daily_questions():
+    try:
+        r = requests.get("https://opentdb.com/api.php?amount=5&type=multiple")
+        data = r.json()
+        questions = [q["question"] for q in data.get("results", [])]
+    except Exception:
+        questions = [_("Could not fetch questions. Try again later.")]
+    return render_template("tools/daily_questions.html", questions=questions, _=_)
+
+# --- PDF Tools (tool) Route ---
+@app.route("/tools/pdf-tools", methods=["GET", "POST"])
+def pdf_tools():
+    import PyPDF2, io, os, uuid
+    from werkzeug.utils import secure_filename
+    from flask import send_file
+    result = None
+    error = None
+    if request.method == "POST":
+        files = request.files.getlist("file")
+        action = request.form.get("action")
+        password = request.form.get("password")
+        watermark_text = request.form.get("watermark_text")
+        rotate_angle = request.form.get("rotate_angle")
+        reorder = request.form.get("reorder")
+        try:
+            # Save all uploaded files
+            pdf_paths = []
+            for file in files:
+                if file and file.filename.endswith(".pdf"):
+                    filename = secure_filename(file.filename)
+                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(path)
+                    pdf_paths.append(path)
+            # Merge
+            if action == "merge":
+                writer = PyPDF2.PdfWriter()
+                for path in pdf_paths:
+                    reader = PyPDF2.PdfReader(path)
+                    for page in reader.pages:
+                        writer.add_page(page)
+                out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"merged_{uuid.uuid4().hex}.pdf")
+                with open(out_path, "wb") as f:
+                    writer.write(f)
+                result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+            # Split
+            elif action == "split":
+                split_links = []
+                for path in pdf_paths:
+                    reader = PyPDF2.PdfReader(path)
+                    for i, page in enumerate(reader.pages):
+                        writer = PyPDF2.PdfWriter()
+                        writer.add_page(page)
+                        out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{os.path.splitext(os.path.basename(path))[0]}_page_{i+1}.pdf")
+                        with open(out_path, "wb") as f:
+                            writer.write(f)
+                        split_links.append(url_for('static', filename=f"uploads/{os.path.basename(out_path)}"))
+                result = split_links
+            # Compress (dummy: just re-save)
+            elif action == "compress":
+                for path in pdf_paths:
+                    reader = PyPDF2.PdfReader(path)
+                    writer = PyPDF2.PdfWriter()
+                    for page in reader.pages:
+                        writer.add_page(page)
+                    out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"compressed_{uuid.uuid4().hex}.pdf")
+                    with open(out_path, "wb") as f:
+                        writer.write(f)
+                    result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+            # Extract Images
+            elif action == "extract_images":
+                import pdfplumber, base64
+                images = []
+                for path in pdf_paths:
+                    with pdfplumber.open(path) as pdf:
+                        for page in pdf.pages:
+                            for img in page.images:
+                                im = page.to_image()
+                                cropped = im.crop((img["x0"], img["top"], img["x1"], img["bottom"])).original
+                                buf = io.BytesIO()
+                                cropped.save(buf, format="PNG")
+                                images.append(base64.b64encode(buf.getvalue()).decode())
+                result = images
+            # Convert to Word
+            elif action == "to_word":
+                from pdf2docx import Converter
+                links = []
+                for path in pdf_paths:
+                    docx_path = path.replace(".pdf", ".docx")
+                    cv = Converter(path)
+                    cv.convert(docx_path, start=0, end=None)
+                    cv.close()
+                    links.append(url_for('static', filename=f"uploads/{os.path.basename(docx_path)}"))
+                result = links
+            # Convert to Excel
+            elif action == "to_excel":
+                # Placeholder: Use tabula-py or camelot for real extraction
+                result = "Excel conversion coming soon!"
+            # Add Password
+            elif action == "add_password":
+                for path in pdf_paths:
+                    reader = PyPDF2.PdfReader(path)
+                    writer = PyPDF2.PdfWriter()
+                    for page in reader.pages:
+                        writer.add_page(page)
+                    out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"protected_{uuid.uuid4().hex}.pdf")
+                    writer.encrypt(password)
+                    with open(out_path, "wb") as f:
+                        writer.write(f)
+                    result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+            # Remove Password
+            elif action == "remove_password":
+                for path in pdf_paths:
+                    reader = PyPDF2.PdfReader(path, password=password)
+                    writer = PyPDF2.PdfWriter()
+                    for page in reader.pages:
+                        writer.add_page(page)
+                    out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"unprotected_{uuid.uuid4().hex}.pdf")
+                    with open(out_path, "wb") as f:
+                        writer.write(f)
+                    result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+            # Rotate
+            elif action == "rotate":
+                for path in pdf_paths:
+                    reader = PyPDF2.PdfReader(path)
+                    writer = PyPDF2.PdfWriter()
+                    for page in reader.pages:
+                        page.rotate(int(rotate_angle))
+                        writer.add_page(page)
+                    out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"rotated_{uuid.uuid4().hex}.pdf")
+                    with open(out_path, "wb") as f:
+                        writer.write(f)
+                    result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+            # Watermark
+            elif action == "watermark":
+                # Placeholder: Add watermark logic here
+                result = "Watermarking coming soon!"
+            # Reorder
+            elif action == "reorder":
+                # Placeholder: Add reorder logic here
+                result = "Reordering coming soon!"
+            else:
+                error = "Invalid action."
+        except Exception as e:
+            error = f"Error: {e}"
+    return render_template("tools/pdf_tools.html", result=result, error=error)
+
+# --- Voice-to-Text (tool) Route ---
+@app.route("/tools/voice-to-text", methods=["GET", "POST"])
+def voice_to_text():
+    result = None
+    if request.method == "POST":
+        file = request.files.get("audio")
+        if file and allowed_file(file.filename, ["audio"]):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            # Convert speech to text using Google Cloud Speech-to-Text
+            try:
+                from google.cloud import speech
+                client = speech.SpeechClient()
+                with open(filepath, "rb") as audio_file:
+                    content = audio_file.read()
+                audio = speech.RecognitionAudio(content=content)
+                config = speech.RecognitionConfig(
+                    encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                    sample_rate_hertz=16000,
+                    language_code="en-US",
+                )
+                response = client.recognize(config=config, audio=audio)
+                for result in response.results:
+                    result = result.alternatives[0].transcript
+            except Exception as e:
+                result = f"Error: {e}"
+    return render_template("tools/voice_to_text.html", result=result)
+
+# --- Text-to-Speech (tool) Route ---
+@app.route("/tools/text-to-speech", methods=["GET", "POST"])
+def text_to_speech():
+    import os, uuid
+    result = None
+    error = None
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        lang = request.form.get("lang", "en")
+        try:
+            from gtts import gTTS
+            audio_dir = os.path.join("static", "audio")
+            os.makedirs(audio_dir, exist_ok=True)
+            filename = os.path.join(audio_dir, f"{uuid.uuid4()}.mp3")
+            tts = gTTS(text=text, lang=lang)
+            tts.save(filename)
+            result = url_for('static', filename=f"audio/{os.path.basename(filename)}")
+        except Exception as e:
+            error = f"Error: {e}"
+    return render_template("tools/text_to_speech.html", result=result, error=error)
+
+# --- Mind-maps/Flowcharts (tool) Route ---
+@app.route("/tools/mind-maps")
+def mind_maps():
+    return render_template("tools/mind_maps.html")
+
+# --- Code Formatter (tool) Route ---
+@app.route("/tools/code-formatter", methods=["GET", "POST"])
+def code_formatter():
+    result = None
+    code = ""
+    if request.method == "POST":
+        code = request.form.get("code", "")
+        if code:
+            try:
+                # Format code using Black
+                from black import format_file_contents, FileMode
+                formatted, _ = format_file_contents(code, fast=True, mode=FileMode())
+                result = formatted
+            except Exception as e:
+                result = f"Error: {e}"
+    return render_template("tools/code_formatter.html", result=result, code=code)
+
+# --- Expense Tracker (tool) Route ---
+@app.route("/tools/expense-tracker", methods=["GET", "POST"])
+@login_required
+def expense_tracker():
+    if request.method == "POST":
+        date = request.form.get("date")
+        category = request.form.get("category")
+        amount = request.form.get("amount")
+        description = request.form.get("description")
+        # Save to user's expenses (JSON field)
+        user = User.query.get(session["user_id"])
+        expenses = user.expenses or []
+        expenses.append({
+            "date": date,
+            "category": category,
+            "amount": float(amount),
+            "description": description
+        })
+        user.expenses = expenses
+        db.session.commit()
+        flash("Expense added!", "success")
+        return redirect(url_for("expense_tracker"))
+    user = User.query.get(session["user_id"])
+    expenses = user.expenses if user else []
+    return render_template("tools/expense_tracker.html", expenses=expenses)
+
+# --- Budget Tracker (tool) Route ---
+@app.route("/tools/budget-tracker", methods=["GET", "POST"])
+@login_required
+def budget_tracker():
+    if request.method == "POST":
+        month = request.form.get("month")
+        budget = request.form.get("budget")
+        # Save to user's budget (JSON field)
+        user = User.query.get(session["user_id"])
+        user.budget = { "month": month, "budget": float(budget) }
+        db.session.commit()
+        flash("Budget saved!", "success")
+        return redirect(url_for("budget_tracker"))
+    user = User.query.get(session["user_id"])
+    budget = user.budget if user else {}
+    return render_template("tools/budget_tracker.html", budget=budget)
+
+# --- Grocery List Manager (tool) Route ---
+@app.route("/tools/grocery-list", methods=["GET", "POST"])
+@login_required
+def grocery_list():
+    if request.method == "POST":
+        item = request.form.get("item")
+        quantity = request.form.get("quantity")
+        # Save to user's grocery list (JSON field)
+        user = User.query.get(session["user_id"])
+        grocery_list = user.grocery_list or []
+        grocery_list.append({
+            "item": item,
+            "quantity": quantity
+        })
+        user.grocery_list = grocery_list
+        db.session.commit()
+        flash("Item added to grocery list!", "success")
+        return redirect(url_for("grocery_list"))
+    user = User.query.get(session["user_id"])
+    grocery_list = user.grocery_list if user else []
+    return render_template("tools/grocery_list.html", grocery_list=grocery_list)
+
+# --- Health Tracker (tool) Route ---
+@app.route("/tools/health-tracker", methods=["GET", "POST"])
+@login_required
+def health_tracker():
+    if request.method == "POST":
+        date = request.form.get("date")
+        weight = request.form.get("weight")
+        height = request.form.get("height")
+        bmi = request.form.get("bmi")
+        # Save to user's health data (JSON field)
+        user = User.query.get(session["user_id"])
+        health_data = user.health_data or []
+        health_data.append({
+            "date": date,
+            "weight": float(weight),
+            "height": float(height),
+            "bmi": float(bmi)
+        })
+        user.health_data = health_data
+        db.session.commit()
+        flash("Health data added!", "success")
+        return redirect(url_for("health_tracker"))
+    user = User.query.get(session["user_id"])
+    health_data = user.health_data if user else []
+    return render_template("tools/health_tracker.html", health_data=health_data)
+
+# --- Random Generator (tool) Route ---
+@app.route("/tools/random-generator")
+def random_generator():
+    return render_template("tools/random_generator.html")
+
+# --- Collaborative Notes (tool) Route ---
+@app.route("/tools/collaborative-notes", methods=["GET", "POST"])
+@login_required
+def collaborative_notes():
+    if request.method == "POST":
+        title = request.form.get("title")
+        content = request.form.get("content")
+        # Save to user's notes (JSON field)
+        user = User.query.get(session["user_id"])
+        notes = user.notes or []
+        notes.append({
+            "title": title,
+            "content": content
+        })
+        user.notes = notes
+        db.session.commit()
+        flash("Note added!", "success")
+        return redirect(url_for("collaborative_notes"))
+    user = User.query.get(session["user_id"])
+    notes = user.notes if user else []
+    return render_template("tools/collaborative_notes.html", notes=notes)
+
+# --- Basic Drawing (tool) Route ---
+@app.route("/tools/basic-drawing")
+def basic_drawing():
+    return render_template("tools/basic_drawing.html")
+
+# --- Stock/Market Tracker (tool) Route ---
+@app.route("/tools/stock-market-tracker", methods=["GET", "POST"])
+@login_required
+def stock_market_tracker():
+    if request.method == "POST":
+        symbol = request.form.get("symbol")
+        # Save to user's stock/market data (JSON field)
+        user = User.query.get(session["user_id"])
+        market_data = user.market_data or []
+        market_data.append({
+            "symbol": symbol
+        })
+        user.market_data = market_data
+        db.session.commit()
+        flash("Stock/Market data added!", "success")
+        return redirect(url_for("stock_market_tracker"))
+    user = User.query.get(session["user_id"])
+    market_data = user.market_data if user else []
+    return render_template("tools/stock_market_tracker.html", market_data=market_data)
+
+# --- Bookmark Manager (tool) Route ---
+@app.route("/tools/bookmark-manager", methods=["GET", "POST"])
+@login_required
+def bookmark_manager():
+    if request.method == "POST":
+        title = request.form.get("title")
+        url = request.form.get("url")
+        # Save to user's bookmarks (JSON field)
+        user = User.query.get(session["user_id"])
+        bookmarks = user.bookmarks or []
+        bookmarks.append({
+            "title": title,
+            "url": url
+        })
+        user.bookmarks = bookmarks
+        db.session.commit()
+        flash("Bookmark added!", "success")
+        return redirect(url_for("bookmark_manager"))
+    user = User.query.get(session["user_id"])
+    bookmarks = user.bookmarks if user else []
+    return render_template("tools/bookmark_manager.html", bookmarks=bookmarks)
+
+# --- World Clock (tool) Route ---
+@app.route("/tools/world-clock")
+def world_clock():
+    return render_template("tools/world_clock.html", bigdatacloud_api_key=BIGDATACLOUD_API_KEY)
+
+# --- Periodic Table (tool) Route ---
+@app.route("/tools/periodic-table")
+def periodic_table():
+    import json
+    import requests  # Import the requests library
+
+    try:
+        response = requests.get("https://raw.githubusercontent.com/Bowserinator/Periodic-Table-JSON/master/PeriodicTableJSON.json", timeout=5)  # Fetch the JSON data
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        data = response.json()  # Parse the JSON data from the response
+        elements = data["elements"]
+    except requests.exceptions.RequestException as e:
+        # Handle potential network errors (e.g., connection refused, timeout)
+        return f"Error fetching data: {e}", 500
+    except json.JSONDecodeError as e:
+        # Handle potential JSON parsing errors
+        return f"Error parsing JSON: {e}", 500
+
+    category_colors = {
+        "alkali metal": "#ffb74d",
+        "alkaline earth metal": "#ffd54f",
+        "transition metal": "#90caf9",
+        "post-transition metal": "#b0bec5",
+        "metalloid": "#a5d6a7",
+        "nonmetal": "#fff176",
+        "noble gas": "#ce93d8",
+        "halogen": "#f06292",
+        "lanthanide": "#80cbc4",
+        "actinide": "#bcaaa4",
+        "unknown": "#eeeeee"
+    }
+    return render_template("tools/periodic_table.html", elements=elements, category_colors=category_colors)
+
+# --- Flashcard Test (tool) Route ---
+@app.route("/tools/flashcard-test", methods=["GET", "POST"])
+@login_required
+def flashcard_test():
+    if request.method == "POST":
+        set_name = request.form.get("set_name")
+        action = request.form.get("action")
+        if action == "start":
+            session["flashcard_test_set"] = set_name
+            session["flashcard_test_index"] = 0
+            session.modified = True
+            return redirect(url_for("flashcard_test"))
+        elif action == "next":
+            index = session.get("flashcard_test_index", 0)
+            session["flashcard_test_index"] = index + 1
+            session.modified = True
+            return redirect(url_for("flashcard_test"))
+        elif action == "finish":
+            session.pop("flashcard_test_set", None)
+            session.pop("flashcard_test_index", None)
+            session.modified = True
+            flash("Test finished!", "success")
+            return redirect(url_for("flashcards"))
+    set_name = session.get("flashcard_test_set")
+    index = session.get("flashcard_test_index", 0)
+    flashcards = []
+    if set_name:
+        flashcards = session["flashcard_sets"].get(set_name, [])
+    current_card = flashcards[index] if index < len(flashcards) else None
+    return render_template("tools/flashcard_test.html", flashcards=flashcards, current_card=current_card, set_name=set_name)
+
+# --- AI Chatbot (tool) Route ---
+@app.route("/tools/ai-chatbot", methods=["GET", "POST"])
+def ai_chatbot():
+    response = None
+    if request.method == "POST":
+        user_input = request.form.get("user_input", "").strip()
+        if user_input:
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": user_input}],
+                    max_tokens=150,
+                    temperature=0.7,
+                )
+                response = response.choices[0].message.content.strip()
+            except Exception as e:
+                response = f"Error: {e}"
+    return render_template("tools/ai_chatbot.html", response=response)
+
+@app.route("/tools/text-case-convertor", methods=["GET", "POST"])
+def text_case_convertor():
+    text = ""
+    result = ""
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        case = request.form.get("case", "")
+        if case == "upper":
+            result = text.upper()
+        elif case == "lower":
+            result = text.lower()
+        elif case == "title":
+            result = text.title()
+        elif case == "sentence":
+            result = text.capitalize()
+        elif case == "snake":
+            result = "_".join(text.lower().split())
+        elif case == "kebab":
+            result = "-".join(text.lower().split())
+        elif case == "camel":
+            words = text.split()
+            result = words[0].lower() + "".join(w.capitalize() for w in words[1:])
+        elif case == "invert":
+            result = text.swapcase()
+        else:
+            result = text
+    return render_template("tools/text_case_convertor.html", text=text, result=result, _=_)
+
+@app.route("/tools/markdown-previewer")
+def markdown_previewer():
+    return render_template("tools/markdown_previewer.html", _=_)
+
+@app.route("/tools/password-generator", methods=["GET", "POST"])
+def password_generator():
+    password = ""
+    length = 12
+    uppercase = numbers = symbols = True
+    exclude = ""
+    batch = 1
+    if request.method == "POST":
+        length = int(request.form.get("length", 12))
+        uppercase = "uppercase" in request.form
+        numbers = "numbers" in request.form
+        symbols = "symbols" in request.form
+        exclude = request.form.get("exclude", "")
+        batch = int(request.form.get("batch", 1))
+        charset = string.ascii_lowercase
+        if uppercase:
+            charset += string.ascii_uppercase
+        if numbers:
+            charset += string.digits
+        if symbols:
+            charset += string.punctuation
+        charset = "".join(c for c in charset if c not in exclude)
+        passwords = []
+        for _ in range(batch):
+            passwords.append("".join(random.choice(charset) for _ in range(length)))
+        password = "\n".join(passwords)
+    return render_template("tools/password_generator.html", password=password, length=length, uppercase=uppercase, numbers=numbers, symbols=symbols)
 
 # --- Main Application Setup ---
 if __name__ == "__main__":

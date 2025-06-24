@@ -1,0 +1,38 @@
+{% extends "layout.html" %} {% block title %}{{ _('Grocery List Manager') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Grocery List Manager') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Item') }}</label>
+      <input type="text" name="item" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Quantity') }}</label>
+      <input type="text" name="quantity" class="form-control" required />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Add Item') }}
+    </button>
+  </form>
+  <div class="card shadow-sm mx-auto" style="max-width: 700px">
+    <div class="card-header">{{ _('Your Grocery List') }}</div>
+    <ul class="list-group list-group-flush">
+      {% for g in grocery_list %}
+      <li
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        <span>{{ g.item }}</span>
+        <span class="badge bg-primary rounded-pill">{{ g.quantity }}</span>
+      </li>
+      {% else %}
+      <li class="list-group-item text-muted">{{ _('No items yet.') }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "layout.html" %} {% block title %}{{ _('Health Tracker') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Health Tracker') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Date') }}</label>
+      <input type="date" name="date" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Weight (kg)') }}</label>
+      <input
+        type="number"
+        name="weight"
+        class="form-control"
+        step="0.01"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Height (cm)') }}</label>
+      <input
+        type="number"
+        name="height"
+        class="form-control"
+        step="0.1"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('BMI') }}</label>
+      <input
+        type="number"
+        name="bmi"
+        class="form-control"
+        step="0.01"
+        required
+      />
+      <div class="form-text">
+        {{ _('Calculate BMI: weight (kg) / (height (m))²') }}
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Add Entry') }}
+    </button>
+  </form>
+  <div class="card shadow-sm mx-auto" style="max-width: 700px">
+    <div class="card-header">{{ _('Your Health Data') }}</div>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>{{ _('Date') }}</th>
+            <th>{{ _('Weight (kg)') }}</th>
+            <th>{{ _('Height (cm)') }}</th>
+            <th>{{ _('BMI') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in health_data %}
+          <tr>
+            <td>{{ h.date }}</td>
+            <td>{{ h.weight }}</td>
+            <td>{{ h.height }}</td>
+            <td>{{ h.bmi }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="text-muted text-center">
+              {{ _('No health data yet.') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

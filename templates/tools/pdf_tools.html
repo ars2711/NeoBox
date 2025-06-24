@@ -1,0 +1,91 @@
+{% extends "layout.html" %} {% block title %}PDF Tools{% endblock %} {% block
+main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">
+    PDF Tools: Merge, Split, Compress, Convert, Protect, More
+  </h2>
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 700px"
+  >
+    <div class="mb-3">
+      <label class="form-label">Upload PDF(s)</label>
+      <input
+        type="file"
+        name="file"
+        accept="application/pdf"
+        class="form-control"
+        required
+        multiple
+      />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Action</label>
+      <select name="action" class="form-select" id="pdfAction">
+        <option value="merge">Merge PDFs</option>
+        <option value="split">Split PDF</option>
+        <option value="compress">Compress PDF</option>
+        <option value="extract_images">Extract Images</option>
+        <option value="to_word">Convert to Word</option>
+        <option value="to_excel">Convert to Excel</option>
+        <option value="add_password">Add Password</option>
+        <option value="remove_password">Remove Password</option>
+        <option value="rotate">Rotate Pages</option>
+        <option value="reorder">Reorder Pages</option>
+        <option value="watermark">Add Watermark</option>
+      </select>
+    </div>
+    <div class="mb-3" id="passwordField" style="display: none">
+      <label class="form-label">Password</label>
+      <input type="text" name="password" class="form-control" />
+    </div>
+    <div class="mb-3" id="watermarkField" style="display: none">
+      <label class="form-label">Watermark Text</label>
+      <input type="text" name="watermark_text" class="form-control" />
+    </div>
+    <div class="mb-3" id="rotateField" style="display: none">
+      <label class="form-label">Rotate Angle (degrees)</label>
+      <input
+        type="number"
+        name="rotate_angle"
+        class="form-control"
+        value="90"
+      />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Process PDF</button>
+  </form>
+  {% if error %}
+  <div class="alert alert-danger mt-4 text-center">{{ error }}</div>
+  {% endif %} {% if result %} {% if result is string %}
+  <div class="alert alert-success mt-4 text-center">
+    <a href="{{ result }}" class="btn btn-success" download>Download Result</a>
+  </div>
+  {% elif result is sequence %}
+  <div class="alert alert-success mt-4 text-center">
+    {% for link in result %}
+    <a href="{{ link }}" class="btn btn-success m-1" download
+      >Download {{ loop.index }}</a
+    >
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info mt-4 text-center">{{ result }}</div>
+  {% endif %} {% endif %}
+</div>
+<script>
+  document.getElementById("pdfAction").addEventListener("change", function () {
+    document.getElementById("passwordField").style.display = [
+      "add_password",
+      "remove_password",
+    ].includes(this.value)
+      ? ""
+      : "none";
+    document.getElementById("watermarkField").style.display =
+      this.value === "watermark" ? "" : "none";
+    document.getElementById("rotateField").style.display =
+      this.value === "rotate" ? "" : "none";
+  });
+</script>
+{% endblock %}

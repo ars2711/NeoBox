@@ -1,0 +1,63 @@
+{% extends "layout.html" %} {% block title %}{{ _('Budget Tracker') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Budget Tracker') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Month') }}</label>
+      <input type="month" name="month" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Category') }}</label>
+      <input type="text" name="category" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Amount') }}</label>
+      <input
+        type="number"
+        name="amount"
+        class="form-control"
+        step="0.01"
+        required
+      />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Save Budget') }}
+    </button>
+  </form>
+  <div class="card shadow-sm mx-auto" style="max-width: 700px">
+    <div class="card-header">{{ _('Your Budgets') }}</div>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>{{ _('Month') }}</th>
+            <th>{{ _('Category') }}</th>
+            <th>{{ _('Amount') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for month, cats in budget.items() %} {% for cat, amt in
+          cats.items() %}
+          <tr>
+            <td>{{ month }}</td>
+            <td>{{ cat }}</td>
+            <td>{{ amt }}</td>
+          </tr>
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="3" class="text-muted text-center">
+              {{ _('No budgets yet.') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "layout.html" %} {% block title %}{{ _('Code Formatter') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Code Formatter & Beautifier') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 800px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Paste your code') }}</label>
+      <textarea
+        name="code"
+        rows="10"
+        class="form-control font-monospace"
+        required
+      >
+{{ code or '' }}</textarea
+      >
+    </div>
+    <div class="mb-3 row g-2">
+      <div class="col-md-4">
+        <label class="form-label">{{ _('Language') }}</label>
+        <select name="language" class="form-select">
+          <option value="python">Python</option>
+          <option value="javascript">JavaScript</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+          <option value="json">JSON</option>
+          <option value="c">C</option>
+          <option value="cpp">C++</option>
+          <option value="java">Java</option>
+          <option value="go">Go</option>
+          <option value="php">PHP</option>
+          <option value="ruby">Ruby</option>
+          <option value="rust">Rust</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ _('Style') }}</label>
+        <select name="style" class="form-select">
+          <option value="black">Black (Python)</option>
+          <option value="prettier">Prettier (JS/HTML/CSS)</option>
+          <option value="autopep8">autopep8 (Python)</option>
+          <option value="clang">ClangFormat (C/C++)</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ _('Indent Size') }}</label>
+        <input
+          type="number"
+          name="indent"
+          class="form-control"
+          value="4"
+          min="2"
+          max="8"
+        />
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Format Code') }}
+    </button>
+  </form>
+  {% if result %}
+  <div class="card shadow-sm p-3 mt-4">
+    <label class="form-label">{{ _('Formatted Code') }}</label>
+    <pre class="bg-light rounded p-3"><code>{{ result }}</code></pre>
+    <button
+      class="btn btn-outline-secondary mt-2"
+      onclick="navigator.clipboard.writeText(document.querySelector('pre code').textContent)"
+    >
+      {{ _('Copy') }}
+    </button>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

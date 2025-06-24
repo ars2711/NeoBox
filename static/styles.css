@@ -288,6 +288,8 @@ body {
 .card {
   border-radius: 1.25rem;
 }
+.card-body {
+}
 .live-preview #math-preview {
   background: #f8f9fa;
   color: #222;

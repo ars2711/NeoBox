@@ -1,0 +1,49 @@
+{% extends "layout.html" %} {% block title %}Text Encryptor/Decryptor{% endblock
+%} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">Text Encryptor / Decryptor</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">Your Text</label>
+      <textarea name="text" rows="4" class="form-control" required>
+{{ text or '' }}</textarea
+      >
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Encryption Key</label>
+      <input
+        type="text"
+        name="user_key"
+        class="form-control"
+        value="{{ user_key }}"
+        required
+      />
+      <div class="form-text">Keep this key safe! You need it to decrypt.</div>
+    </div>
+    <div class="mb-3 d-flex gap-2">
+      <button name="action" value="encrypt" class="btn btn-success flex-fill">
+        Encrypt
+      </button>
+      <button name="action" value="decrypt" class="btn btn-warning flex-fill">
+        Decrypt
+      </button>
+    </div>
+  </form>
+  {% if result %}
+  <div class="alert alert-info mt-4 text-break">
+    <strong>Result:</strong>
+    <div style="word-break: break-all">{{ result }}</div>
+    <button
+      class="btn btn-sm btn-outline-secondary mt-2"
+      onclick="navigator.clipboard.writeText('{{ result }}')"
+    >
+      Copy
+    </button>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

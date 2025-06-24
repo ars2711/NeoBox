@@ -1,0 +1,128 @@
+{% extends "layout.html" %} {% block title %}QR Code Tools{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">QR Code Generator & Reader</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <form
+        method="post"
+        class="card p-4 shadow-sm mb-4"
+        enctype="multipart/form-data"
+      >
+        <div class="mb-3">
+          <label class="form-label">Text/URL</label>
+          <input type="text" name="data" class="form-control" required />
+        </div>
+        <div class="mb-3 row g-2">
+          <div class="col">
+            <label class="form-label">Color</label>
+            <input
+              type="color"
+              name="color"
+              class="form-control"
+              value="#000000"
+            />
+          </div>
+          <div class="col">
+            <label class="form-label">Background</label>
+            <input
+              type="color"
+              name="bgcolor"
+              class="form-control"
+              value="#ffffff"
+            />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Logo (optional)</label>
+          <input
+            type="file"
+            name="logo"
+            accept="image/*"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Error Correction</label>
+          <select name="error" class="form-select">
+            <option value="L">Low</option>
+            <option value="M">Medium</option>
+            <option value="Q">Quartile</option>
+            <option value="H">High</option>
+          </select>
+        </div>
+        <button class="btn btn-primary w-100" type="submit">
+          Generate QR Code
+        </button>
+      </form>
+      {% if img_data %}
+      <div class="text-center mt-4">
+        <img
+          src="data:image/png;base64,{{ img_data }}"
+          class="img-fluid rounded shadow"
+          alt="QR Code"
+        />
+        <a
+          href="data:image/png;base64,{{ img_data }}"
+          download="qrcode.png"
+          class="btn btn-success mt-3"
+          >Download QR Code</a
+        >
+      </div>
+      {% endif %}
+    </div>
+    <div class="col-md-6">
+      <div class="card p-4 shadow-sm">
+        <h5>QR Code Reader</h5>
+        <input
+          type="file"
+          id="qrInput"
+          accept="image/*"
+          class="form-control mb-2"
+        />
+        <video id="qrVideo" width="100%" style="display: none"></video>
+        <button class="btn btn-outline-secondary mb-2" id="startCam">
+          Scan with Camera
+        </button>
+        <div
+          id="qrResult"
+          class="alert alert-info mt-2"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script>
+    document.getElementById("startCam").onclick = function () {
+      let qrVideo = document.getElementById("qrVideo");
+      qrVideo.style.display = "block";
+      let qrScanner = new Html5Qrcode("qrVideo");
+      qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (qrCodeMessage) => {
+          document.getElementById("qrResult").style.display = "block";
+          document.getElementById("qrResult").textContent = qrCodeMessage;
+          qrScanner.stop();
+        }
+      );
+    };
+    document.getElementById("qrInput").onchange = function (e) {
+      let file = e.target.files[0];
+      if (!file) return;
+      let reader = new FileReader();
+      reader.onload = function () {
+        Html5Qrcode.getCameras().then((devices) => {
+          let qrScanner = new Html5Qrcode("qrVideo");
+          qrScanner.scanFile(file, true).then((qrCodeMessage) => {
+            document.getElementById("qrResult").style.display = "block";
+            document.getElementById("qrResult").textContent = qrCodeMessage;
+          });
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+  </script>
+</div>
+{% endblock %}

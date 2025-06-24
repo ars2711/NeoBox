@@ -1,0 +1,29 @@
+{% extends "layout.html" %} {% block title %}{{ _('Stock/Market Tracker') }}{%
+endblock %} {% block main %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">{{ _('Stock/Market Tracker') }}</h2>
+  <form
+    method="post"
+    class="card p-4 shadow-sm mx-auto mb-4"
+    style="max-width: 600px"
+  >
+    <div class="mb-3">
+      <label class="form-label">{{ _('Stock Symbol') }}</label>
+      <input type="text" name="symbol" class="form-control" required />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">
+      {{ _('Add Symbol') }}
+    </button>
+  </form>
+  <div class="card shadow-sm mx-auto" style="max-width: 700px">
+    <div class="card-header">{{ _('Your Watchlist') }}</div>
+    <ul class="list-group list-group-flush">
+      {% for s in market_data %}
+      <li class="list-group-item">{{ s.symbol }}</li>
+      {% else %}
+      <li class="list-group-item text-muted">{{ _('No stocks yet.') }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
