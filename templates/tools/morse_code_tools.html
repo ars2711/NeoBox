@@ -1,0 +1,33 @@
+{% extends "layout.html" %} {% block title %}Morse Code Tools{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <h2 class="mb-3"><i class="bi bi-dot"></i> Morse Code Tools</h2>
+  <form method="POST" class="mb-3">
+    <textarea
+      name="text"
+      rows="5"
+      class="form-control mb-2"
+      placeholder="Enter text or morse code..."
+    >
+{{ text }}</textarea
+    >
+    <div class="mb-2">
+      <label class="me-2"
+        ><input type="radio" name="mode" value="encode" {% if mode == "encode"
+        %}checked{% endif %}> Encode</label
+      >
+      <label
+        ><input type="radio" name="mode" value="decode" {% if mode == "decode"
+        %}checked{% endif %}> Decode</label
+      >
+    </div>
+    <button class="btn btn-primary" type="submit">Convert</button>
+  </form>
+  {% if result %}
+  <div class="card p-3 shadow-sm">
+    <div class="fw-bold">Result:</div>
+    <div class="mt-2">{{ result }}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -359,18 +359,26 @@ WIP_TOOLS = [
     {"name": "Bookmark Manager", "icon": "bi-bookmark-star", "url": "bookmark-manager", "category": "productivity", "login_required": True, "description": "Save and organize your bookmarks."},
     {"name": "Text Case Converter", "icon": "bi-textarea-resize", "url": "text-case-convertor", "category": "productivity", "login_required": False, "description": "Convert text between different cases and styles."},
     {"name": "Password Generator", "icon": "bi-key", "url": "password-generator", "category": "security", "login_required": False, "description": "Generate strong, customizable passwords."},
+    {"name": "Text Counter", "icon": "bi-bar-chart-line", "url": "text-counter", "category": "productivity", "login_required": False, "description": "Count words, characters, sentences, paragraphs, and more in live or uploaded text."},
+    {"name": "Text Reverser", "icon": "bi-arrow-repeat", "url": "text-reverser", "category": "productivity", "login_required": False, "description": "Reverse your text instantly."},
+    {"name": "Text Difference Checker", "icon": "bi-file-diff", "url": "text-difference-checker", "category": "productivity", "login_required": False, "description": "Compare two texts or code files and highlight the differences."},
+    {"name": "Plagiarism Checker", "icon": "bi-search", "url": "plagiarism-checker", "category": "ai", "login_required": False, "description": "Check your text for plagiarism (demo)."},
+    {"name": "AI Checker", "icon": "bi-cpu", "url": "ai-checker", "category": "ai", "login_required": False, "description": "Detect if text is AI-generated or human-written (demo)."},
+    {"name": "Morse Code Tools", "icon": "bi-dot", "url": "morse-code-tools", "category": "productivity", "login_required": False, "description": "Encode and decode Morse code."},
+    {"name": "Random Name Picker", "icon": "bi-person-lines-fill", "url": "random-name-picker", "category": "other", "login_required": False, "description": "Pick a random name from a list."},
+    {"name": "Dice Roller", "icon": "bi-dice-5", "url": "dice", "category": "other", "login_required": False, "description": "Roll up to 5 dice with custom sides and animation."},
+    {"name": "Coin Toss", "icon": "bi-coin", "url": "coin-toss", "category": "other", "login_required": False, "description": "Flip a virtual coin with animation."},
+    {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "url": "music-audio-player", "category": "files", "login_required": False, "description": "Upload, queue, and play audio files. Demo YouTube/Spotify support."},
 ]
 UPCOMING_TOOLS = [
     {"name": "Custom Calendar", "icon": "bi-calendar-range", "soon": "Planning soon"},
     {"name": "Weather", "icon": "bi-cloud-sun", "soon": "Forecasting soon"},
     {"name": "World Clock & Meeting Planner", "icon": "bi-globe", "soon": "Planning soon"},
-    {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "soon": "Playing soon"},
     {"name": "Video/Image Compressor", "icon": "bi-file-earmark-zip", "soon": "Compressing soon"},
     {"name": "Image Editor", "icon": "bi-image-alt", "soon": "Editing soon"},
     {"name": "Markdown Editor", "icon": "bi-filetype-md", "soon": "Markdowning soon"},
     {"name": "JSON Formatter/Validator", "icon": "bi-code-square", "soon": "Validating soon"},
     {"name": "Text Formatter", "icon": "bi-textarea", "soon": "Formatting soon"},
-    {"name": "Text Reverser", "icon": "bi-arrow-repeat", "soon": "Reversing soon"},
     {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "soon": "Analyzing soon"},
     {"name": "Text Expander", "icon": "bi-textarea-t", "soon": "Expanding soon"},
     {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "soon": "Extracting soon"},
@@ -385,18 +393,11 @@ UPCOMING_TOOLS = [
     {"name": "Image Cropper", "icon": "bi-crop", "soon": "Cropping soon"},
     {"name": "ASCII Art Generator", "icon": "bi-type", "soon": "ASCII soon"},
     {"name": "BPM Calculator", "icon": "bi-music-note-list", "soon": "Tapping soon"},
-    {"name": "Text Difference Checker", "icon": "bi-file-diff", "soon": "Comparing soon"},
     {"name": "Age Calculator", "icon": "bi-person-badge", "soon": "Aging soon"},
-    {"name": "Random Quote/Fact Generator", "icon": "bi-lightning", "soon": "Surprising soon"},
-    {"name": "Binary/Hexadecimal Converter", "icon": "bi-123", "soon": "Converting soon"},
-    {"name": "Morse Code Tools", "icon": "bi-dot", "soon": "Morsing soon"},
     {"name": "Typing Speed Test", "icon": "bi-keyboard", "soon": "Typing soon"},
     {"name": "Audio Trimmer", "icon": "bi-scissors", "soon": "Trimming soon"},
     {"name": "HTML Table Generator", "icon": "bi-table", "soon": "Tabling soon"},
-    {"name": "Random Name Picker", "icon": "bi-person-lines-fill", "soon": "Picking soon"},
-    {"name": "Dice", "icon": "bi-dice-5", "soon": "Rolling soon"},
     {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "soon": "Prompting soon"},
-    {"name": "Daily Affirmations", "icon": "bi-chat-left-text", "soon": "Affirming soon"},
     {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
     # TODO: Add more upcoming tools
 ]
@@ -3283,8 +3284,9 @@ def music_audio_player():
         for file in files:
             if file and file.filename.lower().endswith((".mp3", ".wav", ".ogg", ".m4a")):
                 filename = secure_filename(file.filename)
-                path = os.path.join(app.config['UPLOAD_FOLDER'], 'music', filename)
-                os.makedirs(os.path.dirname(path), exist_ok=True)
+                folder = os.path.join(app.static_folder, "uploads", "music")
+                os.makedirs(folder, exist_ok=True)
+                path = os.path.join(folder, filename)
                 file.save(path)
                 session["audio_queue"].append({
                     "name": filename,

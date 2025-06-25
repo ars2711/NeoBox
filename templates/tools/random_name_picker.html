@@ -1,0 +1,22 @@
+{% extends "layout.html" %} {% block title %}Random Name Picker{% endblock %} {%
+block main %}
+<div class="container py-4">
+  <h2 class="mb-3">
+    <i class="bi bi-person-lines-fill"></i> Random Name Picker
+  </h2>
+  <form method="POST" class="mb-3">
+    <textarea
+      name="names"
+      rows="5"
+      class="form-control mb-2"
+      placeholder="Enter names, separated by commas..."
+    >
+{{ names }}</textarea
+    >
+    <button class="btn btn-primary" type="submit">Pick Random Name</button>
+  </form>
+  {% if result %}
+  <div class="alert alert-success mt-3">🎉 <b>{{ result }}</b> was picked!</div>
+  {% endif %}
+</div>
+{% endblock %}
