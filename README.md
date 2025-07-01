@@ -2,6 +2,8 @@
 
 NeoBox is your digital Swiss Army knife for productivity. Developed as my final project for **CS50x 2024** , NeoBox brings together a wide array of everyday tools into a single elegant web application. Whether you're a student, professional, or curious learner, NeoBox is designed to save you time, reduce clutter, and streamline your digital life.
 
+Video Link: https://youtu.be/seg1Gz6OPRw
+
 ---
 
 ## 🌟 Key Features
@@ -16,14 +18,11 @@ NeoBox is your digital Swiss Army knife for productivity. Developed as my final 
   - Calculator
   - Unit Converter
   - Currency Converter (using live exchange rates)
-  - Notes (persistent storage)
   - Pomodoro Timer
-  - File Converter
   - Color Palette & Gradient Generator
 - **User Experience**
   - Flash messaging
   - Theme toggler (light/dark)
-  - Language switching (i18n)
   - Daily quotes and questions for motivation
   - Responsive design with Bootstrap 5
 - **Security**
@@ -82,14 +81,6 @@ Due to CS50's lectures and simply their simplicity and understanding - it made t
 
 ---
 
-## 🚧 Limitations
-
-- Tool data and logs are not yet fully implemented
-- Email templates are currently plain-text
-- Heavy reliance on GitHub Copilot (see below)
-
----
-
 ## 🤖 About Copilot & Contributions
 
 Large portions of this project were accelerated using **GitHub Copilot**, particularly during UI problems, recurring snippets, form handling, and code bugs. However, each section was manually reviewed, tested, and understood before integration.
@@ -114,40 +105,6 @@ This project is licensed under the [MIT License](https://chatgpt.com/c/LICENSE).
 - [Undraw.co](https://undraw.co/) for illustrations
 - GitHub Copilot
 - ChatGPT
-
----
-
-## 📦 Installation & Setup
-
-```bash
-l# Clone the repo
-git clone https://github.com/yourusername/neobox.git
-cd neobox
-
-# Set up virtual environment
-python3 -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set environment variables (create a .env file)
-FLASK_APP=application.py
-SECRET_KEY=your-secret
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-password
-GOOGLE_CLIENT_ID=xxxxx
-GOOGLE_CLIENT_SECRET=xxxxx
-
-# Initialize the DB
-flask shell
->>> from app import db
->>> db.create_all()
->>> exit()
-
-# Run the app
-flask run
-```
 
 ---
 
@@ -176,7 +133,3 @@ Pull requests are welcome. If you'd like to contribute a tool, feature, or langu
 ## 💬 Final Notes
 
 NeoBox is a long-term vision that started as a CS50 project but is slowly evolving into what one (I) can only dream of. While it’s far from perfect today, it’s sprouting to be even bigger and better. Thank you for checking it out!
-
----
-
-> _"This is only the beginning."_
