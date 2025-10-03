@@ -399,6 +399,7 @@ UPCOMING_TOOLS = [
     {"name": "HTML Table Generator", "icon": "bi-table", "soon": "Tabling soon"},
     {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "soon": "Prompting soon"},
     {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
+    {"name": "Image Splitter", "icon": "bi-layout-split", "soon": "Splitting soon"},
     # TODO: Add more upcoming tools
 ]
 TOOL_CATEGORIES = [
