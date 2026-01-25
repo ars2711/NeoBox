@@ -1,0 +1,298 @@
+{% extends "layout.html" %} {% block title %}Image Editor{% endblock %} {% block
+content %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-palette-fill me-2"></i>Image Editor
+      </h2>
+      <p class="text-muted">
+        Apply filters, adjust lighting, and transform images instantly.
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-4 d-flex flex-column-reverse flex-lg-row">
+    <!-- Controls Column -->
+    <div class="col-lg-3 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-3 h-100 d-flex flex-column gap-3">
+        <div class="p-3 bg-light bg-opacity-50 rounded-4 border">
+          <h6 class="fw-bold text-uppercase text-muted small mb-3">Filters</h6>
+          <div class="d-grid gap-2">
+            <button
+              class="btn btn-outline-secondary btn-sm rounded-pill"
+              onclick="applyFilter('grayscale')"
+            >
+              Grayscale
+            </button>
+            <button
+              class="btn btn-outline-secondary btn-sm rounded-pill"
+              onclick="applyFilter('sepia')"
+            >
+              Sepia
+            </button>
+            <button
+              class="btn btn-outline-secondary btn-sm rounded-pill"
+              onclick="applyFilter('invert')"
+            >
+              Invert
+            </button>
+            <button
+              class="btn btn-outline-secondary btn-sm rounded-pill"
+              onclick="applyFilter('vintage')"
+            >
+              Vintage
+            </button>
+            <button class="btn btn-sm text-danger" onclick="resetFilters()">
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        <div class="p-3 bg-light bg-opacity-50 rounded-4 border">
+          <h6 class="fw-bold text-uppercase text-muted small mb-3">
+            Transform
+          </h6>
+          <div class="d-flex justify-content-between gap-2">
+            <button
+              class="btn btn-light border shadow-sm flex-fill"
+              onclick="rotate(90)"
+              title="Rotate"
+            >
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <button
+              class="btn btn-light border shadow-sm flex-fill"
+              onclick="flip('h')"
+              title="Flip Horizontal"
+            >
+              <i class="bi bi-arrow-left-right"></i>
+            </button>
+            <button
+              class="btn btn-light border shadow-sm flex-fill"
+              onclick="flip('v')"
+              title="Flip Vertical"
+            >
+              <i class="bi bi-arrow-down-up"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-3 bg-light bg-opacity-50 rounded-4 border flex-grow-1">
+          <h6 class="fw-bold text-uppercase text-muted small mb-3">
+            Adjustments
+          </h6>
+          <div class="mb-3">
+            <label class="form-label small d-flex justify-content-between"
+              ><span>Brightness</span></label
+            >
+            <input
+              type="range"
+              class="form-range"
+              min="0"
+              max="200"
+              value="100"
+              oninput="updateAdjustment('brightness', this.value)"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small d-flex justify-content-between"
+              ><span>Contrast</span></label
+            >
+            <input
+              type="range"
+              class="form-range"
+              min="0"
+              max="200"
+              value="100"
+              oninput="updateAdjustment('contrast', this.value)"
+            />
+          </div>
+          <div class="mb-2">
+            <label class="form-label small d-flex justify-content-between"
+              ><span>Saturation</span></label
+            >
+            <input
+              type="range"
+              class="form-range"
+              min="0"
+              max="200"
+              value="100"
+              oninput="updateAdjustment('saturation', this.value)"
+            />
+          </div>
+        </div>
+
+        <button
+          class="btn btn-neo w-100 rounded-pill py-3 shadow-sm"
+          onclick="downloadImage()"
+        >
+          <i class="bi bi-download me-2"></i>Save Image
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas Column -->
+    <div class="col-lg-9 fade-in-up" style="animation-delay: 0.2s">
+      <div
+        class="glass-card p-0 h-100 overflow-hidden shadow-sm"
+        style="min-height: 600px"
+      >
+        <div
+          class="d-flex align-items-center justify-content-center bg-dark bg-opacity-75 p-3 w-100 h-100 position-relative"
+        >
+          <canvas
+            id="canvas"
+            style="
+              max-width: 100%;
+              max-height: 100%;
+              display: none;
+              box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            "
+          ></canvas>
+
+          <div id="uploadPrompt" class="text-center text-white">
+            <div class="mb-4">
+              <div
+                class="bg-white bg-opacity-10 p-4 rounded-circle d-inline-block"
+              >
+                <i class="bi bi-image-alt display-2"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold mb-3">Image Editor Canvas</h3>
+            <p class="opacity-75 mb-4">Upload an image to start editing</p>
+            <input type="file" id="fileInput" accept="image/*" class="d-none" />
+            <button
+              class="btn btn-neo rounded-pill px-5"
+              onclick="document.getElementById('fileInput').click()"
+            >
+              <i class="bi bi-upload me-2"></i>Select Image
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const fileInput = document.getElementById("fileInput");
+  const uploadPrompt = document.getElementById("uploadPrompt");
+  let img = new Image();
+
+  // State
+  let currentRotation = 0;
+  let flipH = 1;
+  let flipV = 1;
+  let adjustments = {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    filter: "none",
+  };
+
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        img.onload = () => {
+          initCanvas();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+
+  function initCanvas() {
+    uploadPrompt.style.display = "none";
+    canvas.style.display = "block";
+    resetState();
+    drawImage();
+  }
+
+  function resetState() {
+    currentRotation = 0;
+    flipH = 1;
+    flipV = 1;
+    adjustments = {
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      filter: "none",
+    };
+    // Reset range inputs
+    document
+      .querySelectorAll("input[type=range]")
+      .forEach((i) => (i.value = 100));
+  }
+
+  function drawImage() {
+    // Handle rotation dimensions
+    if (currentRotation % 180 !== 0) {
+      canvas.width = img.height;
+      canvas.height = img.width;
+    } else {
+      canvas.width = img.width;
+      canvas.height = img.height;
+    }
+
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Translate to center
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+
+    ctx.rotate((currentRotation * Math.PI) / 180);
+    ctx.scale(flipH, flipV);
+
+    // Filters strings
+    let filterStr = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%)`;
+    if (adjustments.filter === "grayscale") filterStr += " grayscale(100%)";
+    if (adjustments.filter === "sepia") filterStr += " sepia(100%)";
+    if (adjustments.filter === "invert") filterStr += " invert(100%)";
+    if (adjustments.filter === "vintage")
+      filterStr += " sepia(50%) contrast(120%) brightness(90%)";
+
+    ctx.filter = filterStr;
+
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+    ctx.restore();
+  }
+
+  window.rotate = (deg) => {
+    currentRotation = (currentRotation + deg) % 360;
+    drawImage();
+  };
+
+  window.flip = (dir) => {
+    if (dir === "h") flipH *= -1;
+    if (dir === "v") flipV *= -1;
+    drawImage();
+  };
+
+  window.updateAdjustment = (key, val) => {
+    adjustments[key] = val;
+    drawImage();
+  };
+
+  window.applyFilter = (name) => {
+    adjustments.filter = name;
+    drawImage();
+  };
+
+  window.resetFilters = () => {
+    adjustments.filter = "none";
+    drawImage();
+  };
+
+  window.downloadImage = () => {
+    const link = document.createElement("a");
+    link.download = "edited-image.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+</script>
+{% endblock %}

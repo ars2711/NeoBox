@@ -1,0 +1,240 @@
+{% extends "layout.html" %} {% block title %}Regex Tester{% endblock %} {% block
+main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-code-square me-2"></i>Regex Tester
+      </h2>
+      <p class="text-muted">
+        Test and debug your Regular Expressions in real-time.
+      </p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5 mb-4">
+        <!-- Regex Input -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-9">
+            <label class="form-label small text-muted text-uppercase fw-bold"
+              >Pattern</label
+            >
+            <div class="input-group shadow-sm rounded-pill overflow-hidden">
+              <span
+                class="input-group-text bg-white border-0 text-muted font-monospace ps-3"
+                >/</span
+              >
+              <input
+                type="text"
+                id="regexInput"
+                class="form-control border-0 font-monospace bg-white"
+                placeholder="e.g. [a-z]+"
+                value="\w+"
+              />
+              <span
+                class="input-group-text bg-white border-0 text-muted font-monospace"
+                >/</span
+              >
+              <input
+                type="text"
+                id="flagsInput"
+                class="form-control border-0 font-monospace bg-white border-start"
+                placeholder="flags"
+                value="g"
+                style="max-width: 80px"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Test String -->
+        <div class="mb-4">
+          <label class="form-label small text-muted text-uppercase fw-bold"
+            >Test String</label
+          >
+          <textarea
+            id="testString"
+            class="form-control bg-light-subtle border-0 rounded-4 font-monospace shadow-inner p-3"
+            rows="5"
+          >
+Hello World! This is a test string.
+User@example.com
+123-456-7890
+                    </textarea
+          >
+        </div>
+
+        <!-- Output -->
+        <div
+          class="glass-card bg-white bg-opacity-50 border-0 p-0 overflow-hidden"
+        >
+          <div class="p-3 bg-light bg-opacity-50 border-bottom">
+            <h6 class="mb-0 fw-bold text-gradient">Match Results</h6>
+          </div>
+          <div class="p-3">
+            <div
+              id="output"
+              class="font-monospace text-break"
+              style="white-space: pre-wrap; min-height: 100px"
+            ></div>
+            <div id="count" class="text-muted small mt-2 fw-bold"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 fade-in-up" style="animation-delay: 0.2s">
+        <h5 class="fw-bold mb-3">
+          <i class="bi bi-info-circle me-2"></i>Quick Reference
+        </h5>
+        <div class="row g-3 small text-muted">
+          <div class="col-md-6">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">.</code> Any char
+                except newline
+              </li>
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">\w</code> Word
+                character
+              </li>
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">\d</code> Digit
+              </li>
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">[a-z]</code>
+                Character set
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">*</code> 0 or more
+              </li>
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">+</code> 1 or more
+              </li>
+              <li class="mb-2">
+                <code class="bg-light px-2 py-1 rounded me-2">?</code> 0 or 1
+              </li>
+              <li>
+                <code class="bg-light px-2 py-1 rounded me-2">^ $</code> Start /
+                End
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const regexInput = document.getElementById("regexInput");
+  const flagsInput = document.getElementById("flagsInput");
+  const testString = document.getElementById("testString");
+  const output = document.getElementById("output");
+  const count = document.getElementById("count");
+
+  function updateRegex() {
+    const pattern = regexInput.value;
+    const flags = flagsInput.value;
+    const text = testString.value;
+
+    if (!pattern) {
+      output.textContent = "";
+      count.textContent = "";
+      return;
+    }
+
+    try {
+      const regex = new RegExp(pattern, flags);
+
+      // Highlight matches
+
+      // Escaping helper
+      const escapeHtml = (str) =>
+        str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+
+      let html = "";
+      let matchCount = 0;
+
+      // Simple replace-based highlighting (similar to old tool but cleaner)
+      // Use replace with callback to wrap matches.
+
+      // NOTE: This basic highlighter doesn't handle overlapping matches nicely, but standard for JS regex
+
+      const highlighted = text.replace(regex, function (match) {
+        matchCount++;
+        return `<span class="bg-warning bg-opacity-75 text-dark rounded-1 px-0 shadow-sm border border-warning border-opacity-25">${escapeHtml(match)}</span>`;
+      });
+
+      // We need to display the text. However, just setting innerHTML with `highlighted` leaves the non-matched text raw (un-escaped).
+      // This is a security risk.
+      // A safer, more robust way for a client-side tool:
+
+      // 1. Split by regex to get non-matches? No, split consumes delimiters unless captured.
+      // 2. Use a loop with exec() to build the string piece by piece.
+
+      const isGlobal = flags.includes("g");
+      // If not global, loop works once.
+
+      let lastIndex = 0;
+      let finalHtml = "";
+      let re = new RegExp(pattern, isGlobal ? flags : flags + "g");
+
+      let match;
+      // Limit loop
+      let limit = 2000;
+      let i = 0;
+
+      // Reset lastIndex just in case
+      re.lastIndex = 0;
+
+      // We need to iterate matches on the original text
+      // But 'replace' is easier if we escape everything first? No, regex matches unescaped.
+
+      // Strategy: find matches, record indices. Then build string.
+      // Or strict loop:
+
+      let cursor = 0;
+      while ((match = re.exec(text)) !== null && i < limit) {
+        i++;
+        // Text before match
+        finalHtml += escapeHtml(text.slice(cursor, match.index));
+
+        // Match
+        matchCount++;
+        finalHtml += `<mark class="bg-warning text-dark rounded-1 px-1 fw-bold">${escapeHtml(match[0])}</mark>`;
+
+        cursor = match.index + match[0].length;
+
+        if (!isGlobal) break;
+
+        if (match.index === re.lastIndex) re.lastIndex++; // unexpected zero-width
+      }
+      finalHtml += escapeHtml(text.slice(cursor));
+
+      output.innerHTML = finalHtml.replace(/\n/g, "<br>");
+      count.textContent = `${matchCount} matches found`;
+    } catch (e) {
+      output.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Invalid Regex: ${e.message}</span>`;
+      count.textContent = "";
+    }
+  }
+
+  [regexInput, flagsInput, testString].forEach((el) =>
+    el.addEventListener("input", updateRegex),
+  );
+
+  // Initial call
+  updateRegex();
+</script>
+{% endblock %}

@@ -1,96 +1,181 @@
 {% extends "layout.html" %} {% block title %}File Converter{% endblock %} {%
 block main %}
-<div class="container mt-4">
-  <h2>File Converter</h2>
-  <!-- Category Tabs -->
-  <ul class="nav nav-tabs mb-3">
-    {% for key, cat in categories.items() %}
-    <li class="nav-item">
-      <a
-        class="nav-link {% if selected_category == key %}active{% endif %}"
-        href="{{ url_for('file_converter', category=key) }}"
-      >
-        {{ cat.label }}
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-  <form id="convert-form" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="category" value="{{ selected_category }}" />
-    <div class="mb-3">
-      <div id="drop-area" class="drop-zone mb-3">
-        <i class="bi bi-cloud-arrow-up-fill icon"></i>
-        <p class="mb-2">{{ _('Drag & drop files here or click to select') }}</p>
-        <input
-          type="file"
-          id="fileElem"
-          name="files"
-          class="form-control d-none"
-          multiple
-          required
-          accept="{% for ext in categories[selected_category].exts %}.{{ ext }}{% if not loop.last %},{% endif %}{% endfor %}"
-        />
-        <button
-          type="button"
-          class="btn btn-outline-primary"
-          onclick="document.getElementById('fileElem').click();"
+<div class="container py-5">
+  <div class="row mb-4 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">File Converter</h2>
+      <p class="text-muted">
+        Convert images, documents, and archives instantly.
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="glass-card p-4 p-md-5 mb-5 fade-in-up"
+    style="animation-delay: 0.1s"
+  >
+    <!-- Category Tabs -->
+    <ul
+      class="nav nav-pills nav-fill mb-4 p-2 bg-light-subtle rounded-pill"
+      role="tablist"
+    >
+      {% for key, cat in categories.items() %}
+      <li class="nav-item" role="presentation">
+        <a
+          class="nav-link rounded-pill {% if selected_category == key %}active{% endif %}"
+          href="{{ url_for('file_converter', category=key) }}"
         >
-          Choose Files
-        </button>
-        <div id="file-list" class="mt-2 small text-muted"></div>
+          {{ cat.label }}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <form id="convert-form" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="category" value="{{ selected_category }}" />
+
+      <div class="mb-4">
+        <div
+          id="drop-area"
+          class="drop-zone p-5 text-center border-2 border-dashed rounded-4 bg-light-subtle position-relative overflow-hidden transition-all"
+        >
+          <input
+            type="file"
+            id="fileElem"
+            name="files"
+            class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+            multiple
+            required
+            accept="{% for ext in categories[selected_category].exts %}.{{ ext }}{% if not loop.last %},{% endif %}{% endfor %}"
+          />
+          <div class="pe-none">
+            <i
+              class="bi bi-cloud-arrow-up-fill display-3 text-primary opacity-50 mb-3"
+            ></i>
+            <h5 class="fw-bold">{{ _('Drag & drop files here') }}</h5>
+            <p class="text-muted small mb-3">or click anywhere to browse</p>
+            <div class="badge bg-secondary bg-opacity-10 text-secondary">
+              Supports: {% for ext in categories[selected_category].exts %}{{
+              ext|upper }} {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div
+          id="file-list"
+          class="mt-3 px-2 d-flex flex-wrap gap-2 justify-content-center"
+        ></div>
       </div>
-    </div>
-    <div class="mb-3">
-      <label>Convert to:</label>
-      <select name="target_format" class="form-select" required>
-        {% for ext in categories[selected_category].exts %}
-        <option value="{{ ext }}">{{ ext|upper }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Convert</button>
-  </form>
+
+      <div class="row align-items-center justify-content-center g-3">
+        <div class="col-auto">
+          <span class="text-muted fw-bold">Convert to:</span>
+        </div>
+        <div class="col-auto">
+          <select
+            name="target_format"
+            class="form-select form-select-lg shadow-sm border-0 bg-white"
+            required
+            style="min-width: 150px"
+          >
+            {% for ext in categories[selected_category].exts %}
+            <option value="{{ ext }}">{{ ext|upper }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button
+            type="submit"
+            class="btn btn-neo btn-lg rounded-pill px-5 shadow-sm"
+          >
+            <i class="bi bi-gear-wide-connected me-2"></i>Convert Now
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
   {% if result %}
-  <div class="alert alert-info mt-3 p-3">
-    <div class="d-flex flex-column gap-2">
+  <div class="fade-in-up" style="animation-delay: 0.2s">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold m-0">Conversion Results</h5>
       {% if zip_url %}
-      <a href="{{ zip_url }}" class="btn btn-success mb-2">
-        <i class="bi bi-file-earmark-zip"></i> Download All as ZIP
-      </a>
-      {% endif %} {% for entry in result %} {% if entry.type == "success" %}
-      <div
-        class="alert alert-success py-2 px-3 mb-0 d-flex align-items-center gap-2"
-        style="border-radius: 0.5rem"
+      <a
+        href="{{ url_for('static', filename=zip_url) }}"
+        class="btn btn-success rounded-pill shadow-sm"
       >
-        <i class="bi bi-check-circle-fill me-2"></i>
+        <i class="bi bi-file-earmark-zip me-2"></i>Download All (ZIP)
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+      {% for entry in result %}
+      <div
+        class="glass-card p-3 d-flex align-items-center justify-content-between border-start border-5 {% if entry.type == 'success' %}border-success{% else %}border-danger{% endif %}"
+      >
+        <div class="d-flex align-items-center gap-3">
+          <div
+            class="rounded-circle p-2 {% if entry.type == 'success' %}bg-success text-success bg-opacity-10{% else %}bg-danger text-danger bg-opacity-10{% endif %}"
+          >
+            <i
+              class="bi {% if entry.type == 'success' %}bi-check-lg{% else %}bi-exclamation-triangle-fill{% endif %}"
+            ></i>
+          </div>
+          <span class="fw-bold text-truncate" style="max-width: 300px"
+            >{{ entry.file.split('/')[-1] }}</span
+          >
+        </div>
+
+        {% if entry.type == 'success' %}
         <a
           href="{{ url_for('download_file', zip_id=zip_url.split('/')[-1], filename=entry.file) }}"
           download
-          class="fw-bold text-success"
-          style="text-decoration: underline"
+          class="btn btn-sm btn-outline-success rounded-pill"
         >
-          {{ entry.file.split('/')[-1] }}
+          <i class="bi bi-download me-1"></i> Download
         </a>
-        <span class="ms-2 small text-muted">(converted)</span>
+        {% else %}
+        <small class="text-danger">{{ entry.msg }}</small>
+        {% endif %}
       </div>
-      {% else %}
-      <div
-        class="alert alert-danger py-2 px-3 mb-0 d-flex align-items-center gap-2"
-        style="border-radius: 0.5rem"
-      >
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        {{ entry.msg }}
-      </div>
-      {% endif %} {% endfor %}
+      {% endfor %}
     </div>
   </div>
   {% endif %}
 </div>
+
+<style>
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .drop-zone {
+    transition: all 0.2s ease;
+    border-color: rgba(var(--neo-accent-rgb), 0.3) !important;
+  }
+  .drop-zone:hover,
+  .drop-zone.dragover {
+    background-color: rgba(var(--neo-accent-rgb), 0.05) !important;
+    border-color: var(--neo-accent) !important;
+    transform: scale(1.01);
+  }
+
+  .nav-pills .nav-link {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .nav-pills .nav-link.active {
+    background-color: var(--neo-accent);
+    color: white;
+    box-shadow: 0 4px 6px rgba(var(--neo-accent-rgb), 0.3);
+  }
+</style>
+
 <script>
   // Drag and drop logic
   const dropArea = document.getElementById("drop-area");
   const fileElem = document.getElementById("fileElem");
   const fileList = document.getElementById("file-list");
+
   dropArea.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropArea.classList.add("dragover");
@@ -105,43 +190,21 @@ block main %}
     fileElem.files = e.dataTransfer.files;
     updateFileList();
   });
+
   fileElem.addEventListener("change", updateFileList);
+
   function updateFileList() {
-    let names = [];
-    for (let i = 0; i < fileElem.files.length; i++) {
-      names.push(fileElem.files[i].name);
+    const files = fileElem.files;
+    fileList.innerHTML = "";
+    if (files.length > 0) {
+      Array.from(files).forEach((file) => {
+        const tag = document.createElement("div");
+        tag.className =
+          "badge bg-secondary bg-opacity-75 text-white p-2 rounded-pill shadow-sm";
+        tag.innerHTML = `<i class="bi bi-file-earmark me-1"></i>${file.name}`;
+        fileList.appendChild(tag);
+      });
     }
-    fileList.textContent = names.join(", ");
-  }
-  function convertImages() {
-    const files = document.getElementById("fileElem").files;
-    const format = document.getElementById("targetFormat").value;
-    const downloads = document.getElementById("downloads");
-    downloads.innerHTML = "";
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          canvas.getContext("2d").drawImage(img, 0, 0);
-          canvas.toBlob((blob) => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = file.name.replace(/\.\w+$/, "") + "." + format;
-            a.textContent = "Download " + a.download;
-            downloads.appendChild(a);
-            downloads.appendChild(document.createElement("br"));
-          }, "image/" + format);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
   }
 </script>
 {% endblock %}

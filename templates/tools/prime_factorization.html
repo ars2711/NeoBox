@@ -1,0 +1,102 @@
+{% extends "layout.html" %} {% block title %}Prime Factorization{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-hash text-warning me-2"></i>Prime Factorization
+      </h2>
+      <p class="text-center text-muted mb-4">
+        Decompose an integer into its prime factors.
+      </p>
+
+      <div class="input-group mb-4">
+        <input
+          type="number"
+          id="inputNum"
+          class="form-control form-control-lg"
+          placeholder="Enter a number (e.g., 120)"
+        />
+        <button class="btn btn-warning btn-lg" onclick="computeFactors()">
+          Factorize
+        </button>
+      </div>
+
+      <div id="resultContainer" class="text-center d-none">
+        <h4 class="text-muted">Result</h4>
+        <div class="display-4 mb-3" id="resultText"></div>
+
+        <div class="card bg-transparent border-light mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Analysis</h5>
+            <p id="isPrime" class="card-text"></p>
+            <p id="factorTree" class="font-monospace"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function computeFactors() {
+    const input = parseInt(document.getElementById("inputNum").value);
+    if (isNaN(input) || input < 2) {
+      alert("Please enter a valid integer greater than 1.");
+      return;
+    }
+
+    const factors = getPrimeFactors(input);
+    const resultFormatted = formatFactors(factors);
+
+    document.getElementById("resultText").innerHTML = resultFormatted;
+    document.getElementById("isPrime").innerHTML =
+      factors.length === 1
+        ? `<span class="badge bg-success rounded-pill">Prime Number</span>`
+        : `<span class="badge bg-secondary rounded-pill">Composite Number</span>`;
+
+    document.getElementById("resultContainer").classList.remove("d-none");
+  }
+
+  function getPrimeFactors(n) {
+    const factors = [];
+    let divisor = 2;
+
+    while (n >= 2) {
+      if (n % divisor === 0) {
+        factors.push(divisor);
+        n = n / divisor;
+      } else {
+        divisor++;
+      }
+    }
+    return factors;
+  }
+
+  function formatFactors(factors) {
+    // Group factors for display (e.g., 2^3 x 3 x 5)
+    const counts = {};
+    factors.forEach((x) => {
+      counts[x] = (counts[x] || 0) + 1;
+    });
+
+    return Object.keys(counts)
+      .map((key) => {
+        if (counts[key] > 1) {
+          return `${key}<sup>${counts[key]}</sup>`;
+        }
+        return key;
+      })
+      .join(' <span class="text-muted mx-2">&times;</span> ');
+  }
+
+  // Allow enter key
+  document
+    .getElementById("inputNum")
+    .addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        computeFactors();
+      }
+    });
+</script>
+{% endblock %}

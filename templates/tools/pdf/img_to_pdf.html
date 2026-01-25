@@ -1,0 +1,80 @@
+{% extends "layout.html" %} {% block title %}Images to PDF{% endblock %} {%
+block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="glass-card fade-in p-5 text-center">
+      <h2 class="mb-4 display-6">
+        <i class="bi bi-images text-danger me-2"></i>Images to PDF
+      </h2>
+      <p class="text-muted mb-5">
+        Convert PNG, JPG, BMP images into a single PDF.
+      </p>
+
+      <form
+        action="{{ url_for('pdf_tools') }}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <input type="hidden" name="action" value="img_to_pdf" />
+
+        <div class="mb-4">
+          <label
+            class="form-label d-block p-5 border border-2 border-dashed rounded-4 bg-light bg-opacity-50 cursor-pointer hover-effect"
+          >
+            <i class="bi bi-card-image display-4 text-secondary mb-3"></i>
+            <h5 class="fw-bold text-muted">Select Images</h5>
+            <input
+              type="file"
+              name="file"
+              class="d-none"
+              accept="image/*"
+              multiple
+              required
+              onchange="updateCount(this)"
+            />
+            <p id="fileCount" class="small text-primary mt-2"></p>
+          </label>
+        </div>
+
+        <div class="d-grid">
+          <button
+            type="submit"
+            class="btn btn-danger btn-lg rounded-pill shadow-sm"
+          >
+            <i class="bi bi-file-pdf me-2"></i>Convert to PDF
+          </button>
+        </div>
+      </form>
+
+      {% if error %}
+      <div class="alert alert-danger mt-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+      </div>
+      {% endif %} {% if result %}
+      <div
+        class="mt-5 p-4 bg-success bg-opacity-10 rounded-4 border border-success"
+      >
+        <h4 class="text-success mb-3">
+          <i class="bi bi-check-circle-fill me-2"></i>Success!
+        </h4>
+
+        <a
+          href="{{ result }}"
+          class="btn btn-success btn-lg rounded-pill px-5 shadow-sm"
+          download
+        >
+          <i class="bi bi-download me-2"></i>Download File
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateCount(input) {
+    document.getElementById("fileCount").innerText =
+      input.files.length + " image(s) selected";
+  }
+</script>
+{% endblock %}

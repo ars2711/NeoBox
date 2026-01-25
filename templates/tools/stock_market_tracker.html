@@ -1,29 +1,75 @@
-{% extends "layout.html" %} {% block title %}{{ _('Stock/Market Tracker') }}{%
-endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Stock/Market Tracker') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Stock Symbol') }}</label>
-      <input type="text" name="symbol" class="form-control" required />
+{% extends "layout.html" %} {% block title %}Stock Market Tracker{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-12 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-graph-up-arrow me-2"></i>Stock Market Tracker</h2>
+             <p class="text-muted">Real-time market data powered by TradingView.</p>
+        </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Symbol') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Watchlist') }}</div>
-    <ul class="list-group list-group-flush">
-      {% for s in market_data %}
-      <li class="list-group-item">{{ s.symbol }}</li>
-      {% else %}
-      <li class="list-group-item text-muted">{{ _('No stocks yet.') }}</li>
-      {% endfor %}
-    </ul>
+
+  <div class="row g-4 justify-content-center">
+      
+    <!-- Ticker Tape -->
+    <div class="col-12 fade-in-up" style="animation-delay: 0.1s;">
+        <div class="glass-card p-0 overflow-hidden" style="height: 72px;"> <!-- Fixed height for Ticker -->
+            <!-- TradingView Widget BEGIN -->
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
+              <script
+                type="text/javascript"
+                src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
+                async
+              >
+                {
+                  "symbols": [
+                    { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+                    { "proName": "FOREXCOM:NSXUSD", "title": "US 100" },
+                    { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" },
+                    { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
+                    { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" }
+                  ],
+                  "showSymbolLogo": true,
+                  "colorTheme": "light",
+                  "isTransparent": true,
+                  "displayMode": "adaptive",
+                  "locale": "en"
+                }
+              </script>
+            </div>
+            <!-- TradingView Widget END -->
+        </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="col-lg-12 fade-in-up" style="animation-delay: 0.2s;">
+        <div class="glass-card p-3 p-md-4" style="height: 600px;">
+            <!-- TradingView Widget BEGIN -->
+            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                <div id="tradingview_chart" style="height: 100%; width: 100%;"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                <script type="text/javascript">
+                new TradingView.widget(
+                {
+                "autosize": true,
+                "symbol": "NASDAQ:AAPL",
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_chart"
+                }
+                );
+                </script>
+            </div>
+            <!-- TradingView Widget END -->
+        </div>
+    </div>
+    
   </div>
 </div>
 {% endblock %}

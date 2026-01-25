@@ -1,19 +1,40 @@
 {% extends "layout.html" %} {% block title %}Markdown Previewer{% endblock %} {%
 block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Markdown Previewer') }}</h2>
-  <div class="row">
-    <div class="col-md-6 mb-3">
-      <label class="form-label">{{ _('Markdown Input') }}</label>
-      <textarea id="markdown-input" class="form-control" rows="12"></textarea>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-eye-fill me-2"></i>Markdown Previewer
+      </h2>
+      <p class="text-muted">Simple markdown viewer.</p>
     </div>
-    <div class="col-md-6 mb-3">
-      <label class="form-label">{{ _('Preview') }}</label>
-      <div
-        id="markdown-preview"
-        class="border p-3 bg-light"
-        style="min-height: 200px"
-      ></div>
+  </div>
+
+  <div class="row fade-in-up" style="animation-delay: 0.1s">
+    <div class="col-md-6 mb-4">
+      <div class="glass-card p-4 h-100 d-flex flex-column">
+        <label class="form-label text-muted small fw-bold text-uppercase mb-3"
+          >Input</label
+        >
+        <textarea
+          id="markdown-input"
+          class="form-control form-control-lg bg-light-subtle flex-grow-1 border-0 rounded-4 shadow-inner font-monospace fs-6"
+          style="min-height: 400px; resize: none"
+          placeholder="# Type here..."
+        ></textarea>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="glass-card p-4 h-100 d-flex flex-column">
+        <label class="form-label text-muted small fw-bold text-uppercase mb-3"
+          >Preview</label
+        >
+        <div
+          id="markdown-preview"
+          class="bg-white rounded-4 border p-4 flex-grow-1 overflow-auto"
+          style="min-height: 400px"
+        ></div>
+      </div>
     </div>
   </div>
 </div>
@@ -23,7 +44,7 @@ block main %}
     .getElementById("markdown-input")
     .addEventListener("input", function () {
       document.getElementById("markdown-preview").innerHTML = marked.parse(
-        this.value
+        this.value,
       );
     });
 </script>

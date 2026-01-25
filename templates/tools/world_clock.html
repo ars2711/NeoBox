@@ -1,86 +1,61 @@
 {% extends "layout.html" %} {% block title %}{{ _('World Clock') }}{% endblock
 %} {% block main %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h3 class="card-title d-flex align-items-center gap-2 mb-4">
-            <i class="bi bi-globe"></i> {{ _('World Clock') }}
-          </h3>
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-globe-americas me-2"></i>World Clock</h2>
+             <p class="text-muted">Check current time across the globe with interactive map.</p>
+        </div>
+    </div>
 
+  <div class="row justify-content-center">
+    <div class="col-lg-12 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4">
           <!-- Search Bar -->
-          <div class="mb-4">
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input
-                type="text"
-                id="timezoneSearch"
-                class="form-control"
-                placeholder="{{ _('Search for a city or timezone...') }}"
-              />
-              <button class="btn btn-primary" type="button" id="addTimezoneBtn">
-                <i class="bi bi-plus-lg me-1"></i> {{ _('Add') }}
-              </button>
-            </div>
-            <div
-              id="searchResults"
-              class="list-group position-absolute d-none"
-              style="z-index: 1000; width: calc(100% - 3rem)"
-            ></div>
+          <div class="row mb-4">
+              <div class="col-md-6 mx-auto position-relative">
+                    <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
+                        <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+                        <input
+                            type="text"
+                            id="timezoneSearch"
+                            class="form-control border-0"
+                            placeholder="{{ _('Search city or timezone...') }}"
+                        />
+                        <button class="btn btn-primary px-4" type="button" id="addTimezoneBtn">
+                             Add
+                        </button>
+                    </div>
+                    <div
+                        id="searchResults"
+                        class="list-group position-absolute w-100 shadow-lg mt-2 rounded-4 overflow-hidden d-none"
+                        style="z-index: 1000;"
+                    ></div>
+              </div>
           </div>
 
-          <!-- Map with Dark Mode Support -->
-          <div
-            id="map"
-            style="height: 400px; border-radius: 0.5rem"
-            class="mb-4 shadow-sm"
-          ></div>
+          <!-- Map -->
+          <div class="card border-0 rounded-4 overflow-hidden mb-5 shadow-sm">
+               <div
+                id="map"
+                style="height: 450px; z-index: 1;"
+               ></div>
+          </div>
 
           <!-- Clock Grid -->
-          <div id="clocks" class="row g-3"></div>
+          <div id="clocks" class="row g-4 justify-content-center"></div>
 
           <!-- Popular Cities -->
-          <div class="mt-4">
-            <h5 class="mb-3">{{ _('Popular Cities') }}</h5>
-            <div class="d-flex flex-wrap gap-2" id="popularCities">
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                data-timezone="America/New_York"
-              >
-                {{ _('New York') }}
-              </button>
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                data-timezone="Europe/London"
-              >
-                {{ _('London') }}
-              </button>
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                data-timezone="Asia/Tokyo"
-              >
-                {{ _('Tokyo') }}
-              </button>
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                data-timezone="Australia/Sydney"
-              >
-                {{ _('Sydney') }}
-              </button>
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                data-timezone="Europe/Paris"
-              >
-                {{ _('Paris') }}
-              </button>
-              <button
-                class="btn btn-outline-secondary btn-sm"
-                data-timezone="Asia/Dubai"
-              >
-                {{ _('Dubai') }}
-              </button>
+          <div class="mt-5 text-center border-top pt-4">
+            <h6 class="mb-3 text-muted text-uppercase fw-bold ls-1">{{ _('Quick Add') }}</h6>
+            <div class="d-flex flex-wrap gap-2 justify-content-center" id="popularCities">
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-timezone="America/New_York">{{ _('New York') }}</button>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-timezone="Europe/London">{{ _('London') }}</button>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-timezone="Asia/Tokyo">{{ _('Tokyo') }}</button>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-timezone="Australia/Sydney">{{ _('Sydney') }}</button>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-timezone="Europe/Paris">{{ _('Paris') }}</button>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-timezone="Asia/Dubai">{{ _('Dubai') }}</button>
             </div>
           </div>
         </div>
@@ -89,12 +64,14 @@
   </div>
 </div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
 <script>
   // Initialize map with dark mode detection
   const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-  const map = L.map("map").setView([20, 0], 2);
+  const map = L.map("map", {zoomControl: false}).setView([20, 0], 2);
+  L.control.zoom({position:'bottomright'}).addTo(map);
 
-  // Set up dark/light mode tiles
   const lightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© CartoDB'
   });
@@ -105,7 +82,6 @@
 
   (isDark ? darkTiles : lightTiles).addTo(map);
 
-  // Watch for theme changes
   const observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
       if (mutation.attributeName === "data-bs-theme") {
@@ -121,118 +97,117 @@
     });
   });
 
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-bs-theme']
-  });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
 
   function createClockDiv(timezone, city, datetime) {
     const div = document.createElement("div");
-    div.className = "col-lg-4 col-md-6";
+    div.className = "col-lg-3 col-md-4 col-sm-6 animate__animated animate__zoomIn";
+    div.dataset.timezone = timezone;
+    /* Create a card with NeoBox style */
     div.innerHTML = `
-      <div class="card h-100 shadow-sm">
-        <div class="card-body p-3">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-geo-alt text-primary me-1"></i>
-              <span>${city || timezone.replace('_', ' ').split('/').pop()}</span>
-            </h5>
-            <button class="btn-close" onclick="this.closest('.col-lg-4').remove(); event.stopPropagation();"></button>
-          </div>
-          <div class="text-center">
-            <canvas width="120" height="120" class="analog-clock mb-3"></canvas>
-            <div class="digital-clock fs-4 mb-2" data-time="${datetime.toISOString()}" data-fetched="${Date.now()}">
-              ${datetime.toLocaleTimeString()}
-            </div>
-            <div class="text-muted small">${timezone.replace('_', ' ')}</div>
-          </div>
-        </div>
+      <div class="glass-card h-100 p-3 text-center position-relative group-hover-btn">
+         <button class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 shadow-sm" onclick="this.closest('.col-lg-3').remove(); event.stopPropagation();" style="width:24px; height:24px; padding:0; line-height:1;"><i class="bi bi-x"></i></button>
+         
+         <div class="mb-3">
+            <canvas width="140" height="140" class="analog-clock mx-auto d-block"></canvas>
+         </div>
+         
+         <h5 class="fw-bold mb-1 text-truncate" title="${city || timezone}">${city || timezone.split('/').pop().replace(/_/g, ' ')}</h5>
+         <div class="digital-clock fs-5 font-monospace text-primary mb-1" data-time="${datetime.toISOString()}" data-fetched="${Date.now()}">
+             ${datetime.toLocaleTimeString()}
+         </div>
+         <div class="small text-muted text-uppercase" style="font-size:0.75rem;">${moment.tz(timezone).format('z Z')}</div>
       </div>
     `;
     return div;
-  }  function drawAnalogClock(canvas, date) {
+  }
+
+  function drawAnalogClock(canvas, date) {
     const ctx = canvas.getContext("2d");
     const radius = canvas.width / 2;
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
 
-    // Clear and set up
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(radius, radius);
 
-    // Draw clock face
+    // Face
     ctx.beginPath();
-    ctx.arc(0, 0, radius - 2, 0, 2 * Math.PI);
-    ctx.strokeStyle = isDark ? '#444' : '#ddd';
+    ctx.arc(0, 0, radius - 5, 0, 2 * Math.PI);
+    ctx.fillStyle = isDark ? '#2b3035' : '#ffffff';
+    ctx.fill();
     ctx.lineWidth = 2;
+    ctx.strokeStyle = isDark ? '#495057' : '#dee2e6';
     ctx.stroke();
 
-    // Draw hour markers
+    // Hour Markers
     for (let i = 0; i < 12; i++) {
-      ctx.beginPath();
-      ctx.rotate(Math.PI / 6);
-      ctx.moveTo(radius * 0.7, 0);
-      ctx.lineTo(radius * 0.8, 0);
-      ctx.strokeStyle = isDark ? '#666' : '#999';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+        ctx.save();
+        ctx.rotate(i * Math.PI / 6);
+        ctx.beginPath();
+        ctx.moveTo(0, -radius + 15);
+        ctx.lineTo(0, -radius + 5);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = isDark ? '#ced4da' : '#6c757d';
+        ctx.stroke();
+        ctx.restore();
     }
 
     const h = date.getHours() % 12;
     const m = date.getMinutes();
     const s = date.getSeconds();
 
-    // Hour hand
+    // Hour
     ctx.save();
     ctx.rotate(((h + m / 60) * 30 * Math.PI) / 180);
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -radius * 0.5);
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
     ctx.strokeStyle = isDark ? '#fff' : '#333';
-    ctx.lineWidth = 4;
+    ctx.moveTo(0, 10);
+    ctx.lineTo(0, -radius * 0.5);
     ctx.stroke();
     ctx.restore();
 
-    // Minute hand
+    // Minute
     ctx.save();
     ctx.rotate(((m + s / 60) * 6 * Math.PI) / 180);
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -radius * 0.7);
-    ctx.strokeStyle = isDark ? '#ccc' : '#666';
     ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = '#0d6efd';
+    ctx.moveTo(0, 10);
+    ctx.lineTo(0, -radius * 0.75);
     ctx.stroke();
     ctx.restore();
 
-    // Second hand
+    // Second
     ctx.save();
     ctx.rotate((s * 6 * Math.PI) / 180);
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -radius * 0.8);
-    ctx.strokeStyle = '#dc3545';
     ctx.lineWidth = 2;
+    ctx.strokeStyle = '#dc3545';
+    ctx.moveTo(0, 20);
+    ctx.lineTo(0, -radius * 0.85);
     ctx.stroke();
-
-    // Center dot
     ctx.beginPath();
-    ctx.arc(0, 0, 3, 0, 2 * Math.PI);
+    ctx.arc(0, 0, 4, 0, Math.PI * 2);
     ctx.fillStyle = '#dc3545';
     ctx.fill();
+    ctx.restore();
 
     ctx.restore();
-    ctx.restore();
-  }  // Initialize timezone data
+  }
+
+  // Timezones
   const timezones = moment.tz.names().map(tz => ({
     name: tz,
-    city: tz.split('/').pop().replace('_', ' '),
+    city: tz.split('/').pop().replace(/_/g, ' '),
     offset: moment.tz(tz).format('Z')
   }));
 
-  // Search functionality
   const searchInput = document.getElementById('timezoneSearch');
   const searchResults = document.getElementById('searchResults');
-  const addTimezoneBtn = document.getElementById('addTimezoneBtn');
 
   searchInput.addEventListener('input', function() {
     const query = this.value.toLowerCase();
@@ -248,13 +223,13 @@
 
     if (matches.length > 0) {
       searchResults.innerHTML = matches.map(tz => `
-        <button class="list-group-item list-group-item-action" data-timezone="${tz.name}">
+        <button class="list-group-item list-group-item-action border-0" data-timezone="${tz.name}">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <div class="fw-bold">${tz.city}</div>
+              <div class="fw-bold text-dark">${tz.city}</div>
               <div class="small text-muted">${tz.name}</div>
             </div>
-            <span class="badge bg-light text-dark">${tz.offset}</span>
+            <span class="badge bg-primary-subtle text-primary rounded-pill">${tz.offset}</span>
           </div>
         </button>
       `).join('');
@@ -264,7 +239,6 @@
     }
   });
 
-  // Handle search result selection
   searchResults.addEventListener('click', function(e) {
     const button = e.target.closest('button');
     if (button) {
@@ -275,7 +249,6 @@
     }
   });
 
-  // Popular cities
   document.getElementById('popularCities').addEventListener('click', function(e) {
     const button = e.target.closest('button');
     if (button) {
@@ -285,20 +258,25 @@
 
   function updateClocks() {
     document.querySelectorAll(".analog-clock").forEach(function (canvas) {
-      const digital = canvas.parentElement.querySelector(".digital-clock");
-      const date = new Date(digital.dataset.time);
-      date.setSeconds(
-        date.getSeconds() +
-          (Date.now() - parseInt(digital.dataset.fetched)) / 1000
-      );
+      const digital = canvas.closest('.glass-card').querySelector(".digital-clock");
+      if(!digital) return;
+      
+      const fetchedTime = parseInt(digital.dataset.fetched);
+      const originalDate = new Date(digital.dataset.time);
+      const elapsed = Date.now() - fetchedTime;
+      const date = new Date(originalDate.getTime() + elapsed);
+
       digital.textContent = date.toLocaleTimeString();
-      digital.dataset.time = date.toISOString();
       drawAnalogClock(canvas, date);
     });
     requestAnimationFrame(updateClocks);
   }
 
   function addClock(timezone) {
+    // Check if already exists
+    const existing = document.querySelector(`div[data-timezone='${timezone}']`);
+    if(existing) return;
+
     const datetime = moment.tz(timezone);
     const div = createClockDiv(timezone, null, datetime.toDate());
     document.getElementById('clocks').appendChild(div);
@@ -313,24 +291,16 @@
       .then((r) => r.json())
       .then((data) => {
         if (!data.zoneName) return;
+        // Fix: Use moment to get time for this zone, simpler than parsing API datetime string sometimes
         addClock(data.zoneName);
-          .then((timeData) => {
-            let dt = new Date(timeData.datetime);
-            let div = createClockDiv(
-              data.timezone,
-              data.localityInfo &&
-                data.localityInfo.administrative &&
-                data.localityInfo.administrative[0]
-                ? data.localityInfo.administrative[0].name
-                : "",
-              dt
-            );
-            document.getElementById("clocks").appendChild(div);
-            updateClocks();
-          });
       });
   });
-  // Initial call to update clocks (in case clocks are preloaded)
+  
+  // Default clocks
+  if(document.getElementById('clocks').children.length === 0) {
+      addClock(moment.tz.guess());
+  }
+  
   updateClocks();
 </script>
 {% endblock %}

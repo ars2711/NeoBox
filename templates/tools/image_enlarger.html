@@ -1,69 +1,182 @@
-{% extends "layout.html" %}
-{% block title %}Image Resizer, Converter & Compressor{% endblock %}
-{% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">Image Resizer, Converter & Compressor</h2>
-  <form method="post" enctype="multipart/form-data" class="card p-4 shadow-sm mx-auto" style="max-width:700px;">
-    <div class="mb-3">
-      <label class="form-label">Select Images</label>
-      <input type="file" name="images" accept="image/*" multiple required class="form-control">
+{% extends "layout.html" %} {% block title %}Image Resizer, Converter &
+Compressor{% endblock %} {% block main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-aspect-ratio me-2"></i>Image Resizer & Converter
+      </h2>
+      <p class="text-muted">Resize, scale, and convert format in bulk.</p>
     </div>
-    <div class="mb-3 row g-2">
-      <div class="col-md-4">
-        <label class="form-label">Resize (px)</label>
-        <input type="number" name="width" class="form-control" placeholder="Width">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">x</label>
-        <input type="number" name="height" class="form-control" placeholder="Height">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Scale (%)</label>
-        <input type="number" name="scale" class="form-control" min="10" max="1000" value="100">
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-9 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5 mb-5">
+        <form method="post" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Select Images</label
+            >
+            <input
+              type="file"
+              name="images"
+              accept="image/*"
+              multiple
+              required
+              class="form-control form-control-lg bg-light-subtle"
+            />
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>You can select multiple
+              files at once.
+            </div>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-4">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >Direct Resize (px)</label
+              >
+              <div class="input-group">
+                <input
+                  type="number"
+                  name="width"
+                  class="form-control bg-light-subtle"
+                  placeholder="W"
+                />
+                <span class="input-group-text bg-white border-0">×</span>
+                <input
+                  type="number"
+                  name="height"
+                  class="form-control bg-light-subtle"
+                  placeholder="H"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >OR Scale (%)</label
+              >
+              <input
+                type="number"
+                name="scale"
+                class="form-control bg-light-subtle"
+                min="10"
+                max="1000"
+                value="100"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >Target Format</label
+              >
+              <select name="format" class="form-select bg-light-subtle">
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="webp">WEBP</option>
+                <option value="bmp">BMP</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-4 align-items-end">
+            <div class="col-md-6">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase d-flex justify-content-between"
+              >
+                <span>Quality</span>
+                <span class="badge bg-secondary rounded-pill"
+                  >Adjust for JPG/WEBP</span
+                >
+              </label>
+              <input
+                type="range"
+                name="quality"
+                min="10"
+                max="100"
+                value="90"
+                class="form-range custom-range"
+              />
+            </div>
+            <div class="col-md-6">
+              <div
+                class="d-flex gap-3 justify-content-end p-2 border rounded-3 bg-light bg-opacity-50"
+              >
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="preserve_aspect"
+                    id="preserve_aspect"
+                    checked
+                  />
+                  <label class="form-check-label small" for="preserve_aspect"
+                    >Keep Ratio</label
+                  >
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="strip_metadata"
+                    id="strip_metadata"
+                  />
+                  <label class="form-check-label small" for="strip_metadata"
+                    >Remove Exif</label
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-neo w-100 mt-5 rounded-pill py-3 shadow-sm"
+            type="submit"
+          >
+            <i class="bi bi-gear-wide-connected me-2"></i>Process Images
+          </button>
+        </form>
       </div>
     </div>
-    <div class="mb-3 row g-2">
-      <div class="col-md-4">
-        <label class="form-label">Output Format</label>
-        <select name="format" class="form-select">
-          <option value="png">PNG</option>
-          <option value="jpg">JPG</option>
-          <option value="webp">WEBP</option>
-          <option value="bmp">BMP</option>
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Compression Quality</label>
-        <input type="range" name="quality" min="10" max="100" value="90" class="form-range">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">DPI</label>
-        <input type="number" name="dpi" class="form-control" min="72" max="600" value="300">
-      </div>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Advanced</label>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="preserve_aspect" id="preserve_aspect" checked>
-        <label class="form-check-label" for="preserve_aspect">Preserve Aspect Ratio</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="strip_metadata" id="strip_metadata">
-        <label class="form-check-label" for="strip_metadata">Strip Metadata</label>
-      </div>
-    </div>
-    <button class="btn btn-primary w-100" type="submit">Process Images</button>
-  </form>
+  </div>
+
   {% if results %}
-    <div class="row mt-4">
-      {% for img in results %}
-        <div class="col-md-4 mb-3 text-center">
-          <img src="data:image/{{ img.format }};base64,{{ img.data }}" class="img-fluid rounded shadow" alt="Result Image">
-          <div class="small mt-2">Size: {{ img.size }} KB</div>
-          <a href="data:image/{{ img.format }};base64,{{ img.data }}" download="converted.{{ img.format }}" class="btn btn-success btn-sm mt-2">Download</a>
+  <div class="d-flex align-items-center justify-content-center mb-4 fade-in-up">
+    <h5 class="fw-bold m-0">
+      <i class="bi bi-check-circle-fill text-success me-2"></i>Results
+    </h5>
+  </div>
+  <div class="row g-4 fade-in-up" style="animation-delay: 0.2s">
+    {% for img in results %}
+    <div class="col-md-4 col-sm-6">
+      <div
+        class="glass-card h-100 d-flex flex-column border-0 shadow-sm p-0 overflow-hidden"
+      >
+        <div
+          class="bg-light bg-opacity-50 p-4 flex-grow-1 d-flex align-items-center justify-content-center"
+        >
+          <img
+            src="data:image/{{ img.format }};base64,{{ img.data }}"
+            class="img-fluid rounded-3 shadow-sm"
+            style="max-height: 200px; object-fit: contain"
+          />
         </div>
-      {% endfor %}
+        <div class="p-3 bg-white text-center border-top">
+          <p class="mb-2 fw-bold small text-muted text-uppercase">
+            Size: {{ img.size }} KB
+          </p>
+          <a
+            href="data:image/{{ img.format }};base64,{{ img.data }}"
+            download="converted.{{ img.format }}"
+            class="btn btn-sm btn-success rounded-pill px-4"
+          >
+            <i class="bi bi-download me-1"></i>Download
+          </a>
+        </div>
+      </div>
     </div>
+    {% endfor %}
+  </div>
   {% endif %}
 </div>
 {% endblock %}

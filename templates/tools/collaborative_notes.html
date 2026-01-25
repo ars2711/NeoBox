@@ -1,41 +1,165 @@
 {% extends "layout.html" %} {% block title %}{{ _('Collaborative Notes') }}{%
 endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Collaborative Notes') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 700px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Title') }}</label>
-      <input type="text" name="title" class="form-control" required />
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">{{ _('Collaborative Notes') }}</h2>
+      <button
+        class="btn btn-neo rounded-pill"
+        data-bs-toggle="modal"
+        data-bs-target="#newNoteModal"
+      >
+        <i class="bi bi-plus-lg me-2"></i>{{ _('Create New Note') }}
+      </button>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Content') }}</label>
-      <textarea
-        name="content"
-        rows="4"
-        class="form-control"
-        required
-      ></textarea>
+  </div>
+
+  <div class="row g-4 masonry-grid">
+    {% for n in notes %}
+    <div
+      class="col-sm-6 col-lg-4 fade-in-up"
+      style="animation-delay: {{ loop.index0 * 0.1 }}s;"
+    >
+      <div class="note-card p-4 h-100 position-relative">
+        <div class="note-pin">
+          <i class="bi bi-pin-angle-fill text-danger opacity-75"></i>
+        </div>
+        <h5 class="fw-bold mb-3 note-title">{{ n.title }}</h5>
+        <div
+          class="note-content text-muted small"
+          style="white-space: pre-wrap"
+        >
+          {{ n.content }}
+        </div>
+        <div
+          class="mt-3 pt-3 border-top border-secondary border-opacity-10 d-flex justify-content-between align-items-center"
+        >
+          <small class="text-xs text-muted opacity-75">Just now</small>
+          <button class="btn btn-sm btn-link text-secondary p-0">
+            <i class="bi bi-three-dots"></i>
+          </button>
+        </div>
+      </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Note') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Notes') }}</div>
-    <ul class="list-group list-group-flush">
-      {% for n in notes %}
-      <li class="list-group-item">
-        <strong>{{ n.title }}</strong>
-        <div class="text-muted small">{{ n.content }}</div>
-      </li>
-      {% else %}
-      <li class="list-group-item text-muted">{{ _('No notes yet.') }}</li>
-      {% endfor %}
-    </ul>
+    {% else %}
+    <div class="col-12 text-center py-5 opacity-50 fade-in-up">
+      <i class="bi bi-journal-x display-1 mb-3 d-block"></i>
+      <p class="lead">{{ _('No notes yet. Start by creating one!') }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Create Modal -->
+  <div class="modal fade" id="newNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">New Note</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <form method="post">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >{{ _('Title') }}</label
+              >
+              <input
+                type="text"
+                name="title"
+                class="form-control bg-light-subtle border-0"
+                placeholder="Project Idea..."
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >{{ _('Content') }}</label
+              >
+              <textarea
+                name="content"
+                rows="5"
+                class="form-control bg-light-subtle border-0"
+                placeholder="Details here..."
+                required
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">
+              Cancel
+            </button>
+            <button class="btn btn-neo" type="submit">
+              {{ _('Save Note') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
+
+<style>
+  .note-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+
+  .note-card:hover {
+    transform: translateY(-5px) rotate(1deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+  }
+
+  /* Random pastel colors generated via css n-child could act as sticky note colors */
+  .col-sm-6:nth-child(3n + 1) .note-card {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 240, 0.9),
+      rgba(255, 250, 205, 0.8)
+    );
+  } /* Yellowish */
+  .col-sm-6:nth-child(3n + 2) .note-card {
+    background: linear-gradient(
+      135deg,
+      rgba(240, 255, 255, 0.9),
+      rgba(224, 255, 255, 0.8)
+    );
+  } /* Cyanish */
+  .col-sm-6:nth-child(3n + 3) .note-card {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 240, 245, 0.9),
+      rgba(255, 228, 225, 0.8)
+    );
+  } /* Pinkish */
+
+  .note-pin {
+    position: absolute;
+    top: -10px;
+    right: 50%;
+    font-size: 1.2rem;
+    filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
+    transform: rotate(15deg);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover {
+    color: var(--text-color);
+    background: rgba(0, 0, 0, 0.05);
+  }
+</style>
 {% endblock %}

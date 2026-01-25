@@ -1,0 +1,269 @@
+{% extends "layout.html" %}
+{% block title %}Mood Tracker{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row text-center mb-5 fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-emoji-smile-fill me-2"></i>Mood Tracker</h2>
+             <p class="text-muted">Track your emotional well-being over time.</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card p-4 p-md-5 mb-4 fade-in-up" style="animation-delay: 0.1s;">
+                <h5 class="fw-bold mb-4 text-center">How are you feeling right now?</h5>
+                <div class="d-flex justify-content-center gap-2 gap-md-4 mb-4 flex-wrap">
+                    <button class="btn btn-outline-light border-0 shadow-sm mood-btn rounded-circle p-3 transition-transform" data-mood="5" data-bs-toggle="tooltip" title="Amazing"><span class="display-4">😆</span></button>
+                    <button class="btn btn-outline-light border-0 shadow-sm mood-btn rounded-circle p-3 transition-transform" data-mood="4" data-bs-toggle="tooltip" title="Good"><span class="display-4">🙂</span></button>
+                    <button class="btn btn-outline-light border-0 shadow-sm mood-btn rounded-circle p-3 transition-transform" data-mood="3" data-bs-toggle="tooltip" title="Okay"><span class="display-4">😐</span></button>
+                    <button class="btn btn-outline-light border-0 shadow-sm mood-btn rounded-circle p-3 transition-transform" data-mood="2" data-bs-toggle="tooltip" title="Bad"><span class="display-4">😞</span></button>
+                    <button class="btn btn-outline-light border-0 shadow-sm mood-btn rounded-circle p-3 transition-transform" data-mood="1" data-bs-toggle="tooltip" title="Terrible"><span class="display-4">😫</span></button>
+                </div>
+                <div class="form-floating mb-3">
+                    <textarea id="mood-note" class="form-control border-0 bg-light-subtle rounded-4 shadow-inner" style="height: 100px" placeholder="Why?"></textarea>
+                    <label for="mood-note" class="text-muted">Why do you feel this way? (Optional)</label>
+                </div>
+                <button class="btn btn-neo w-100 py-3 rounded-pill shadow-sm" onclick="saveMood()">
+                    <i class="bi bi-check-lg me-2"></i>Log Mood
+                </button>
+            </div>
+
+            <div class="glass-card p-4 mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                 <h5 class="fw-bold mb-4 text-gradient"><i class="bi bi-graph-up me-2"></i>Trends</h5>
+                 <div style="height: 300px;">
+                    <canvas id="moodChart"></canvas>
+                 </div>
+            </div>
+
+            <div class="glass-card p-4 fade-in-up" style="animation-delay: 0.3s;">
+                <h5 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock-history me-2"></i>History</span>
+                    <button class="btn btn-xs btn-outline-danger rounded-pill small" onclick="clearHistory()">Clear</button>
+                </h5>
+                <div class="list-group list-group-flush rounded-4 overflow-hidden" id="mood-history">
+                    <!-- History items -->
+                    <div class="text-center text-muted py-4 small fst-italic">No stats yet. Log your first mood!</div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    .mood-btn {
+        background: rgba(255,255,255,0.8);
+        transition: all 0.2s ease;
+    }
+    .mood-btn:hover {
+        transform: scale(1.1);
+        background: #fff;
+    }
+    .mood-btn.active {
+        background: var(--neo-primary);
+        color: white; /* Affects border/outline usually, emoji color stays */
+        transform: scale(1.2);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,0.15);
+    }
+    .transition-transform { transition: transform 0.2s; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let selectedMood = null;
+    const moodBtns = document.querySelectorAll('.mood-btn');
+    let moodChart;
+    
+    moodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+             moodBtns.forEach(b => b.classList.remove('active'));
+             btn.classList.add('active');
+             selectedMood = btn.dataset.mood;
+        });
+    });
+
+    function saveMood() {
+        if (!selectedMood) return alert('Please select a mood emoji!');
+        
+        const note = document.getElementById('mood-note').value;
+        const entry = {
+            mood: parseInt(selectedMood),
+            note: note,
+            date: new Date().toISOString()
+        };
+
+        let history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+        history.unshift(entry);
+        localStorage.setItem('moodHistory', JSON.stringify(history));
+        
+        // Reset UI
+        document.getElementById('mood-note').value = '';
+        moodBtns.forEach(b => b.classList.remove('active'));
+        selectedMood = null;
+        
+        loadHistory();
+    }
+    
+    function clearHistory() {
+        if(confirm('Clear all mood history?')) {
+            localStorage.removeItem('moodHistory');
+            loadHistory();
+        }
+    }
+
+    function loadHistory() {
+        const history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+        const container = document.getElementById('mood-history');
+        
+        if (history.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted py-4 small fst-italic">No stats yet. Log your first mood!</div>';
+            if(moodChart) {
+                moodChart.destroy();
+                moodChart = null;
+            }
+            return;
+        }
+
+        container.innerHTML = '';
+        
+        // Display last 5 list items
+        history.slice(0, 5).forEach(item => {
+            const date = new Date(item.date).toLocaleDateString() + ' ' + new Date(item.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const emojis = {1: '😫', 2: '😞', 3: '😐', 4: '🙂', 5: '😆'};
+            const colors = {1: 'danger', 2: 'warning', 3: 'secondary', 4: 'info', 5: 'success'};
+            
+            const el = document.createElement('div');
+            el.className = 'list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom';
+            el.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <span class="fs-2 me-3">${emojis[item.mood]}</span>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">${date}</div>
+                        ${item.note ? `<p class="mb-0 text-dark small">${item.note}</p>` : '<span class="text-muted small fst-italic position-relative" style="top: -2px;">No note</span>'}
+                    </div>
+                </div>
+                <span class="badge bg-${colors[item.mood]} bg-opacity-10 text-${colors[item.mood]} rounded-pill">${item.mood}/5</span>
+            `;
+            container.appendChild(el);
+        });
+
+        updateChart(history);
+    }
+
+    function updateChart(history) {
+        // Reverse for chronological order (history is new -> old)
+        const data = [...history].reverse();
+        
+        // Take last 14 entries for chart
+        const recentData = data.slice(-14);
+        
+        const labels = recentData.map(d => new Date(d.date).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
+        const values = recentData.map(d => d.mood);
+        const emojis = ['','😫', '😞', '😐', '🙂', '😆'];
+
+        const ctx = document.getElementById('moodChart').getContext('2d');
+        
+        if (moodChart) moodChart.destroy();
+
+        moodChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Mood Level',
+                    data: values,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#4f46e5',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0.5,
+                        max: 5.5,
+                        ticks: {stepSize: 1, callback: function(val) { return emojis[val] + ' ('+val+')'; }}
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+    
+    // Init
+    loadHistory();
+</script>
+{% endblock %}
+                            callback: function(value) {
+                                return emojis[value] || '';
+                            },
+                            font: { size: 20 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+{% endblock %}
+        const note = document.getElementById('mood-note').value;
+        const entry = {
+            date: new Date().toISOString(),
+            mood: selectedMood,
+            note: note
+        };
+        
+        let history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+        history.unshift(entry);
+        localStorage.setItem('moodHistory', JSON.stringify(history));
+        
+        loadHistory();
+        // Reset
+        selectedMood = null;
+        document.getElementById('mood-note').value = '';
+        moodBtns.forEach(b => b.classList.remove('active', 'bg-light'));
+        alert('Mood logged!');
+    }
+
+    function loadHistory() {
+        const history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+        const list = document.getElementById('mood-history');
+        const moodMap = { '5': '😆', '4': '🙂', '3': '😐', '2': '😞', '1': '😫' };
+        
+        if (history.length === 0) return;
+        
+        list.innerHTML = '';
+        history.slice(0, 10).forEach(item => {
+            const date = new Date(item.date).toLocaleString();
+            const el = document.createElement('div');
+            el.className = 'list-group-item d-flex justify-content-between align-items-center';
+            el.innerHTML = `
+                <div>
+                    <span class="fs-4 me-2">${moodMap[item.mood]}</span>
+                    <span class="small text-muted">${date}</span>
+                    <p class="mb-0 small text-dark">${item.note ? item.note : ''}</p>
+                </div>
+            `;
+            list.appendChild(el);
+        });
+    }
+    
+    // Init
+    loadHistory();
+</script>
+{% endblock %}

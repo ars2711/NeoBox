@@ -1,46 +1,66 @@
 {% extends "layout.html" %} {% block title %}Search Engine Prompt{% endblock %}
 {% block main %}
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-/>
-<div class="container mt-4">
-  <h2>Search Engine Prompt</h2>
-  <form id="search-form" method="post" class="mb-3 d-flex">
-    <input
-      type="text"
-      name="query"
-      class="form-control me-2"
-      placeholder="Type your search..."
-      value="{{ query }}"
-      required
-    />
-    <button
-      type="submit"
-      class="btn btn-primary inline d-flex align-items-center"
-    >
-      <i class="bi bi-search"></i> Search
-    </button>
-  </form>
-  {% if query %}
-  <div class="row">
-    {% for engine in search_engines %}
-    <div class="col-6 col-md-4 col-lg-3 mb-3">
-      <a
-        href="{{ engine.url }}{{ query|urlencode }}"
-        target="_blank"
-        class="btn btn-outline-primary w-100 d-flex align-items-center"
-      >
-        <i class="bi {{ engine.icon }} me-2"></i> {{ engine.name }}
-      </a>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-search me-2"></i>Multi-Engine Search
+      </h2>
+      <p class="text-muted">Search across multiple platforms simultaneously.</p>
     </div>
-    {% endfor %}
   </div>
-  {% endif %}
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <form id="search-form" method="post" class="mb-4">
+          <div class="position-relative">
+            <input
+              type="text"
+              name="query"
+              class="form-control form-control-lg border-0 rounded-pill ps-5 py-3 shadow-sm"
+              placeholder="Type your search query..."
+              value="{{ query }}"
+              required
+              autofocus
+              style="padding-right: 120px"
+            />
+            <i
+              class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-4"
+            ></i>
+            <button
+              type="submit"
+              class="btn btn-neo rounded-pill position-absolute top-50 end-0 translate-middle-y me-2 px-4"
+            >
+              Go
+            </button>
+          </div>
+        </form>
+
+        {% if query %}
+        <hr class="my-4 opacity-10" />
+        <h5
+          class="fw-bold mb-4 text-center text-muted text-uppercase small ls-1"
+        >
+          Click to Search On
+        </h5>
+        <div class="row g-3">
+          {% for engine in search_engines %}
+          <div class="col-6 col-md-4 col-lg-3">
+            <a
+              href="{{ engine.url }}{{ query|urlencode }}"
+              target="_blank"
+              class="glass-card d-flex flex-column align-items-center justify-content-center p-3 text-decoration-none text-dark hover-scale bg-white h-100"
+            >
+              <i class="bi {{ engine.icon }} fs-3 text-primary mb-2"></i>
+              <span class="small fw-bold text-center">{{ engine.name }}</span>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
-<script>
-  document.getElementById("search-form").onsubmit = function (e) {
-    // Add AJAX here if needed
-  };
-</script>
 {% endblock %}

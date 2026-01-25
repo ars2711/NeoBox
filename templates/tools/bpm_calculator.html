@@ -1,0 +1,156 @@
+{% extends "layout.html" %}
+
+{% block title %}BPM Calculator{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="mb-5 fade-in-up">
+        <h1 class="display-4 fw-bold tool-header mb-2"><i class="bi bi-music-note-beamed"></i> BPM Wizard</h1>
+        <p class="text-muted">Find the tempo of any song just by tapping.</p>
+    </div>
+
+    <div class="row justify-content-center fade-in-up" style="animation-delay: 0.1s;">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-card p-5 position-relative overflow-hidden">
+                
+                <!-- Beat Visualizer Ring -->
+                <div class="beat-ring" id="beatRing"></div>
+
+                <div class="position-relative z-index-1">
+                    <!-- Tap Button -->
+                    <button id="tapBtn" class="btn btn-lg rounded-circle mb-4 shadow-sm fw-bold d-flex flex-column align-items-center justify-content-center mx-auto tap-button" 
+                           style="width: 220px; height: 220px; border: none;">
+                        <i class="bi bi-hand-index-thumb display-4 mb-2"></i>
+                        <span class="fs-4">TAP HERE</span>
+                        <small class="opacity-50 fw-normal">or Spacebar</small>
+                    </button>
+                    
+                    <div class="mb-4">
+                        <h2 class="display-1 fw-bold mb-0" id="bpmDisplay" style="color: var(--neo-accent);">0</h2>
+                        <span class="text-muted letter-spacing-2 small fw-bold">BEATS PER MINUTE</span>
+                    </div>
+    
+                    <button class="btn btn-outline-danger px-4 rounded-pill" onclick="resetBPM()">
+                        <i class="bi bi-arrow-counterclockwise fs-5"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Timeline/Graph Placeholder -->
+    <div class="row justify-content-center mt-4 fade-in-up" style="animation-delay: 0.2s;">
+        <div class="col-md-6">
+            <div class="d-flex justify-content-center gap-1 align-items-end" id="visualizerBars" style="height: 50px;">
+                <!-- Bars added by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tap-button {
+        background: linear-gradient(145deg, #ffffff, #e6e6e6);
+        color: #555;
+        transition: transform 0.1s, background 0.2s;
+        box-shadow:  20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff;
+    }
+    .tap-button:active, .tap-button.active {
+        transform: scale(0.95);
+        background: linear-gradient(145deg, var(--neo-accent), var(--neo-accent-2));
+        color: white;
+    }
+    
+    .beat-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        border: 2px solid var(--neo-accent);
+        opacity: 0;
+        pointer-events: none;
+    }
+    .beat-ring.play {
+        animation: ripple 0.6s ease-out;
+    }
+    @keyframes ripple {
+        0% { width: 220px; height: 220px; opacity: 0.8; }
+        100% { width: 350px; height: 350px; opacity: 0; }
+    }
+    
+    [data-bs-theme="dark"] .tap-button {
+        background: linear-gradient(145deg, #2b2b36, #1e1e28);
+        color: #eee;
+        box-shadow: 10px 10px 30px #15151c, -10px -10px 30px #2d2d3c;
+    }
+</style>
+
+<script>
+    let taps = [];
+    const bpmDisplay = document.getElementById('bpmDisplay');
+    const tapBtn = document.getElementById('tapBtn');
+    const beatRing = document.getElementById('beatRing');
+
+    tapBtn.addEventListener('mousedown', (e) => { e.preventDefault(); registerTap(); });
+    tapBtn.addEventListener('touchstart', (e) => { e.preventDefault(); registerTap(); });
+    
+    document.addEventListener('keydown', (e) => {
+        if(e.code === 'Space') {
+            e.preventDefault(); 
+            registerTap();
+            tapBtn.classList.add('active'); 
+        }
+    });
+    document.addEventListener('keyup', (e) => {
+        if(e.code === 'Space') tapBtn.classList.remove('active');
+    });
+
+    function registerTap() {
+        const now = Date.now();
+        
+        // Animation trigger
+        const clone = beatRing.cloneNode(true);
+        beatRing.parentNode.replaceChild(clone, beatRing); // force reflow/restart
+        clone.classList.add('play');
+        
+        // Logic
+        if (taps.length > 0 && now - taps[taps.length - 1] > 2000) {
+            taps = [];
+            resetVisuals();
+        }
+        
+        taps.push(now);
+        if (taps.length > 10) taps.shift();
+
+        if (taps.length > 1) {
+            calculateBPM();
+        }
+    }
+
+    function calculateBPM() {
+        let intervals = [];
+        for (let i = 1; i < taps.length; i++) {
+            intervals.push(taps[i] - taps[i-1]);
+        }
+        
+        let avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        let bpm = Math.round(60000 / avgInterval);
+        
+        bpmDisplay.textContent = bpm;
+        bpmDisplay.style.transform = "scale(1.2)";
+        setTimeout(() => bpmDisplay.style.transform = "scale(1)", 100);
+    }
+    
+    function resetVisuals() {
+        // Optional: clear graph or bars
+    }
+
+    window.resetBPM = () => {
+        taps = [];
+        bpmDisplay.textContent = '0';
+    };
+</script>
+{% endblock %}

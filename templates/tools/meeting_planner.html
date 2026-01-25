@@ -1,0 +1,209 @@
+{% extends "layout.html" %} {% block title %}Meeting Planner{% endblock %} {%
+block content %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-calendar-check-fill me-2"></i>Meeting Planner
+      </h2>
+      <p class="text-muted">
+        Coordinate meetings across different time zones seamlessly.
+      </p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <div class="row g-4 mb-5 align-items-end">
+          <div class="col-md-9">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Add a City/Timezone</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-light-subtle border-0 ps-3"
+                ><i class="bi bi-clock-history"></i
+              ></span>
+              <select
+                class="form-select form-select-lg bg-light-subtle border-0 shadow-sm"
+                id="timezoneSelect"
+              >
+                <!-- Populated by JS -->
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <button
+              class="btn btn-neo w-100 btn-lg rounded-pill shadow-sm"
+              id="addZoneBtn"
+            >
+              <i class="bi bi-plus-lg me-2"></i>Add Zone
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="mb-5 text-center bg-light bg-opacity-50 p-4 rounded-4 border"
+        >
+          <label class="form-label fw-bold text-uppercase small text-muted mb-3"
+            >Adjust Meeting Time</label
+          >
+          <input
+            type="range"
+            class="form-range custom-range mb-4"
+            min="0"
+            max="1440"
+            step="15"
+            id="timeSlider"
+            value="720"
+          />
+          <div class="d-flex justify-content-center align-items-center">
+            <h2
+              class="display-4 fw-bold text-gradient mb-0 me-3"
+              id="baseTimeDisplay"
+            >
+              12:00 PM
+            </h2>
+          </div>
+          <p class="text-muted small mt-2 fw-bold">
+            <i class="bi bi-geo-alt me-1"></i>Your Local Time
+          </p>
+        </div>
+
+        <div id="zonesList" class="d-flex flex-column gap-3">
+          <!-- Added zones appear here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const DateTime = luxon.DateTime;
+    const zonesList = document.getElementById("zonesList");
+    const timezoneSelect = document.getElementById("timezoneSelect");
+    const addZoneBtn = document.getElementById("addZoneBtn");
+    const timeSlider = document.getElementById("timeSlider");
+    const baseTimeDisplay = document.getElementById("baseTimeDisplay");
+
+    // Common timezones
+    const timezones = Intl.supportedValuesOf
+      ? Intl.supportedValuesOf("timeZone")
+      : [
+          "UTC",
+          "America/New_York",
+          "America/Los_Angeles",
+          "America/Chicago",
+          "Europe/London",
+          "Europe/Paris",
+          "Europe/Berlin",
+          "Asia/Tokyo",
+          "Asia/Shanghai",
+          "Asia/Dubai",
+          "Asia/Kolkata",
+          "Australia/Sydney",
+        ];
+
+    // Populate select
+    timezones.forEach((zone) => {
+      const option = document.createElement("option");
+      option.value = zone;
+      option.textContent = zone.replace(/_/g, " ");
+      timezoneSelect.appendChild(option);
+    });
+
+    // Default: Add user's local zone
+    const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let selectedZones = [localZone];
+
+    function renderZones() {
+      zonesList.innerHTML = "";
+
+      // Calculate base time from slider (minutes from midnight)
+      const sliderVal = parseInt(timeSlider.value);
+      const hours = Math.floor(sliderVal / 60);
+      const minutes = sliderVal % 60;
+
+      // Create a base DateTime for TODAY at the slider time in LOCAL zone
+      const now = DateTime.now();
+      const baseTime = now.set({ hour: hours, minute: minutes });
+
+      baseTimeDisplay.textContent = baseTime.toLocaleString(
+        DateTime.TIME_SIMPLE,
+      );
+
+      selectedZones.forEach((zone, index) => {
+        const zoneTime = baseTime.setZone(zone);
+        const isWorkHours = isBusinessHours(zoneTime);
+
+        const card = document.createElement("div");
+        card.className =
+          "d-flex justify-content-between align-items-center p-3 rounded-4 border bg-white shadow-sm transition-hover";
+        // card.classList.add(isWorkHours ? 'border-success' : 'border-light'); // Optional hint
+
+        const deleteBtn =
+          index !== 0
+            ? `<button class="btn btn-light text-danger rounded-circle shadow-sm ms-3" onclick="removeZone(${index})"><i class="bi bi-trash"></i></button>`
+            : `<div style="width: 42px;"></div>`;
+
+        card.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="me-3 p-3 rounded-circle ${isWorkHours ? "bg-success bg-opacity-10 text-success" : "bg-secondary bg-opacity-10 text-secondary"}">
+                             <i class="bi ${isWorkHours ? "bi-briefcase-fill" : "bi-moon-stars-fill"} fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 fw-bold">${zone.split("/").pop().replace(/_/g, " ")}</h5>
+                            <small class="text-muted font-monospace">${zone}</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="text-end">
+                            <h3 class="mb-0 fw-bold ${isWorkHours ? "text-success" : "text-muted opacity-75"}">
+                                ${zoneTime.toLocaleString(DateTime.TIME_SIMPLE)}
+                            </h3>
+                            <small class="text-muted fw-bold">${zoneTime.toFormat("EEE, MMM dd")}</small>
+                        </div>
+                        ${deleteBtn}
+                    </div>
+                `;
+        zonesList.appendChild(card);
+      });
+    }
+
+    // Check if 9 AM - 6 PM
+    function isBusinessHours(dt) {
+      const h = dt.hour;
+      return h >= 9 && h < 18;
+    }
+
+    window.removeZone = (index) => {
+      selectedZones.splice(index, 1);
+      renderZones();
+    };
+
+    addZoneBtn.addEventListener("click", () => {
+      const zone = timezoneSelect.value;
+      if (!selectedZones.includes(zone)) {
+        selectedZones.push(zone);
+        renderZones();
+      }
+    });
+
+    timeSlider.addEventListener("input", renderZones);
+
+    // Initial render
+    renderZones();
+  });
+</script>
+<style>
+  .custom-range::-webkit-slider-thumb {
+    background: var(--neo-primary);
+  }
+  .transition-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+</style>
+{% endblock %}

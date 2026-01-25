@@ -1,0 +1,232 @@
+{% extends "layout.html" %} {% block title %}Kanban Board{% endblock %} {% block
+content %}
+<div class="container py-4">
+  <div class="tool-header d-flex align-items-center mb-4">
+    <div
+      class="feature-icon-small d-inline-flex align-items-center justify-content-center bg-gradient text-white fs-4 rounded-3 me-3"
+      style="width: 48px; height: 48px"
+    >
+      <i class="bi bi-kanban"></i>
+    </div>
+    <div>
+      <h1 class="h3 mb-0">Kanban Board</h1>
+      <p class="text-muted mb-0">Simple drag-and-drop task management</p>
+    </div>
+  </div>
+
+  <div class="card glass-card">
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <input
+              type="text"
+              id="newTaskInput"
+              class="form-control"
+              placeholder="New task..."
+            />
+            <button class="btn btn-primary" onclick="addTask()">
+              Add Task
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <button class="btn btn-outline-danger btn-sm" onclick="clearBoard()">
+            Clear Board
+          </button>
+        </div>
+      </div>
+
+      <div class="row kanban-board">
+        <div class="col-md-4 mb-3">
+          <div class="card bg-light h-100">
+            <div
+              class="card-header fw-bold text-uppercase text-secondary small"
+            >
+              To Do
+            </div>
+            <div
+              class="card-body kanban-column"
+              id="todo"
+              ondrop="drop(event)"
+              ondragover="allowDrop(event)"
+            >
+              <!-- Tasks go here -->
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card bg-light h-100">
+            <div class="card-header fw-bold text-uppercase text-primary small">
+              In Progress
+            </div>
+            <div
+              class="card-body kanban-column"
+              id="inprogress"
+              ondrop="drop(event)"
+              ondragover="allowDrop(event)"
+            ></div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card bg-light h-100">
+            <div class="card-header fw-bold text-uppercase text-success small">
+              Done
+            </div>
+            <div
+              class="card-body kanban-column"
+              id="done"
+              ondrop="drop(event)"
+              ondragover="allowDrop(event)"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .kanban-board {
+    min-height: 400px;
+  }
+  .kanban-column {
+    min-height: 200px;
+    transition: background-color 0.2s;
+  }
+  .kanban-task {
+    background: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    position: relative;
+  }
+  .kanban-task:active {
+    cursor: grabbing;
+  }
+  .kanban-task .delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.8rem;
+    color: #dc3545;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .kanban-task:hover .delete-btn {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", loadTasks);
+
+  function allowDrop(ev) {
+    ev.preventDefault();
+    ev.target.closest(".kanban-column").style.backgroundColor = "#e9ecef";
+  }
+
+  function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const task = document.getElementById(data);
+    const dropZone = ev.target.closest(".kanban-column");
+
+    if (dropZone && task) {
+      dropZone.appendChild(task);
+    }
+
+    // Reset styles
+    document
+      .querySelectorAll(".kanban-column")
+      .forEach((col) => (col.style.backgroundColor = ""));
+    saveTasks();
+  }
+
+  function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+  }
+
+  function addTask() {
+    const input = document.getElementById("newTaskInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    createTaskElement(text, "todo");
+    input.value = "";
+    saveTasks();
+  }
+
+  function createTaskElement(text, columnId, id = null) {
+    const taskId = id || "task-" + Date.now();
+    const div = document.createElement("div");
+    div.className = "kanban-task";
+    div.id = taskId;
+    div.draggable = true;
+    div.ondragstart = drag;
+    div.innerHTML = `
+            ${text}
+            <i class="bi bi-x-circle delete-btn" onclick="deleteTask('${taskId}')"></i>
+        `;
+    document.getElementById(columnId).appendChild(div);
+  }
+
+  function deleteTask(id) {
+    const task = document.getElementById(id);
+    if (task) {
+      task.remove();
+      saveTasks();
+    }
+  }
+
+  function saveTasks() {
+    const data = {
+      todo: getColumnTasks("todo"),
+      inprogress: getColumnTasks("inprogress"),
+      done: getColumnTasks("done"),
+    };
+    localStorage.setItem("neobox_kanban", JSON.stringify(data));
+  }
+
+  function getColumnTasks(colId) {
+    const col = document.getElementById(colId);
+    return Array.from(col.children).map((task) => ({
+      id: task.id,
+      text: task.innerText,
+    }));
+  }
+
+  function loadTasks() {
+    const saved = localStorage.getItem("neobox_kanban");
+    if (saved) {
+      const data = JSON.parse(saved);
+
+      // Clear current content just in case
+      ["todo", "inprogress", "done"].forEach((col) => {
+        document.getElementById(col).innerHTML = "";
+        if (data[col]) {
+          data[col].forEach((t) => createTaskElement(t.text, col, t.id));
+        }
+      });
+    }
+  }
+
+  function clearBoard() {
+    if (confirm("Clear all tasks?")) {
+      localStorage.removeItem("neobox_kanban");
+      location.reload();
+    }
+  }
+
+  document
+    .getElementById("newTaskInput")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        addTask();
+      }
+    });
+</script>
+{% endblock %}

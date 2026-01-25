@@ -1,81 +1,289 @@
-{% extends "layout.html" %}
-{% block title %}{{ _('Gradient Generator') }}{% endblock %}
-{% block main %}
-<h2>Gradient Generator</h2>
-<form method="post" class="mb-3">
-  <div class="row g-2 align-items-end">
-    <div class="col-auto">
-      <label>Type</label>
-      <select name="type" class="form-select" onchange="this.form.submit()">
-        <option value="linear" {% if gradient_type=='linear' %}selected{% endif %}>Linear</option>
-        <option value="radial" {% if gradient_type=='radial' %}selected{% endif %}>Radial</option>
-      </select>
-    </div>
-    <div class="col-auto">
-      <label>Direction</label>
-      <select name="direction" class="form-select">
-        <option value="to right" {% if direction=='to right' %}selected{% endif %}>Left → Right</option>
-        <option value="to left" {% if direction=='to left' %}selected{% endif %}>Right → Left</option>
-        <option value="to bottom" {% if direction=='to bottom' %}selected{% endif %}>Top → Bottom</option>
-        <option value="to top" {% if direction=='to top' %}selected{% endif %}>Bottom → Top</option>
-        <option value="135deg" {% if direction=='135deg' %}selected{% endif %}>135°</option>
-      </select>
-    </div>
-    <div class="col-auto">
-      <label>Colors</label>
-      <div class="d-flex flex-row gap-2">
-        {% for color in colors %}
-        <input type="color" name="color" value="{{ color }}" class="form-control form-control-color" style="width: 2.5rem;">
-        {% endfor %}
-        {% if colors|length < 5 %}
-        <button name="add_color" value="1" class="btn btn-outline-secondary btn-sm">+</button>
-        {% endif %}
-        {% if colors|length > 2 %}
-        <button name="remove_color" value="1" class="btn btn-outline-secondary btn-sm">-</button>
-        {% endif %}
-      </div>
-    </div>
-    <div class="col-auto">
-      <button class="btn btn-primary">Generate</button>
+{% extends "layout.html" %} {% block title %}{{ _('Gradient Generator') }}{%
+endblock %} {% block main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-palette me-2"></i>Gradient Generator
+      </h2>
+      <p class="text-muted">
+        Create beautiful CSS gradients for your projects.
+      </p>
     </div>
   </div>
-</form>
-{% if css %}
-<div class="card mt-3">
-  <div class="card-body">
-    <div style="height: 80px; border-radius: 8px; background: {{ css }};"></div>
-    <div class="mt-2">
-      <code>background: {{ css }};</code>
-      <button class="btn btn-sm btn-outline-secondary ms-1" onclick="navigator.clipboard.writeText('background: {{ css }};')">Copy CSS</button>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post" id="gradientForm">
+          <div class="row g-4 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >Type</label
+              >
+              <select
+                name="type"
+                class="form-select bg-light-subtle shadow-sm border-0"
+                onchange="this.form.submit()"
+              >
+                <option
+                  value="linear"
+                  {%
+                  if
+                  gradient_type=""
+                  ="linear"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Linear
+                </option>
+                <option
+                  value="radial"
+                  {%
+                  if
+                  gradient_type=""
+                  ="radial"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Radial
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >Direction</label
+              >
+              <select
+                name="direction"
+                class="form-select bg-light-subtle shadow-sm border-0"
+              >
+                <option
+                  value="to right"
+                  {%
+                  if
+                  direction=""
+                  ="to right"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Left → Right
+                </option>
+                <option
+                  value="to left"
+                  {%
+                  if
+                  direction=""
+                  ="to left"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Right → Left
+                </option>
+                <option
+                  value="to bottom"
+                  {%
+                  if
+                  direction=""
+                  ="to bottom"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Top → Bottom
+                </option>
+                <option
+                  value="to top"
+                  {%
+                  if
+                  direction=""
+                  ="to top"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Bottom → Top
+                </option>
+                <option
+                  value="135deg"
+                  {%
+                  if
+                  direction=""
+                  ="135deg"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Diagonal (135°)
+                </option>
+                <option
+                  value="45deg"
+                  {%
+                  if
+                  direction=""
+                  ="45deg"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  Diagonal (45°)
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-12">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase mb-3"
+                >Colors</label
+              >
+              <div
+                class="d-flex flex-wrap align-items-center gap-3 p-3 bg-light rounded-4 border"
+              >
+                {% for color in colors %}
+                <div class="color-swatch-wrapper">
+                  <input
+                    type="color"
+                    name="color"
+                    value="{{ color }}"
+                    class="form-control form-control-color border-0 shadow-sm rounded-circle"
+                    style="width: 40px; height: 40px"
+                    title="Pick Color"
+                  />
+                </div>
+                {% endfor %}
+
+                <div class="vr mx-2 opacity-25"></div>
+
+                <div class="d-flex gap-2">
+                  {% if colors|length < 5 %}
+                  <button
+                    name="add_color"
+                    value="1"
+                    class="btn btn-outline-primary rounded-circle btn-sm d-flex align-items-center justify-content-center"
+                    style="width: 32px; height: 32px"
+                    title="Add Color"
+                  >
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                  {% endif %} {% if colors|length > 2 %}
+                  <button
+                    name="remove_color"
+                    value="1"
+                    class="btn btn-outline-danger rounded-circle btn-sm d-flex align-items-center justify-content-center"
+                    style="width: 32px; height: 32px"
+                    title="Remove Last Color"
+                  >
+                    <i class="bi bi-dash-lg"></i>
+                  </button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 mt-4 text-center">
+              <button class="btn btn-neo rounded-pill px-5 py-2">
+                <i class="bi bi-magic me-2"></i>Generate Gradient
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {% if css %}
+      <div class="glass-card mt-4 p-4 fade-in-up" style="animation-delay: 0.2s">
+        <h5 class="fw-bold mb-3">Preview & Code</h5>
+
+        <div
+          class="gradient-preview shadow-sm mb-4 border"
+          style="height: 150px; border-radius: 16px; background: {{ css }}; width: 100%;"
+        ></div>
+
+        <div class="position-relative">
+          <pre
+            class="bg-dark text-white p-3 rounded-3 mb-0"
+          ><code>background: {{ css }};</code></pre>
+          <button
+            class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 shadow-sm"
+            onclick="copyToClipboard('background: {{ css }};', this)"
+          >
+            <i class="bi bi-clipboard me-1"></i>Copy
+          </button>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
-{% endif %}
+
 <script>
-document.querySelectorAll('button[name="add_color"]').forEach(btn => {
-  btn.onclick = function(e) {
-    e.preventDefault();
-    let form = btn.closest('form');
-    let input = document.createElement('input');
-    input.type = 'color';
-    input.name = 'color';
-    input.value = '#ffffff';
-    input.className = 'form-control form-control-color';
-    input.style.width = '2.5rem';
+  function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check-lg text-success me-1"></i>Copied!';
+      setTimeout(() => (btn.innerHTML = original), 2000);
+    });
+  }
+
+  document.querySelectorAll('button[name="add_color"]').forEach((btn) => {
+    btn.onclick = function (e) {
+      e.preventDefault();
+      let form = btn.closest("form");
+      let input = document.createElement("input");
+      input.type = "color";
+      input.name = "color";
+      input.value = "#ffffff";
+      input.className =
+        "form-control form-control-color border-0 shadow-sm rounded-circle"; // Match styling
+      input.style.width = "40px";
+      // Actually we need to insert it into the wrapper logic if we used one, but for simplicity let's just append before the VR or dividers.
+      // The previous code inserted before the button.
+      // Let's just submit the form with a hidden input trigger so backend handles it?
+      // The previous code did frontend DOM manipulation then submit.
+
+      // NOTE: Jinja renders the loop. We can just add a hidden input and submit.
+      // Or just let the button submit and handle logic in backend?
+      // The original code used JS to append an input then submit.
+
+      const colorsDiv = btn.closest(".d-flex.flex-wrap"); // Find container
+      const newColor = document.createElement("input");
+      newColor.type = "color";
+      newColor.name = "color";
+      newColor.value = "#007bff"; // Default distinct color
+      newColor.className = "form-control form-control-color";
+
+      // Actually simplicity: Just submit. The backend usually handles 'add_color' param?
+      // Looking at template: `{% if colors|length < 5 %}` implies backend logic usually renders list.
+      // BUT the JS in the original file was:
+      /*
+    let input = document.createElement('input'); ... 
     btn.parentNode.insertBefore(input, btn);
     form.submit();
-  }
-});
-document.querySelectorAll('button[name="remove_color"]').forEach(btn => {
-  btn.onclick = function(e) {
-    e.preventDefault();
-    let form = btn.closest('form');
-    let colors = form.querySelectorAll('input[type="color"]');
-    if (colors.length > 2) {
-      colors[colors.length - 1].remove();
+    */
+      // This implies the backend reads ALL 'color' inputs from the form to rebuild the list.
+
+      // So we must emulate that.
+      input.style.display = "none"; // Hide it, we just need the value for the post
+      form.appendChild(input);
       form.submit();
-    }
-  }
-});
+    };
+  });
+
+  // Remove color logic - likewise, we can just remove the last input and submit
+  document.querySelectorAll('button[name="remove_color"]').forEach((btn) => {
+    btn.onclick = function (e) {
+      e.preventDefault();
+      let form = btn.closest("form");
+      let colors = form.querySelectorAll('input[type="color"]');
+      if (colors.length > 2) {
+        colors[colors.length - 1].remove();
+        form.submit();
+      }
+    };
+  });
 </script>
 {% endblock %}

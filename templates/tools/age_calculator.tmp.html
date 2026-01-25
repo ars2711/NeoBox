@@ -1,0 +1,334 @@
+{% extends "layout.html" %} {% block title %}Age Calculator{% endblock %} {%
+block main %}
+<style>
+  /* Unique styles for this tool specifically */
+  .result-card {
+    opacity: 0;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  .stat-value {
+    font-family: var(--bs-font-sans-serif);
+    font-weight: 700;
+    color: var(--neo-accent);
+  }
+
+  .planet-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--neo-accent-2);
+  }
+
+  .progress-bar-custom {
+    background: linear-gradient(90deg, var(--neo-accent), var(--neo-accent-2));
+    height: 8px;
+    border-radius: 4px;
+    width: 0%;
+    transition: width 1s ease-in-out;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="text-center mb-5 fade-in-up">
+    <h1 class="display-4 fw-bold tool-header mb-3">Ultimate Age Calculator</h1>
+    <p class="lead text-muted">
+      Discover your age in years, months, days, minutes, and even on other
+      planets!
+    </p>
+  </div>
+
+  <div
+    class="row justify-content-center mb-5 fade-in-up"
+    style="animation-delay: 0.1s"
+  >
+    <div class="col-md-8 col-lg-6">
+      <div class="glass-card p-4">
+        <form id="ageForm" onsubmit="calculateAge(event)">
+          <div class="mb-4">
+            <label class="form-label fw-bold">Date of Birth</label>
+            <input
+              type="date"
+              id="dob"
+              class="form-control form-control-lg"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-bold">Time of Birth (Optional)</label>
+            <input type="time" id="tob" class="form-control form-control-lg" />
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary w-100 btn-lg fw-bold rounded-pill"
+            style="
+              background: linear-gradient(
+                90deg,
+                var(--neo-accent),
+                var(--neo-accent-2)
+              );
+              border: none;
+            "
+          >
+            <i class="bi bi-magic fs-5 me-2"></i> Reveal My Stats
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultsArea" class="d-none">
+    <!-- Main Age Display -->
+    <div class="text-center mb-5 result-card" style="animation-delay: 0.1s">
+      <h2 class="h3 text-muted mb-3">You have been alive for</h2>
+      <div class="display-5 fw-bold mb-2">
+        <span id="years" class="text-primary tool-header">0</span> Years,
+        <span id="months" class="text-primary tool-header">0</span> Months,
+        <span id="days" class="text-primary tool-header">0</span> Days
+      </div>
+      <div class="fs-4 text-muted">
+        and
+        <span id="timeString" class="fw-bold" style="color: var(--neo-accent-2)"
+          >00:00:00</span
+        >
+      </div>
+    </div>
+
+    <!-- Total Stats Grid -->
+    <div class="row g-4 mb-5">
+      <div class="col-6 col-md-3 result-card" style="animation-delay: 0.2s">
+        <div class="glass-card p-3 text-center h-100">
+          <i class="bi bi-calendar3 fs-3 mb-2 text-primary"></i>
+          <div class="text-muted small text-uppercase fw-bold">Total Weeks</div>
+          <div class="fs-3 stat-value" id="totalWeeks">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 result-card" style="animation-delay: 0.3s">
+        <div class="glass-card p-3 text-center h-100">
+          <i class="bi bi-sun fs-3 mb-2 text-warning"></i>
+          <div class="text-muted small text-uppercase fw-bold">Total Days</div>
+          <div class="fs-3 stat-value" id="totalDays">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 result-card" style="animation-delay: 0.4s">
+        <div class="glass-card p-3 text-center h-100">
+          <i class="bi bi-clock fs-3 mb-2 text-info"></i>
+          <div class="text-muted small text-uppercase fw-bold">Total Hours</div>
+          <div class="fs-4 stat-value" id="totalHours">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 result-card" style="animation-delay: 0.5s">
+        <div class="glass-card p-3 text-center h-100">
+          <i class="bi bi-stopwatch fs-3 mb-2 text-danger"></i>
+          <div class="text-muted small text-uppercase fw-bold">
+            Total Minutes
+          </div>
+          <div class="fs-4 stat-value" id="totalMinutes">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next Birthday -->
+    <div
+      class="row justify-content-center mb-5 result-card"
+      style="animation-delay: 0.6s"
+    >
+      <div class="col-md-8">
+        <div class="glass-card p-4">
+          <h3 class="h5 fw-bold mb-3">
+            <i class="bi bi-cake2-fill me-2 text-danger"></i>Next Birthday
+          </h3>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>Countdown</span>
+            <span id="nextBdayCount" class="fw-bold text-primary">0 days</span>
+          </div>
+          <div
+            class="progress"
+            style="height: 10px; background-color: rgba(0, 0, 0, 0.05)"
+          >
+            <div
+              id="bdayProgress"
+              class="progress-bar-custom"
+              role="progressbar"
+            ></div>
+          </div>
+          <p class="mt-3 text-muted small mb-0">
+            Your next birthday will be on a
+            <span id="nextBdayDay" class="fw-bold text-dark">Friday</span>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Planetary Ages -->
+    <div class="mb-5 result-card" style="animation-delay: 0.8s">
+      <h3 class="fw-bold text-center mb-4">Your Age on Other Worlds</h3>
+      <div class="row g-3" id="planetaryGrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Copy the same JS logic from original
+  class AgeCalc {
+    constructor() {
+      this.timer = null;
+      this.planets = [
+        { name: "Mercury", period: 0.2408467, icon: "bi-circle" },
+        { name: "Venus", period: 0.61519726, icon: "bi-circle" },
+        { name: "Mars", period: 1.8808158, icon: "bi-circle" },
+        { name: "Jupiter", period: 11.862615, icon: "bi-circle" },
+        { name: "Saturn", period: 29.447498, icon: "bi-circle" },
+        { name: "Uranus", period: 84.016846, icon: "bi-circle" },
+        { name: "Neptune", period: 164.79132, icon: "bi-circle" },
+      ];
+    }
+
+    calculate(dobInput, tobInput) {
+      if (!dobInput) return;
+
+      const dobStr = dobInput + "T" + (tobInput || "00:00");
+      const dob = new Date(dobStr);
+      const now = new Date();
+
+      if (dob > now) {
+        alert("Unless you are a time traveler, please enter a past date!");
+        return;
+      }
+
+      document.getElementById("resultsArea").classList.remove("d-none");
+
+      if (this.timer) clearInterval(this.timer);
+      this.updateStats(dob);
+      this.timer = setInterval(() => this.updateStats(dob), 1000);
+
+      this.updateNextBirthday(dob);
+      this.updatePlanets(dob);
+
+      // Wait for DOM update then scroll
+      setTimeout(() => {
+        document
+          .getElementById("resultsArea")
+          .scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+
+    updateStats(dob) {
+      const now = new Date();
+      // Simple logic for display
+      let years = now.getFullYear() - dob.getFullYear();
+      let months = now.getMonth() - dob.getMonth();
+      let days = now.getDate() - dob.getDate();
+
+      if (days < 0) {
+        months--;
+        const prev = new Date(now.getFullYear(), now.getMonth(), 0);
+        days += prev.getDate();
+      }
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+
+      // Time logic
+      let rHours = now.getHours() - dob.getHours();
+      let rMin = now.getMinutes() - dob.getMinutes();
+      let rSec = now.getSeconds() - dob.getSeconds();
+
+      if (rSec < 0) {
+        rMin--;
+        rSec += 60;
+      }
+      if (rMin < 0) {
+        rHours--;
+        rMin += 60;
+      }
+      if (rHours < 0) {
+        rHours += 24;
+      }
+
+      document.getElementById("years").innerText = years;
+      document.getElementById("months").innerText = months;
+      document.getElementById("days").innerText = days;
+      document.getElementById("timeString").innerText =
+        `${rHours}h ${rMin}m ${rSec}s`;
+
+      const diffTime = Math.abs(now - dob);
+      document.getElementById("totalWeeks").innerText = Math.floor(
+        diffTime / (1000 * 60 * 60 * 24 * 7),
+      ).toLocaleString();
+      document.getElementById("totalDays").innerText = Math.floor(
+        diffTime / (1000 * 60 * 60 * 24),
+      ).toLocaleString();
+      document.getElementById("totalHours").innerText = Math.floor(
+        diffTime / (1000 * 60 * 60),
+      ).toLocaleString();
+      document.getElementById("totalMinutes").innerText = Math.floor(
+        diffTime / (1000 * 60),
+      ).toLocaleString();
+    }
+
+    updateNextBirthday(dob) {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let nextBday = new Date(dob);
+      nextBday.setFullYear(currentYear);
+
+      if (nextBday < now) nextBday.setFullYear(currentYear + 1);
+
+      const diff = nextBday - now;
+      const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      document.getElementById("nextBdayCount").innerText = `${diffDays} Days`;
+
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      document.getElementById("nextBdayDay").innerText =
+        days[nextBday.getDay()];
+
+      // Progress Bar
+      const startValues = new Date(now.getFullYear(), 0, 1);
+      const endValues = new Date(now.getFullYear() + 1, 0, 1);
+      const percent = ((now - startValues) / (endValues - startValues)) * 100;
+      document.getElementById("bdayProgress").style.width = `${percent}%`;
+    }
+
+    updatePlanets(dob) {
+      const now = new Date();
+      const earthYears = (now - dob) / (1000 * 60 * 60 * 24 * 365.25);
+      const grid = document.getElementById("planetaryGrid");
+      grid.innerHTML = "";
+
+      this.planets.forEach((p) => {
+        const pAge = (earthYears / p.period).toFixed(2);
+        const col = document.createElement("div");
+        col.className = "col-6 col-md-4 col-lg-3";
+        col.innerHTML = `
+                    <div class="glass-card p-3 text-center h-100 hover-lift">
+                        <i class="bi ${p.icon} planet-icon d-block"></i>
+                        <h6 class="text-muted text-uppercase small fw-bold">${p.name}</h6>
+                        <div class="fs-4 fw-bold text-primary">${pAge}</div>
+                        <small class="text-muted">Years</small>
+                    </div>
+                `;
+        grid.appendChild(col);
+      });
+    }
+  }
+
+  const calc = new AgeCalc();
+  function calculateAge(e) {
+    e.preventDefault();
+    const d = document.getElementById("dob").value;
+    const t = document.getElementById("tob").value;
+    calc.calculate(d, t);
+  }
+</script>
+{% endblock %}

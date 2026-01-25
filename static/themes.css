@@ -1,0 +1,150 @@
+/* === UI THEME SKINS (separate from light/dark color scheme) === */
+:root {
+  --neo-accent: #667eea;
+  --neo-accent-2: #764ba2;
+  --neo-glow: rgba(102, 126, 234, 0.25);
+  --neo-navbar-bg: rgba(255, 255, 255, 0.75);
+  --neo-card-bg: rgba(255, 255, 255, 0.95);
+  --neo-scrollbar-track: #f1f1f1;
+  --neo-scrollbar-thumb: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  --neo-scrollbar-border: #f1f1f1;
+  --neo-cursor-primary: #667eea;
+  --neo-cursor-secondary: #764ba2;
+  --neo-cursor-core: #ffffff;
+}
+
+[data-theme="classic"] {
+  --neo-accent: #8b6843;
+  --neo-accent-2: #a0825a;
+  --neo-glow: rgba(139, 104, 67, 0.25);
+  --neo-navbar-bg: rgba(248, 245, 240, 0.92);
+  --neo-card-bg: rgba(255, 255, 255, 0.92);
+  --neo-scrollbar-thumb: linear-gradient(180deg, #8b6843 0%, #a0825a 100%);
+  --neo-cursor-primary: #8b6843;
+  --neo-cursor-secondary: #a0825a;
+  --neo-cursor-core: #ffffff;
+  --bs-font-sans-serif: "Playfair Display", "Georgia", "Times New Roman", serif;
+}
+[data-theme="classic"] * {
+  font-family: "Playfair Display", "Georgia", serif !important;
+}
+[data-theme="classic"] .navbar-brand {
+  font-family: "Playfair Display", serif !important;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b6843 0%, #a0825a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="coding"] {
+  --neo-accent: #00ff41;
+  --neo-accent-2: #00d1ff;
+  --neo-glow: rgba(0, 255, 65, 0.35);
+  --neo-navbar-bg: rgba(10, 14, 20, 0.95);
+  --neo-card-bg: rgba(13, 17, 23, 0.95);
+  --neo-scrollbar-thumb: linear-gradient(180deg, #00ff41 0%, #00d1ff 100%);
+  --neo-cursor-primary: #00ff41;
+  --neo-cursor-secondary: #00d1ff;
+  --neo-cursor-core: #0a0e14;
+  --bs-font-sans-serif: "Fira Code", "Consolas", "Courier New", monospace;
+}
+[data-theme="coding"] * {
+  font-family: "Fira Code", "Consolas", monospace !important;
+}
+[data-theme="coding"] .navbar-brand {
+  color: #00ff41 !important;
+  text-shadow: 0 0 10px #00ff41;
+}
+
+[data-theme="goofy"] {
+  --neo-accent: #ff00ff;
+  --neo-accent-2: #ffcc00;
+  --neo-glow: rgba(255, 0, 255, 0.35);
+  --neo-navbar-bg: rgba(255, 200, 220, 0.85);
+  --neo-card-bg: rgba(255, 255, 204, 0.95);
+  --neo-scrollbar-thumb: linear-gradient(180deg, #ff00ff 0%, #ffcc00 100%);
+  --neo-cursor-primary: #ff00ff;
+  --neo-cursor-secondary: #ffcc00;
+  --neo-cursor-core: #ffffff;
+  --bs-font-sans-serif: "Comic Sans MS", "Chalkboard SE", "Comic Neue", cursive;
+}
+[data-theme="goofy"] * {
+  font-family: "Comic Sans MS", "Chalkboard SE", cursive !important;
+}
+
+[data-theme="ocean"] {
+  --neo-accent: #00b4d8;
+  --neo-accent-2: #0077b6;
+  --neo-glow: rgba(0, 180, 216, 0.35);
+  --neo-navbar-bg: rgba(224, 247, 255, 0.85);
+  --neo-card-bg: rgba(230, 249, 255, 0.95);
+  --neo-scrollbar-thumb: linear-gradient(180deg, #00b4d8 0%, #0077b6 100%);
+  --neo-cursor-primary: #00b4d8;
+  --neo-cursor-secondary: #0077b6;
+  --neo-cursor-core: #ffffff;
+  --bs-font-sans-serif: "Poppins", "Inter", sans-serif;
+}
+
+[data-theme="sunset"] {
+  --neo-accent: #ff6b6b;
+  --neo-accent-2: #f06595;
+  --neo-glow: rgba(255, 107, 107, 0.35);
+  --neo-navbar-bg: rgba(255, 235, 230, 0.85);
+  --neo-card-bg: rgba(255, 245, 240, 0.95);
+  --neo-scrollbar-thumb: linear-gradient(180deg, #ff6b6b 0%, #f06595 100%);
+  --neo-cursor-primary: #ff6b6b;
+  --neo-cursor-secondary: #f06595;
+  --neo-cursor-core: #ffffff;
+  --bs-font-sans-serif: "Nunito", "Inter", sans-serif;
+}
+
+[data-theme="forest"] {
+  --neo-accent: #2d6a4f;
+  --neo-accent-2: #40916c;
+  --neo-glow: rgba(45, 106, 79, 0.35);
+  --neo-navbar-bg: rgba(236, 247, 240, 0.9);
+  --neo-card-bg: rgba(240, 250, 244, 0.95);
+  --neo-scrollbar-thumb: linear-gradient(180deg, #2d6a4f 0%, #40916c 100%);
+  --neo-cursor-primary: #2d6a4f;
+  --neo-cursor-secondary: #40916c;
+  --neo-cursor-core: #ffffff;
+  --bs-font-sans-serif: "Montserrat", "Inter", sans-serif;
+}
+
+[data-theme] .glass-navbar {
+  background-color: var(--neo-navbar-bg) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+[data-theme] .card {
+  background: var(--neo-card-bg);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+[data-theme] .btn-primary {
+  background: linear-gradient(135deg, var(--neo-accent) 0%, var(--neo-accent-2) 100%);
+  border: none;
+  box-shadow: 0 4px 12px var(--neo-glow);
+}
+[data-theme] a {
+  color: var(--neo-accent);
+}
+[data-theme] ::selection {
+  background: var(--neo-accent);
+  color: #fff;
+}
+[data-theme] .glow-on-hover::after {
+  background: radial-gradient(600px circle at 50% 0%, var(--neo-glow), transparent 55%);
+}
+
+[data-bs-theme="dark"] {
+  --neo-scrollbar-track: #1e1e28;
+  --neo-scrollbar-border: #1e1e28;
+}
+[data-bs-theme="dark"][data-theme] .card {
+  background: rgba(20, 23, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+[data-bs-theme="dark"][data-theme] .glass-navbar {
+  background-color: rgba(20, 23, 30, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}

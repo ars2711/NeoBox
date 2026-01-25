@@ -1,0 +1,140 @@
+{% extends "layout.html" %} {% block title %}Pixel Art Maker{% endblock %} {%
+block content %}
+<style>
+  .pixel-grid {
+    display: grid;
+    background-color: #ddd;
+    gap: 1px;
+    border: 1px solid #ccc;
+  }
+  .pixel {
+    background-color: white;
+    cursor: crosshair;
+  }
+  .pixel:hover {
+    opacity: 0.8;
+  }
+</style>
+
+<div class="row justify-content-center">
+  <div class="col-md-11">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-grid-3x3 text-danger me-2"></i>Pixel Art Maker
+      </h2>
+
+      <div class="row g-3">
+        <!-- Controls -->
+        <div class="col-md-3">
+          <div class="d-grid gap-3 p-3 bg-light rounded-3">
+            <div>
+              <label class="form-label">Grid Size</label>
+              <input
+                type="number"
+                id="gridSize"
+                class="form-control"
+                value="16"
+                min="8"
+                max="32"
+              />
+            </div>
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              onclick="makeGrid()"
+            >
+              Reset / New Grid
+            </button>
+
+            <hr />
+
+            <div>
+              <label class="form-label">Color Picker</label>
+              <input
+                type="color"
+                id="colorPicker"
+                class="form-control form-control-color w-100"
+                value="#000000"
+              />
+            </div>
+
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-warning flex-grow-1"
+                onclick="selectEraser()"
+              >
+                <i class="bi bi-eraser"></i> Eraser
+              </button>
+              <button class="btn btn-primary flex-grow-1" onclick="selectPen()">
+                <i class="bi bi-pencil"></i> Pen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div
+          class="col-md-9 d-flex justify-content-center align-items-start bg-light rounded-3 p-4 overflow-auto"
+        >
+          <div id="gridContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentColor = "#000000";
+  let isDrawing = false;
+  let mode = "pen"; // pen or eraser
+
+  function makeGrid() {
+    const size = document.getElementById("gridSize").value;
+    const container = document.getElementById("gridContainer");
+
+    container.innerHTML = "";
+    container.className = "pixel-grid";
+
+    // CSS Grid config
+    const cellSize = 25; // px
+    container.style.gridTemplateColumns = `repeat(${size}, ${cellSize}px)`;
+    container.style.gridTemplateRows = `repeat(${size}, ${cellSize}px)`;
+
+    for (let i = 0; i < size * size; i++) {
+      const cell = document.createElement("div");
+      cell.className = "pixel";
+      cell.addEventListener("mousedown", function () {
+        isDrawing = true;
+        paint(cell);
+      });
+      cell.addEventListener("mouseover", function () {
+        if (isDrawing) paint(cell);
+      });
+      cell.addEventListener("mouseup", function () {
+        isDrawing = false;
+      });
+      container.appendChild(cell);
+    }
+  }
+
+  // Stop drawing if mouse leave grid area
+  document.body.addEventListener("mouseup", () => (isDrawing = false));
+
+  function paint(cell) {
+    if (mode === "pen") {
+      cell.style.backgroundColor = document.getElementById("colorPicker").value;
+    } else {
+      cell.style.backgroundColor = "white";
+    }
+  }
+
+  function selectEraser() {
+    mode = "eraser";
+  }
+  function selectPen() {
+    mode = "pen";
+  }
+
+  // Init
+  window.onload = makeGrid;
+</script>
+{% endblock %}

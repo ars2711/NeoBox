@@ -1,0 +1,152 @@
+{% extends "layout.html" %} {% block title %}Meme Generator{% endblock %} {%
+block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-card-image text-success me-2"></i>Meme Generator
+      </h2>
+
+      <div class="row g-4">
+        <div class="col-md-5">
+          <div class="mb-3">
+            <label class="form-label">Upload Image</label>
+            <input
+              type="file"
+              id="imgUpload"
+              class="form-control"
+              accept="image/*"
+              onchange="loadImage()"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Top Text</label>
+            <input
+              type="text"
+              id="topText"
+              class="form-control"
+              placeholder="WHEN YOU..."
+              oninput="drawMeme()"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Bottom Text</label>
+            <input
+              type="text"
+              id="bottomText"
+              class="form-control"
+              placeholder="BOTTOM TEXT"
+              oninput="drawMeme()"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Font Size</label>
+            <input
+              type="range"
+              id="fontSize"
+              class="form-range"
+              min="20"
+              max="80"
+              value="40"
+              oninput="drawMeme()"
+            />
+          </div>
+
+          <button class="btn btn-primary w-100" onclick="downloadMeme()">
+            <i class="bi bi-download me-2"></i>Download Meme
+          </button>
+        </div>
+
+        <div
+          class="col-md-7 text-center bg-dark rounded-3 p-3 d-flex align-items-center justify-content-center"
+        >
+          <canvas
+            id="memeCanvas"
+            style="max-width: 100%; height: auto"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById("memeCanvas");
+  const ctx = canvas.getContext("2d");
+  let currentImage = null;
+
+  function loadImage() {
+    const file = document.getElementById("imgUpload").files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const img = new Image();
+      img.onload = function () {
+        currentImage = img;
+        canvas.width = img.width;
+        canvas.height = img.height;
+        drawMeme();
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function drawMeme() {
+    if (!currentImage) {
+      // Draw placeholder
+      canvas.width = 500;
+      canvas.height = 500;
+      ctx.fillStyle = "#eee";
+      ctx.fillRect(0, 0, 500, 500);
+      ctx.fillStyle = "#aaa";
+      ctx.textAlign = "center";
+      ctx.font = "30px Arial";
+      ctx.fillText("Upload an image", 250, 250);
+      return;
+    }
+
+    // Draw Image
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(currentImage, 0, 0);
+
+    // Text Config
+    const top = document.getElementById("topText").value.toUpperCase();
+    const bottom = document.getElementById("bottomText").value.toUpperCase();
+    const size = document.getElementById("fontSize").value;
+
+    ctx.font = `bold ${size}px Impact, sans-serif`;
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = size / 15;
+    ctx.textAlign = "center";
+
+    // Draw Top
+    if (top) {
+      ctx.strokeText(top, canvas.width / 2, size * 1.5);
+      ctx.fillText(top, canvas.width / 2, size * 1.5);
+    }
+
+    // Draw Bottom
+    if (bottom) {
+      ctx.strokeText(bottom, canvas.width / 2, canvas.height - size * 0.5);
+      ctx.fillText(bottom, canvas.width / 2, canvas.height - size * 0.5);
+    }
+  }
+
+  function downloadMeme() {
+    if (!currentImage) return;
+    const link = document.createElement("a");
+    link.download = "meme.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
+  // Init
+  drawMeme();
+</script>
+{% endblock %}

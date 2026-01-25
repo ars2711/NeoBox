@@ -1,0 +1,149 @@
+{% extends "layout.html" %}
+
+{% block title %}Focus Mode{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center vh-100 position-relative" style="background: #2b3035; color: white;">
+    <!-- Background Video/Image could go here -->
+    
+    <div class="position-absolute top-0 end-0 p-3">
+        <button class="btn btn-outline-light btn-sm" onclick="document.exitFullscreen()"><i class="bi bi-arrows-fullscreen"></i> Exit</button>
+        <a href="/" class="btn btn-outline-light btn-sm ms-2">Home</a>
+    </div>
+
+    <div class="text-center">
+        <h1 class="display-1 fw-bold mb-4" id="timer">25:00</h1>
+        
+        <div class="btn-group mb-5">
+            <button class="btn btn-lg btn-light active" onclick="setMode(25)" id="btnFocus">Focus</button>
+            <button class="btn btn-lg btn-outline-light" onclick="setMode(5)" id="btnShort">Short Break</button>
+            <button class="btn btn-lg btn-outline-light" onclick="setMode(15)" id="btnLong">Long Break</button>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mb-5">
+            <button class="btn btn-primary btn-lg rounded-pill px-5" onclick="toggleTimer()" id="toggleBtn">Start</button>
+            <button class="btn btn-secondary btn-lg rounded-circle" onclick="resetTimer()"><i class="bi bi-arrow-counterclockwise"></i></button>
+        </div>
+
+        <div class="row justify-content-center gap-4">
+            <div class="col-auto text-center">
+                <button class="btn btn-outline-light rounded-circle p-3 mb-2" onclick="toggleSound('rain')" id="btnRain">
+                    <i class="bi bi-cloud-rain fs-4"></i>
+                </button>
+                <div class="small">Rain</div>
+                <audio id="audioRain" loop>
+                    <source src="https://cdn.pixabay.com/audio/2022/02/16/audio_985b882415.mp3" type="audio/mpeg">
+                </audio>
+            </div>
+            <div class="col-auto text-center">
+                <button class="btn btn-outline-light rounded-circle p-3 mb-2" onclick="toggleSound('forest')" id="btnForest">
+                    <i class="bi bi-tree fs-4"></i>
+                </button>
+                <div class="small">Forest</div>
+                <audio id="audioForest" loop>
+                   <source src="https://cdn.pixabay.com/audio/2021/09/06/audio_03d6d0e800.mp3" type="audio/mpeg">
+                </audio>
+            </div>
+            <div class="col-auto text-center">
+                <button class="btn btn-outline-light rounded-circle p-3 mb-2" onclick="toggleSound('white')" id="btnWhite">
+                    <i class="bi bi-activity fs-4"></i>
+                </button>
+                <div class="small">White Noise</div>
+                 <!-- Using a generic noise generator or file -->
+                 <audio id="audioWhite" loop>
+                     <source src="https://bigsoundbank.com/UPLOAD/mp3/1841.mp3" type="audio/mpeg">
+                 </audio>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 25 * 60;
+    let timerId = null;
+    let isRunning = false;
+
+    const timerDisplay = document.getElementById('timer');
+    const toggleBtn = document.getElementById('toggleBtn');
+    
+    function updateDisplay() {
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        document.title = `${timerDisplay.textContent} - Focus`;
+    }
+
+    function toggleTimer() {
+        if (isRunning) {
+            clearInterval(timerId);
+            isRunning = false;
+            toggleBtn.textContent = 'Start';
+            toggleBtn.classList.replace('btn-warning', 'btn-primary');
+        } else {
+            timerId = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerId);
+                    isRunning = false;
+                    new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
+                    alert("Time's up!");
+                    toggleBtn.textContent = 'Start';
+                }
+            }, 1000);
+            isRunning = true;
+            toggleBtn.textContent = 'Pause';
+            toggleBtn.classList.replace('btn-primary', 'btn-warning');
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(timerId);
+        isRunning = false;
+        toggleBtn.textContent = 'Start';
+        const activeBtn = document.querySelector('.btn-group .active');
+        const mins = activeBtn.id === 'btnFocus' ? 25 : (activeBtn.id === 'btnShort' ? 5 : 15);
+        timeLeft = mins * 60;
+        updateDisplay();
+    }
+
+    window.setMode = (mins) => {
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active', 'btn-light'));
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.add('btn-outline-light'));
+        
+        const btnId = mins === 25 ? 'btnFocus' : (mins === 5 ? 'btnShort' : 'btnLong');
+        const btn = document.getElementById(btnId);
+        btn.classList.add('active', 'btn-light');
+        btn.classList.remove('btn-outline-light');
+        
+        clearInterval(timerId);
+        isRunning = false;
+        toggleBtn.textContent = 'Start';
+        timeLeft = mins * 60;
+        updateDisplay();
+    };
+
+    window.toggleSound = (type) => {
+        const audio = document.getElementById(`audio${type.charAt(0).toUpperCase() + type.slice(1)}`);
+        const btn = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`);
+        
+        if (audio.paused) {
+            audio.play();
+            btn.classList.add('active', 'bg-white', 'text-dark');
+            btn.classList.remove('btn-outline-light');
+        } else {
+            audio.pause();
+            btn.classList.remove('active', 'bg-white', 'text-dark');
+            btn.classList.add('btn-outline-light');
+        }
+    };
+    
+    // Request full screen
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        // elem.requestFullscreen(); 
+        // Auto fullscreen often blocked by browser policy without user gesture
+    }
+</script>
+{% endblock %}

@@ -1,63 +1,147 @@
 {% extends "layout.html" %} {% block title %}Music/Audio Player{% endblock %} {%
 block main %}
-<div class="container py-4">
-  <h2 class="mb-3">
-    <i class="bi bi-music-note-beamed"></i> Music/Audio Player
-  </h2>
-  <form method="POST" enctype="multipart/form-data" class="mb-4">
-    <div class="input-group">
-      <input
-        type="file"
-        name="audio_files"
-        accept="audio/*"
-        multiple
-        class="form-control"
-        required
-      />
-      <button class="btn btn-primary" type="submit">
-        <i class="bi bi-upload"></i> Upload
-      </button>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-music-note-beamed me-2"></i>Music Player
+      </h2>
+      <p class="text-muted">Simple local audio player with queue management.</p>
     </div>
-  </form>
-  <div id="audio-player-ui" class="card p-4 shadow-lg neo-card-hover">
-    <div id="now-playing" class="mb-3">
-      <h5 id="now-playing-title" class="fw-bold"></h5>
-      <audio id="audio-player" controls style="width: 100%"></audio>
-    </div>
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="fw-bold">Queue</span>
-      <button class="btn btn-outline-danger btn-sm" id="clear-queue">
-        <i class="bi bi-trash"></i> Clear
-      </button>
-    </div>
-    <ul id="audio-queue" class="list-group mb-2">
-      {% for track in audio_queue %}
-      <li
-        class="list-group-item d-flex align-items-center justify-content-between"
-        data-url="{{ track.url }}"
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <!-- Upload Area -->
+      <div class="glass-card p-4 mb-4">
+        <form method="POST" enctype="multipart/form-data">
+          <label class="form-label text-muted small fw-bold text-uppercase"
+            >Add Tracks</label
+          >
+          <div class="input-group input-group-lg">
+            <input
+              type="file"
+              name="audio_files"
+              accept="audio/*"
+              multiple
+              class="form-control bg-light-subtle"
+              required
+            />
+            <button class="btn btn-neo shadow-sm" type="submit">
+              <i class="bi bi-cloud-upload me-2"></i>Upload
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Player UI -->
+      <div
+        id="audio-player-ui"
+        class="glass-card p-4 p-md-5 position-relative overflow-hidden fade-in-up"
+        style="animation-delay: 0.2s"
       >
-        <span>{{ track.name }}</span>
-        <div>
-          <button class="btn btn-outline-primary btn-sm play-btn">
-            <i class="bi bi-play-fill"></i>
-          </button>
-          <button class="btn btn-outline-danger btn-sm remove-btn">
-            <i class="bi bi-x"></i>
-          </button>
+        <!-- Decorative bg elements -->
+        <div
+          class="position-absolute top-0 start-0 w-100 h-100 bg-primary opacity-5"
+          style="z-index: 0; pointer-events: none"
+        ></div>
+
+        <div class="position-relative" style="z-index: 1">
+          <div id="now-playing" class="mb-5 text-center">
+            <div
+              class="mb-4 d-inline-block p-4 rounded-circle bg-white shadow-sm"
+            >
+              <i
+                class="bi bi-disc text-secondary display-1 opacity-25 spinner-border border-0"
+                style="width: 5rem; height: 5rem; animation-duration: 3s"
+              ></i>
+            </div>
+            <h4 id="now-playing-title" class="fw-bold mb-3 text-gradient">
+              Select a track
+            </h4>
+            <audio
+              id="audio-player"
+              controls
+              class="w-100 rounded-pill shadow-sm"
+            ></audio>
+          </div>
+
+          <hr class="opacity-10 my-4" />
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-bold text-uppercase small text-muted"
+              ><i class="bi bi-list-ol me-2"></i>Queue</span
+            >
+            <button
+              class="btn btn-link btn-sm text-danger text-decoration-none"
+              id="clear-queue"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div
+            class="bg-white bg-opacity-50 rounded-4 border overflow-hidden shadow-inner"
+            style="max-height: 300px; overflow-y: auto"
+          >
+            <ul
+              id="audio-queue"
+              class="list-group list-group-flush bg-transparent"
+            >
+              {% for track in audio_queue %}
+              <li
+                class="list-group-item d-flex align-items-center justify-content-between bg-transparent border-bottom px-3 py-2 track-item"
+                data-url="{{ track.url }}"
+              >
+                <div class="d-flex align-items-center text-truncate">
+                  <i class="bi bi-music-note text-primary me-3 opacity-50"></i>
+                  <span class="text-truncate fw-medium">{{ track.name }}</span>
+                </div>
+                <div class="d-flex gap-2">
+                  <button
+                    class="btn btn-sm btn-light rounded-circle play-btn text-primary border shadow-sm"
+                  >
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-light rounded-circle remove-btn text-danger border shadow-sm"
+                  >
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </li>
+              {% endfor %} {% if not audio_queue %}
+              <li
+                class="list-group-item text-center text-muted py-4 small bg-transparent border-0"
+              >
+                Queue is empty
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+
+          <!-- Online Source Input -->
+          <div class="mt-4 pt-3 border-top border-light-subtle">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Import External URL (Demo)</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-white border-0"
+                ><i class="bi bi-link-45deg"></i
+              ></span>
+              <input
+                type="text"
+                id="yt-url"
+                class="form-control bg-light-subtle border-0"
+                placeholder="Paste audio URL..."
+              />
+              <button class="btn btn-light shadow-sm" id="add-yt">
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
         </div>
-      </li>
-      {% endfor %}
-    </ul>
-    <div class="mt-3">
-      <input
-        type="text"
-        id="yt-url"
-        class="form-control mb-2"
-        placeholder="Paste YouTube/Spotify URL (demo)"
-      />
-      <button class="btn btn-outline-success" id="add-yt">
-        <i class="bi bi-youtube"></i> Add from YouTube/Spotify
-      </button>
+      </div>
     </div>
   </div>
 </div>
@@ -66,42 +150,81 @@ block main %}
   const queue = document.getElementById("audio-queue");
   const nowPlayingTitle = document.getElementById("now-playing-title");
   let currentIdx = 0;
+
   function playTrack(idx) {
-    const items = queue.querySelectorAll("li");
-    if (items.length === 0) return;
+    const items = queue.querySelectorAll("li.track-item");
+    if (items.length === 0 || idx >= items.length) return;
     currentIdx = idx;
     const item = items[idx];
     audioPlayer.src = item.dataset.url;
     nowPlayingTitle.textContent = item.querySelector("span").textContent;
     audioPlayer.play();
-    items.forEach((li) => li.classList.remove("active"));
-    item.classList.add("active");
+
+    items.forEach((li) => {
+      li.classList.remove("bg-primary", "bg-opacity-10", "active");
+      li.querySelector(".play-btn i").className = "bi bi-play-fill";
+    });
+
+    item.classList.add("bg-primary", "bg-opacity-10", "active");
+    item.querySelector(".play-btn i").className = "bi bi-pause-fill";
   }
+
   queue.addEventListener("click", function (e) {
+    const li = e.target.closest("li.track-item");
+    if (!li) return;
+
     if (e.target.closest(".play-btn")) {
-      const idx = Array.from(queue.children).indexOf(e.target.closest("li"));
-      playTrack(idx);
+      const allItems = Array.from(queue.querySelectorAll("li.track-item"));
+      const idx = allItems.indexOf(li);
+
+      // Toggle play/pause if same track
+      if (audioPlayer.src.endsWith(li.dataset.url) && !audioPlayer.paused) {
+        audioPlayer.pause();
+        li.querySelector(".play-btn i").className = "bi bi-play-fill";
+      } else if (
+        audioPlayer.src.endsWith(li.dataset.url) &&
+        audioPlayer.paused
+      ) {
+        audioPlayer.play();
+        li.querySelector(".play-btn i").className = "bi bi-pause-fill";
+      } else {
+        playTrack(idx);
+      }
     }
     if (e.target.closest(".remove-btn")) {
-      e.target.closest("li").remove();
+      li.remove();
     }
   });
+
   audioPlayer.addEventListener("ended", function () {
-    const items = queue.querySelectorAll("li");
+    const items = queue.querySelectorAll("li.track-item");
     if (currentIdx + 1 < items.length) playTrack(currentIdx + 1);
   });
+
+  // Visual feedback on play
+  audioPlayer.addEventListener("play", () => {
+    document.querySelector(".bi-disc").classList.add("spinner-border");
+  });
+  audioPlayer.addEventListener("pause", () => {
+    document.querySelector(".bi-disc").classList.remove("spinner-border");
+  });
+
   document.getElementById("clear-queue").onclick = () => {
-    queue.innerHTML = "";
-    nowPlayingTitle.textContent = "";
+    queue.innerHTML =
+      '<li class="list-group-item text-center text-muted py-4 small bg-transparent border-0">Queue is empty</li>';
+    nowPlayingTitle.textContent = "Select a track";
     audioPlayer.src = "";
   };
+
   document.getElementById("add-yt").onclick = () => {
     const url = document.getElementById("yt-url").value.trim();
     if (!url) return;
     alert(
-      "YouTube/Spotify playback is a demo. Embed or use a backend API for real playback."
+      "Direct streaming requires a proxy or valid audio file URL. This is a demo interface.",
     );
+    // In a real app, you'd add this URL to the queue list here
   };
-  if (queue.children.length) playTrack(0);
+
+  if (queue.querySelectorAll("li.track-item").length) playTrack(0);
 </script>
 {% endblock %}

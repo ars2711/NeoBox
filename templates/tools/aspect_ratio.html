@@ -1,0 +1,185 @@
+{% extends "layout.html" %} {% block title %}Aspect Ratio Calculator{% endblock
+%} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-aspect-ratio text-info me-2"></i>Aspect Ratio Calculator
+      </h2>
+
+      <!-- Calc Section -->
+      <div class="row g-3 mb-4">
+        <h5 class="border-bottom pb-2">1. Find Aspect Ratio</h5>
+        <div class="col-md-5">
+          <label class="form-label">Width (px)</label>
+          <input
+            type="number"
+            id="w1"
+            class="form-control"
+            placeholder="1920"
+            oninput="calcRatio()"
+          />
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Height (px)</label>
+          <input
+            type="number"
+            id="h1"
+            class="form-control"
+            placeholder="1080"
+            oninput="calcRatio()"
+          />
+        </div>
+        <div
+          class="col-md-2 text-center d-flex align-items-end justify-content-center"
+        >
+          <h3 class="mb-0 text-success" id="ratioResult">16:9</h3>
+        </div>
+      </div>
+
+      <!-- Resize Section -->
+      <div class="row g-3">
+        <h5 class="border-bottom pb-2">2. Resize Calculator</h5>
+        <p class="text-muted small">
+          Lock aspect ratio and calculate new dimension.
+        </p>
+
+        <div class="col-md-4">
+          <label class="form-label">Original Width</label>
+          <input
+            type="number"
+            id="rw1"
+            class="form-control"
+            value="1920"
+            oninput="calcResize()"
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Original Height</label>
+          <input
+            type="number"
+            id="rh1"
+            class="form-control"
+            value="1080"
+            oninput="calcResize()"
+          />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <!-- Spacer -->
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label">New Width</label>
+          <input
+            type="number"
+            id="rw2"
+            class="form-control"
+            placeholder="New Width"
+            oninput="calcResize('width')"
+          />
+        </div>
+        <div
+          class="col-md-2 text-center d-flex align-items-center justify-content-center pt-4"
+        >
+          <i class="bi bi-arrow-left-right"></i>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">New Height</label>
+          <input
+            type="number"
+            id="rh2"
+            class="form-control"
+            placeholder="New Height"
+            oninput="calcResize('height')"
+          />
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="mt-4 text-center">
+        <p class="mb-2">Presets:</p>
+        <div class="btn-group">
+          <button
+            class="btn btn-outline-secondary"
+            onclick="setPreset(1920, 1080)"
+          >
+            1080p (16:9)
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            onclick="setPreset(1080, 1920)"
+          >
+            Story (9:16)
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            onclick="setPreset(1080, 1080)"
+          >
+            Square (1:1)
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            onclick="setPreset(1024, 768)"
+          >
+            Classic (4:3)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function gcd(a, b) {
+    return b == 0 ? a : gcd(b, a % b);
+  }
+
+  function calcRatio() {
+    const w = parseInt(document.getElementById("w1").value) || 0;
+    const h = parseInt(document.getElementById("h1").value) || 0;
+
+    if (w > 0 && h > 0) {
+      const divisor = gcd(w, h);
+      document.getElementById("ratioResult").innerText =
+        `${w / divisor}:${h / divisor}`;
+
+      // Sync logic for section 2 inputs if empty
+      if (!document.getElementById("rw1").value)
+        document.getElementById("rw1").value = w;
+      if (!document.getElementById("rh1").value)
+        document.getElementById("rh1").value = h;
+    } else {
+      document.getElementById("ratioResult").innerText = "--";
+    }
+  }
+
+  function calcResize(source) {
+    const w1 = parseFloat(document.getElementById("rw1").value);
+    const h1 = parseFloat(document.getElementById("rh1").value);
+
+    if (!w1 || !h1) return;
+
+    const ratio = w1 / h1;
+
+    if (source === "width") {
+      const w2 = parseFloat(document.getElementById("rw2").value);
+      if (w2) {
+        document.getElementById("rh2").value = Math.round(w2 / ratio);
+      }
+    } else {
+      const h2 = parseFloat(document.getElementById("rh2").value);
+      if (h2) {
+        document.getElementById("rw2").value = Math.round(h2 * ratio);
+      }
+    }
+  }
+
+  function setPreset(w, h) {
+    document.getElementById("w1").value = w;
+    document.getElementById("h1").value = h;
+    document.getElementById("rw1").value = w;
+    document.getElementById("rh1").value = h;
+    calcRatio();
+  }
+</script>
+{% endblock %}

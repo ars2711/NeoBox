@@ -1,28 +1,226 @@
-{% extends "layout.html" %}
-{% block title %}Polynomial Calculator{% endblock %}
+{% extends "layout.html" %} {% block title %}Polynomial Calculator{% endblock %}
 {% block main %}
-<h1>Polynomial Calculator</h1>
-<form method="post">
-  <div class="mb-2">
-    <label>Coefficients (comma separated, highest degree first): <input name="coeffs" value="{{ coeffs }}" class="form-control"></label>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-graph-up-arrow me-2"></i>Polynomial Calculator
+      </h2>
+      <p class="text-muted">
+        Analyze polynomials, find roots, derivatives, and integrals.
+      </p>
+    </div>
   </div>
-  <div class="mb-2">
-    <label>Value of x (for evaluation): <input name="x_val" value="{{ x_val }}" class="form-control"></label>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5 mb-4 position-relative">
+        <form method="post">
+          <div class="row g-4">
+            <div class="col-md-12">
+              <div class="form-floating">
+                <input
+                  name="coeffs"
+                  id="coeffsInput"
+                  value="{{ coeffs }}"
+                  class="form-control bg-light-subtle border-0 rounded-4"
+                  placeholder="1 2 3"
+                />
+                <label for="coeffsInput"
+                  >Coefficients (space sep, highest first)</label
+                >
+              </div>
+              <div class="form-text small ms-2">
+                <i class="bi bi-info-circle me-1"></i>Example: "1 -2 1" for x² -
+                2x + 1
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input
+                  name="x_val"
+                  id="xValInput"
+                  value="{{ x_val }}"
+                  class="form-control bg-light-subtle border-0 rounded-4"
+                  placeholder="0"
+                />
+                <label for="xValInput">Evaluation Point (x)</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <select
+                  name="action"
+                  class="form-select bg-light-subtle border-0 rounded-4"
+                  id="actionSelect"
+                >
+                  <option
+                    value="roots"
+                    {%
+                    if
+                    action=""
+                    ="roots"
+                    %}selected{%
+                    endif
+                    %}
+                  >
+                    Find Roots
+                  </option>
+                  <option
+                    value="evaluate"
+                    {%
+                    if
+                    action=""
+                    ="evaluate"
+                    %}selected{%
+                    endif
+                    %}
+                  >
+                    Evaluate at x
+                  </option>
+                  <option
+                    value="derivative"
+                    {%
+                    if
+                    action=""
+                    ="derivative"
+                    %}selected{%
+                    endif
+                    %}
+                  >
+                    Derivative
+                  </option>
+                  <option
+                    value="integral"
+                    {%
+                    if
+                    action=""
+                    ="integral"
+                    %}selected{%
+                    endif
+                    %}
+                  >
+                    Integral
+                  </option>
+                </select>
+                <label for="actionSelect">Operation</label>
+              </div>
+            </div>
+            <div class="col-12 mt-4">
+              <button
+                class="btn btn-neo w-100 py-3 rounded-pill shadow-sm"
+                type="submit"
+              >
+                <i class="bi bi-calculator me-2"></i>Calculate
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="glass-card p-4 mb-4 fade-in-up" style="animation-delay: 0.2s">
+        <h5 class="fw-bold mb-4 text-gradient">
+          <i class="bi bi-bezier2 me-2"></i>Visualization
+        </h5>
+        <div style="height: 350px">
+          <canvas id="polyChart" class="d-none w-100 h-100"></canvas>
+          <div
+            id="empty-chart"
+            class="h-100 d-flex align-items-center justify-content-center text-muted opacity-50"
+          >
+            <span>Enter coefficients to plot graph</span>
+          </div>
+        </div>
+      </div>
+
+      {% if result is not none %}
+      <div
+        class="glass-card p-4 text-center fade-in-up"
+        style="animation-delay: 0.3s"
+      >
+        <h5 class="fw-bold text-success mb-2">Calculation Result</h5>
+        <p class="fs-4 font-monospace mb-1" id="calc-result">{{ result }}</p>
+        {% if explanation %}
+        <div class="text-muted small">{{ explanation }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
   </div>
-  <div class="mb-2">
-    <select name="action" class="form-select">
-      <option value="roots" {% if action=="roots" %}selected{% endif %}>Find Roots</option>
-      <option value="evaluate" {% if action=="evaluate" %}selected{% endif %}>Evaluate at x</option>
-      <option value="derivative" {% if action=="derivative" %}selected{% endif %}>Derivative</option>
-      <option value="integral" {% if action=="integral" %}selected{% endif %}>Integral</option>
-    </select>
-  </div>
-  <button class="btn btn-primary">Calculate</button>
-</form>
-{% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b> <span id="calc-result">{{ result }}</span>
-    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
-  </div>
-{% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const input = document.querySelector('input[name="coeffs"]');
+    if (input && input.value) {
+      plotPolynomial(input.value);
+    }
+  });
+
+  function plotPolynomial(coeffStr) {
+    let coeffs = coeffStr
+      .split(/[\s,;]+/)
+      .map(Number)
+      .filter((n) => !isNaN(n));
+    if (coeffs.length === 0) return;
+
+    document.getElementById("empty-chart").style.display = "none";
+
+    // Evaluate polynomial: P(x) = c0*x^n + c1*x^(n-1) + ...
+    const poly = (x) => {
+      let res = 0;
+      const n = coeffs.length - 1;
+      for (let i = 0; i <= n; i++) {
+        res += coeffs[i] * Math.pow(x, n - i);
+      }
+      return res;
+    };
+
+    const labels = [];
+    const data = [];
+    for (let x = -10; x <= 10; x += 0.5) {
+      labels.push(x.toFixed(1));
+      data.push(poly(x));
+    }
+
+    const ctx = document.getElementById("polyChart");
+    ctx.classList.remove("d-none");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "P(x)",
+            data: data,
+            borderColor: "#4f46e5",
+            backgroundColor: "rgba(79, 70, 229, 0.1)",
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: { display: true, text: "x" },
+            grid: { color: (ctx) => (ctx.tick.value == 0 ? "#666" : "#eee") },
+          },
+          y: {
+            title: { display: true, text: "f(x)" },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+  }
+</script>
 {% endblock %}

@@ -1,0 +1,187 @@
+{% extends "layout.html" %} {% block title %}Markdown Editor{% endblock %} {%
+block content %}
+<div
+  class="d-flex flex-column h-100 bg-light"
+  style="min-height: calc(100vh - 60px)"
+>
+  <div
+    class="px-4 py-3 bg-white border-bottom shadow-sm d-flex justify-content-between align-items-center"
+  >
+    <div class="d-flex align-items-center">
+      <div class="bg-dark p-2 rounded text-white me-3">
+        <i class="bi bi-markdown-fill"></i>
+      </div>
+      <div>
+        <h6 class="mb-0 fw-bold">Editor</h6>
+        <small class="text-muted">Markdown</small>
+      </div>
+    </div>
+    <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+      <button
+        class="btn btn-sm btn-light border-end"
+        onclick="insertSyntax('**', '**', 'Bold')"
+        title="Bold"
+      >
+        <i class="bi bi-type-bold"></i>
+      </button>
+      <button
+        class="btn btn-sm btn-light border-end"
+        onclick="insertSyntax('*', '*', 'Italic')"
+        title="Italic"
+      >
+        <i class="bi bi-type-italic"></i>
+      </button>
+      <button
+        class="btn btn-sm btn-light border-end"
+        onclick="insertSyntax('# ', '', 'Heading')"
+        title="Heading"
+      >
+        <i class="bi bi-type-h1"></i>
+      </button>
+      <button
+        class="btn btn-sm btn-light border-end"
+        onclick="insertSyntax('- ', '', 'List')"
+        title="List"
+      >
+        <i class="bi bi-list-ul"></i>
+      </button>
+      <button
+        class="btn btn-sm btn-light border-end"
+        onclick="insertSyntax('[', '](url)', 'Link')"
+        title="Link"
+      >
+        <i class="bi bi-link"></i>
+      </button>
+      <button
+        class="btn btn-sm btn-light"
+        onclick="insertSyntax('`', '`', 'Code')"
+        title="Code"
+      >
+        <i class="bi bi-code"></i>
+      </button>
+    </div>
+    <button class="btn btn-neo btn-sm rounded-pill px-4" onclick="downloadMD()">
+      <i class="bi bi-download me-2"></i>Export
+    </button>
+  </div>
+
+  <div class="flex-grow-1 d-flex">
+    <!-- Editor -->
+    <div
+      class="w-50 h-100 border-end border-light-subtle d-flex flex-column bg-white"
+    >
+      <div
+        class="small text-uppercase text-muted fw-bold px-3 py-2 border-bottom bg-light bg-opacity-10"
+      >
+        Input
+      </div>
+      <textarea
+        id="markdownInput"
+        class="form-control border-0 h-100 rounded-0 p-4 shadow-none bg-transparent"
+        style="
+          resize: none;
+          font-family:
+            &quot;Fira Code&quot;, &quot;Courier New&quot;, monospace;
+          font-size: 14px;
+          line-height: 1.6;
+        "
+        placeholder="# Start writing markdown..."
+      ></textarea>
+    </div>
+
+    <!-- Preview -->
+    <div class="w-50 h-100 bg-light d-flex flex-column">
+      <div
+        class="small text-uppercase text-muted fw-bold px-3 py-2 border-bottom bg-white"
+      >
+        Preview
+      </div>
+      <div class="flex-grow-1 p-4 overflow-auto markdown-body" id="previewPane">
+        <!-- Rendered content -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  const input = document.getElementById("markdownInput");
+  const preview = document.getElementById("previewPane");
+
+  // Live preview
+  input.addEventListener("input", () => {
+    const raw = input.value;
+    preview.innerHTML = marked.parse(raw);
+  });
+
+  // Toolbar Helpers
+  window.insertSyntax = (start, end, placeholder) => {
+    const startPos = input.selectionStart;
+    const endPos = input.selectionEnd;
+    const text = input.value;
+
+    const selection = text.substring(startPos, endPos) || placeholder;
+    const replacement = start + selection + end;
+
+    input.value =
+      text.substring(0, startPos) + replacement + text.substring(endPos);
+    input.focus();
+    input.selectionStart = startPos + start.length;
+    input.selectionEnd = startPos + start.length + selection.length;
+
+    // Trigger update
+    input.dispatchEvent(new Event("input"));
+  };
+
+  window.downloadMD = () => {
+    const blob = new Blob([input.value], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "document.md";
+    a.click();
+  };
+
+  // Initial Example
+  if (!input.value) {
+    input.value =
+      "# Welcome to the Markdown Editor\n\nStart typing on the left to see the **preview** on the right.\n\n- Support for lists\n- [Links](https://example.com)\n- and `code snippets`";
+    input.dispatchEvent(new Event("input"));
+  }
+</script>
+<style>
+  /* GitHub-like Markdown Styling for Preview */
+  .markdown-body {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+      sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 16px;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .markdown-body h1,
+  .markdown-body h2 {
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+  }
+  .markdown-body blockquote {
+    border-left: 0.25em solid #dfe2e5;
+    color: #6a737d;
+    padding: 0 1em;
+    margin: 0;
+  }
+  .markdown-body pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+  }
+  .markdown-body code {
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    background-color: rgba(27, 31, 35, 0.05);
+    border-radius: 6px;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "layout.html" %} {% block title %}Daily Journal Prompts{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="row mb-5 fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-journal-richtext me-2"></i>Daily Journal Prompt
+      </h2>
+      <p class="text-muted">
+        Inspiration for your daily writing and reflection.
+      </p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="glass-card p-5 mb-4 fade-in-up" style="animation-delay: 0.1s">
+        <i
+          class="bi bi-quote display-3 text-primary opacity-25 mb-3 d-block"
+        ></i>
+        <div
+          style="min-height: 120px"
+          class="d-flex align-items-center justify-content-center"
+        >
+          <h2
+            class="display-6 fst-italic mb-0 text-gradient"
+            id="promptDisplay"
+          >
+            Loading...
+          </h2>
+        </div>
+        <div class="mt-4 pt-4 border-top">
+          <button
+            class="btn btn-neo rounded-pill px-5 shadow-sm"
+            onclick="newPrompt()"
+          >
+            <i class="bi bi-shuffle me-2"></i>New Prompt
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 fade-in-up" style="animation-delay: 0.2s">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="bi bi-pen me-2"></i>Your Entry</h5>
+          <button
+            class="btn btn-sm btn-light border text-muted"
+            onclick="document.querySelector('textarea').value = ''"
+          >
+            <i class="bi bi-trash me-1"></i>Clear
+          </button>
+        </div>
+        <textarea
+          class="form-control form-control-lg bg-light-subtle border-0 mb-3 rounded-4 shadow-inner"
+          rows="8"
+          placeholder="Start writing here... (This is local only, copy it when you're done!)"
+          style="resize: none"
+        ></textarea>
+        <div class="text-end">
+          <button
+            class="btn btn-outline-primary btn-sm rounded-pill"
+            onclick="
+              navigator.clipboard.writeText(
+                document.querySelector('textarea').value,
+              )
+            "
+          >
+            <i class="bi bi-clipboard me-1"></i>Copy Text
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const prompts = [
+    "What are you most grateful for today?",
+    "What was the highlight of your day?",
+    "Describe a challenge you faced today and how you handled it.",
+    "What is something new you learned recently?",
+    "How have you been kind to yourself today?",
+    "What is a goal you are currently working towards?",
+    "Visualize your perfect day. What does it look like?",
+    "What is a fear you would like to overcome?",
+    "Who is someone you appreciate and why?",
+    "What makes you feel most alive?",
+    "Reflect on a mistake you made and what it taught you.",
+    "What are three things you love about yourself?",
+    "If you could travel anywhere, where would you go?",
+    "What is a habit you want to start or break?",
+    "Describe a moment of unexpected joy from the past week.",
+    "What does success mean to you right now?",
+    "How do you recharge when you feel drained?",
+    "What is something you've been procrastinating on?",
+  ];
+
+  function newPrompt() {
+    const idx = Math.floor(Math.random() * prompts.length);
+    const display = document.getElementById("promptDisplay");
+    display.style.opacity = "0";
+    setTimeout(() => {
+      display.textContent = prompts[idx];
+      display.style.opacity = "1";
+    }, 300);
+  }
+
+  // Add transition style
+  document.getElementById("promptDisplay").style.transition =
+    "opacity 0.3s ease";
+
+  // Init
+  newPrompt();
+</script>
+{% endblock %}

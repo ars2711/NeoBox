@@ -1,38 +1,113 @@
 {% extends "layout.html" %} {% block title %}{{ _('Grocery List Manager') }}{%
 endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Grocery List Manager') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Item') }}</label>
-      <input type="text" name="item" class="form-control" required />
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-basket-fill me-2"></i>Grocery List
+      </h2>
+      <p class="text-muted">Manage your shopping items efficiently.</p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Quantity') }}</label>
-      <input type="text" name="quantity" class="form-control" required />
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <!-- Add Item Form -->
+    <div class="col-md-5 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 h-100">
+        <h5 class="fw-bold mb-4 text-gradient">
+          <i class="bi bi-plus-circle me-2"></i>Add Item
+        </h5>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Item Name</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-light-subtle border-end-0"
+                ><i class="bi bi-tag"></i
+              ></span>
+              <input
+                type="text"
+                name="item"
+                class="form-control bg-light-subtle border-start-0"
+                placeholder="e.g. Milk"
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Quantity</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-light-subtle border-end-0"
+                ><i class="bi bi-123"></i
+              ></span>
+              <input
+                type="text"
+                name="quantity"
+                class="form-control bg-light-subtle border-start-0"
+                placeholder="e.g. 2 liters"
+                required
+              />
+            </div>
+          </div>
+          <button class="btn btn-neo w-100 rounded-pill py-2" type="submit">
+            Add to List
+          </button>
+        </form>
+      </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Item') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Grocery List') }}</div>
-    <ul class="list-group list-group-flush">
-      {% for g in grocery_list %}
-      <li
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <span>{{ g.item }}</span>
-        <span class="badge bg-primary rounded-pill">{{ g.quantity }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item text-muted">{{ _('No items yet.') }}</li>
-      {% endfor %}
-    </ul>
+
+    <!-- List View -->
+    <div class="col-md-7 fade-in-up" style="animation-delay: 0.2s">
+      <div class="glass-card p-0 d-flex flex-column h-100 overflow-hidden">
+        <div class="p-4 border-bottom bg-light bg-opacity-25">
+          <h5 class="fw-bold m-0 text-gradient">
+            <i class="bi bi-list-check me-2"></i>Your List
+          </h5>
+        </div>
+
+        <ul class="list-group list-group-flush flex-grow-1">
+          {% for g in grocery_list %}
+          <li
+            class="list-group-item bg-transparent d-flex justify-content-between align-items-center p-3 border-light-subtle"
+          >
+            <div class="d-flex align-items-center">
+              <input
+                class="form-check-input me-3 rounded-circle"
+                type="checkbox"
+                style="width: 1.25rem; height: 1.25rem"
+              />
+              <span class="fw-medium lead fs-6">{{ g.item }}</span>
+            </div>
+            <span
+              class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2"
+              >{{ g.quantity }}</span
+            >
+          </li>
+          {% else %}
+          <li
+            class="list-group-item bg-transparent text-center py-5 text-muted"
+          >
+            <i class="bi bi-basket display-4 opacity-50 mb-3 d-block"></i>
+            {{ _('Your list is empty. Add some items!') }}
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if grocery_list %}
+        <div class="p-3 border-top bg-light bg-opacity-10 text-end">
+          <button
+            class="btn btn-sm btn-outline-danger rounded-pill"
+            onclick="window.print()"
+          >
+            <i class="bi bi-printer me-1"></i>Print List
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

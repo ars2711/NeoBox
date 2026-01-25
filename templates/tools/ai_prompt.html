@@ -1,22 +1,69 @@
-{% extends "layout.html" %} {% block title %}AI Prompt{% endblock %} {% block
-main %}
-<div class="container mt-4">
-  <h2><i class="bi-robot"></i> AI Prompt</h2>
-  <form method="post" class="mb-3">
-    <label for="prompt" class="form-label">Enter your prompt:</label>
-    <textarea class="form-control" id="prompt" name="prompt" rows="3" required>
-{{ prompt }}</textarea
-    >
-    <button class="btn btn-primary mt-2" type="submit">Ask AI</button>
-  </form>
-  {% if result %}
-  <div class="alert alert-info"><b>AI:</b> {{ result }}</div>
-  {% endif %}
-  <div class="alert alert-secondary mt-3">
-    <small>
-      This tool uses OpenAI (ChatGPT), Gemini, or similar AI APIs to generate
-      results. Responses may not always be accurate or appropriate.
-    </small>
-  </div>
+{% extends "layout.html" %} 
+{% block title %}AI Prompt{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="text-center mb-5 fade-in-up">
+        <div class="mb-3">
+            <i class="bi bi-robot display-1 text-primary" style="text-shadow: 0 0 30px rgba(13, 110, 253, 0.3);"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-3 tool-header">Ask AI</h1>
+        <p class="lead text-muted">A universal interface for your AI queries.</p>
+    </div>
+
+    <!-- Chat-like Interface -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card fade-in-up" style="animation-delay: 0.1s;">
+                 <div class="card-body p-4">
+                    {% if result %}
+                    <!-- Conversation History (Simulated) -->
+                    <div class="mb-5">
+                         <!-- User -->
+                         <div class="d-flex justify-content-end mb-4">
+                             <div class="bg-primary text-white rounded-4 px-4 py-3 shadow-sm" style="max-width: 80%; border-bottom-right-radius: 0;">
+                                 {{ prompt }}
+                             </div>
+                         </div>
+                         
+                         <!-- AI -->
+                         <div class="d-flex justify-content-start mb-4">
+                             <div class="bg-light rounded-4 px-4 py-3 shadow-sm border" style="max-width: 90%; border-bottom-left-radius: 0;">
+                                 <strong class="text-primary mb-2 d-block"><i class="bi bi-robot me-2"></i>Assistant</strong>
+                                 <div style="white-space: pre-wrap;">{{ result }}</div>
+                                 <div class="mt-2 text-end">
+                                     <button class="btn btn-sm btn-link text-muted p-0" onclick="navigator.clipboard.writeText(`{{ result|escapejs }}`)">
+                                         <i class="bi bi-clipboard"></i> Copy
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Input Box -->
+                    <form method="post" class="position-relative">
+                        <textarea 
+                            class="form-control form-control-lg rounded-4 ps-4 pe-5 pt-3 pb-3 shadow-sm border-0 bg-light" 
+                            id="prompt" 
+                            name="prompt" 
+                            rows="2" 
+                            placeholder="Type a message..." 
+                            required 
+                            style="resize: none; padding-right: 80px;"
+                            onkeydown="if(event.keyCode == 13 && !event.shiftKey) { this.form.submit(); return false; }"
+                        >{% if not result %}{{ prompt }}{% endif %}</textarea>
+                        
+                        <button type="submit" class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 m-2 shadow-sm d-flex align-items-center justify-content-center" 
+                                style="width: 45px; height: 45px;">
+                            <i class="bi bi-arrow-up fs-4"></i>
+                        </button>
+                    </form>
+                    <div class="text-center mt-3 text-muted small">
+                        Press Enter to send, Shift+Enter for new line
+                    </div>
+                 </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

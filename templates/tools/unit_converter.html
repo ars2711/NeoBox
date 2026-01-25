@@ -1,80 +1,87 @@
-{% extends "/layout.html" %}
-{% block title %}Unit Converter{% endblock %}
+{% extends "layout.html" %} {% block title %}Unit Converter{% endblock %}
 {% block main %}
-<div class="container py-4" style="max-width: 600px">
-  <h2 class="mb-4 text-center">Unit Converter</h2>
-  
-  <div class="card border-0 shadow rounded-4">
-    <div class="card-body p-4">
-      <form method="post" class="mb-0" id="unitForm">
-        <!-- Category Selection -->
-        <div class="mb-4">
-          <div class="btn-group d-flex flex-wrap gap-2" role="group">
-            {% for cat in categories %}
-            <input type="radio" class="btn-check" name="category" id="cat-{{ cat }}" value="{{ cat }}" 
-                   {% if category==cat %}checked{% endif %} onchange="this.form.submit()">
-            <label class="btn btn-outline-primary rounded-3" for="cat-{{ cat }}">{{ cat }}</label>
-            {% endfor %}
-          </div>
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-arrow-left-right me-2"></i>Unit Converter</h2>
+             <p class="text-muted">Convert between common units of measurement.</p>
         </div>
+    </div>
 
-        <!-- Input Value -->
-        <div class="mb-4">
-          <div class="position-relative">
-            <input type="number" 
-                   step="any" 
-                   name="value" 
-                   class="form-control form-control-lg text-center bg-body-tertiary fs-3 py-3 rounded-4" 
-                   placeholder="Enter value" 
-                   required 
-                   value="{{ value or '' }}"
-                   style="border: none; box-shadow: inset 0 0 0 1px var(--bs-border-color)">
-          </div>
-        </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4">
+          <form method="post" id="unitForm">
+            <!-- Categories Pills -->
+            <div class="mb-5 overflow-auto">
+                <div class="d-flex justify-content-center gap-2" style="min-width: 600px;">
+                    {% for cat in categories %}
+                    <input type="radio" class="btn-check" name="category" id="cat-{{ cat }}" value="{{ cat }}" 
+                           {% if category==cat %}checked{% endif %} onchange="this.form.submit()">
+                    <label class="btn btn-outline-primary rounded-pill px-4" for="cat-{{ cat }}">{{ cat }}</label>
+                    {% endfor %}
+                </div>
+            </div>
 
-        <!-- Unit Selection -->
-        <div class="row g-3 mb-4">
-          <div class="col-5">
-            <label class="form-label text-body-secondary small mb-1">From</label>
-            <select name="from_unit" class="form-select form-select-lg bg-body-tertiary" required>
-              {% for code, name in categories[category].units.items() %}
-              <option value="{{ code }}" {% if from_unit==code %}selected{% endif %}>{{ name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          
-          <div class="col-2 d-flex align-items-center justify-content-center mt-4">
-            <button type="button" class="btn btn-link text-decoration-none p-0" onclick="swapUnits()">
-              <i class="bi bi-arrow-left-right fs-4"></i>
-            </button>
-          </div>
-          
-          <div class="col-5">
-            <label class="form-label text-body-secondary small mb-1">To</label>
-            <select name="to_unit" class="form-select form-select-lg bg-body-tertiary" required>
-              {% for code, name in categories[category].units.items() %}
-              <option value="{{ code }}" {% if to_unit==code %}selected{% endif %}>{{ name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
+            <div class="row g-4 align-items-center">
+                <!-- Input Side -->
+                <div class="col-md-5">
+                    <label class="form-label text-muted small fw-bold">FROM</label>
+                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
+                        <input type="number" step="any" name="value" class="form-control border-0 bg-white" placeholder="0" required value="{{ value or '' }}">
+                    </div>
+                    <select name="from_unit" class="form-select border-0 bg-transparent mt-2 fw-bold text-primary" onchange="this.form.submit()">
+                        {% for code, name in categories[category].units.items() %}
+                        <option value="{{ code }}" {% if from_unit==code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <!-- Submit Button -->
-        <button class="btn btn-primary btn-lg w-100 rounded-3" type="submit">Convert</button>
-      </form>
+                <!-- Swap Button -->
+                <div class="col-md-2 text-center">
+                    <button type="button" class="btn btn-primary rounded-circle p-3 shadow-sm d-md-inline-block d-none" onclick="swapUnits()">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </button>
+                    <!-- Mobile only -->
+                    <button type="button" class="btn btn-primary rounded-circle p-3 shadow-sm d-md-none my-3" onclick="swapUnits()">
+                        <i class="bi bi-arrow-down-up"></i>
+                    </button>
+                </div>
 
-      <!-- Result Display -->
+                <!-- Output Side -->
+                <div class="col-md-5">
+                    <label class="form-label text-muted small fw-bold">TO</label>
+                    <div class="form-control form-control-lg border-0 bg-light-subtle d-flex align-items-center justify-content-between shadow-sm rounded-4" style="height: 58px;">
+                        <span class="fs-4 fw-bold text-dark">
+                            {% if result is not none %}{{ result }}{% else %}---{% endif %}
+                        </span>
+                    </div>
+                    <select name="to_unit" class="form-select border-0 bg-transparent mt-2 fw-bold text-primary" onchange="this.form.submit()">
+                        {% for code, name in categories[category].units.items() %}
+                        <option value="{{ code }}" {% if to_unit==code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                 <button class="btn btn-lg btn-success rounded-pill px-5 shadow-sm" type="submit">Convert Now</button>
+            </div>
+
+          </form>
+      </div>
+      
       {% if result is not none %}
-      <div class="text-center mt-4">
-        <div class="fs-2 mb-2">
-          {% if value %}{{ value }}{% endif %} {{ categories[category].units[from_unit] if from_unit }}
-        </div>
-        <div class="fs-5 text-body-secondary">=</div>
-        <div class="fs-1 fw-bold mt-2">
-          {{ result }} {{ categories[category].units[to_unit] if to_unit }}
-        </div>
+      <div class="glass-card mt-4 p-4 text-center animate__animated animate__fadeInUp">
+           <h5 class="text-muted mb-2">Result</h5>
+           <h3 class="display-6 fw-bold">
+               {{ value }} <small class="text-muted fs-4">{{ categories[category].units[from_unit] }}</small>
+               =
+               {{ result }} <small class="text-primary fs-4">{{ categories[category].units[to_unit] }}</small>
+           </h3>
       </div>
       {% endif %}
+
     </div>
   </div>
 </div>

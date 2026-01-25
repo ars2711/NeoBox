@@ -2,39 +2,84 @@
 {% block title %}Settings{% endblock %}
 {% block main %}
 <div class="container mt-5">
-  <h2>Settings</h2>
-  <form method="post">
-    <!--
-    <div class="mb-3">
-      <label for="language" class="form-label">Language</label>
-      <select name="language" id="language" class="form-select">
-        {% for lang in available_languages %}
-          <option value="{{ lang.code }}" {% if user.language == lang.code %}selected{% endif %}>
-            {{ lang.name }}
-          </option>
-        {% endfor %}
-      </select>
+  <h2 class="mb-4"><i class="bi bi-gear-fill"></i> Settings</h2>
+  
+  <div class="card shadow-sm mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-circle-half"></i> Appearance</h5>
     </div>
-    -->
-    <div class="mb-3">
-      <label for="theme" class="form-label">Theme</label>
-      <select name="theme" id="theme" class="form-select">
-        <option value="auto" {% if user.theme == "auto" %}selected{% endif %}>Auto (System)</option>
-        <option value="light" {% if user.theme == "light" %}selected{% endif %}>Light</option>
-        <option value="dark" {% if user.theme == "dark" %}selected{% endif %}>Dark</option>
-      </select>
+    <div class="card-body">
+      <form method="post">
+        <div class="mb-3">
+          <label for="colorScheme" class="form-label">Color Scheme</label>
+          <select name="color_scheme" id="colorScheme" class="form-select">
+            <option value="auto">Auto (System)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="uiTheme" class="form-label">Theme Style</label>
+          <select name="theme" id="uiTheme" class="form-select">
+            <option value="default" {% if user.theme in ["default", "auto", None] %}selected{% endif %}>Default</option>
+            <option value="classic" {% if user.theme == "classic" %}selected{% endif %}>Classic (Elegant Serif)</option>
+            <option value="coding" {% if user.theme == "coding" %}selected{% endif %}>Coding (Hacker Green)</option>
+            <option value="goofy" {% if user.theme == "goofy" %}selected{% endif %}>Goofy (Fun & Playful)</option>
+            <option value="ocean" {% if user.theme == "ocean" %}selected{% endif %}>Ocean (Cool Blue)</option>
+            <option value="sunset" {% if user.theme == "sunset" %}selected{% endif %}>Sunset (Warm Glow)</option>
+            <option value="forest" {% if user.theme == "forest" %}selected{% endif %}>Forest (Earthy Green)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="language" class="form-label">Language</label>
+          <select name="language" id="language" class="form-select">
+            {% for lang in available_languages %}
+              <option value="{{ lang.code }}" {% if session.get('lang') == lang.code %}selected{% endif %}>{{ lang.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </form>
     </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-  </form>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-info-circle"></i> Tips</h5>
+    </div>
+    <div class="card-body">
+      <p class="text-muted mb-0">Your color scheme and theme apply across all tools, including scrollbars, cursor, and glow effects.</p>
+    </div>
+  </div>
 </div>
 <script>
-document.getElementById("theme").addEventListener("change", function() {
-  setTheme(this.value);
-  fetch("/settings", {
-    method: "POST",
-    headers: {"Content-Type": "application/x-www-form-urlencoded"},
-    body: "theme=" + encodeURIComponent(this.value) + "&language=" + encodeURIComponent(document.getElementById("language").value)
-  });
+const colorSchemeSelect = document.getElementById("colorScheme");
+const uiThemeSelect = document.getElementById("uiTheme");
+
+function applyScheme(value) {
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolved = value === 'auto' ? (prefersDark ? 'dark' : 'light') : value;
+  document.documentElement.setAttribute('data-bs-theme', resolved);
+  localStorage.setItem('colorScheme', value);
+}
+
+function applyUiTheme(value) {
+  document.documentElement.setAttribute('data-theme', value);
+  localStorage.setItem('uiTheme', value);
+}
+
+const storedScheme = localStorage.getItem('colorScheme') || 'auto';
+const storedUiTheme = localStorage.getItem('uiTheme') || 'default';
+colorSchemeSelect.value = storedScheme;
+uiThemeSelect.value = storedUiTheme;
+applyScheme(storedScheme);
+applyUiTheme(storedUiTheme);
+
+colorSchemeSelect.addEventListener("change", function() {
+  applyScheme(this.value);
+});
+uiThemeSelect.addEventListener("change", function() {
+  applyUiTheme(this.value);
 });
 </script>
 {% endblock %}

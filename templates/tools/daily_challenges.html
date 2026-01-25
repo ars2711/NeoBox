@@ -1,0 +1,170 @@
+{% extends "layout.html" %} {% block title %}Daily Challenges{% endblock %} {%
+block content %}
+<div class="container py-5 text-center">
+  <div class="col-md-8 mx-auto fade-in-up">
+    <h1 class="tool-header mb-4">
+      <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Daily
+      Challenge
+    </h1>
+    <p class="lead text-muted mb-5">
+      Step out of your comfort zone today and grow.
+    </p>
+
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div
+          class="glass-card shadow-lg p-5 challenge-card position-relative overflow-hidden"
+        >
+          <!-- Background decoration -->
+          <div
+            class="position-absolute top-0 start-0 w-100 h-100 opacity-10"
+            style="
+              background: radial-gradient(
+                circle at top right,
+                #ffc107,
+                transparent 60%
+              );
+              pointer-events: none;
+            "
+          ></div>
+
+          <div
+            class="position-relative z-1 d-flex flex-column align-items-center justify-content-center"
+          >
+            <span
+              class="badge rounded-pill bg-warning text-dark mb-4 px-3 py-2 shadow-sm text-uppercase fw-bold ls-1"
+              >Today's Mission</span
+            >
+
+            <h2
+              class="card-text fw-bold mb-5 display-6 text-gradient"
+              id="challengeDisplay"
+              style="min-height: 120px; display: flex; align-items: center"
+            >
+              ...
+            </h2>
+
+            <div
+              class="d-flex gap-3 justify-content-center flex-wrap"
+              id="actionButtons"
+            >
+              <button
+                class="btn btn-outline-secondary rounded-pill px-4"
+                onclick="newChallenge()"
+              >
+                <i class="bi bi-arrow-repeat me-2"></i>Reroll
+              </button>
+              <button
+                class="btn btn-neo rounded-pill px-5"
+                onclick="acceptChallenge(this)"
+              >
+                <i class="bi bi-check-lg me-2"></i>Accept Challenge
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 text-muted small fade-in-up" style="animation-delay: 0.2s">
+      <p>
+        <i class="bi bi-stars text-primary"></i> Challenges are randomly
+        selected to inspire growth, kindness, and productivity.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ls-1 {
+    letter-spacing: 1px;
+  }
+
+  .challenge-card {
+    transition: transform 0.3s ease;
+  }
+  .challenge-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #ffd700;
+  }
+</style>
+
+<script>
+  const challenges = [
+    "Drink 8 glasses of water today.",
+    "Compliment a stranger genuinely.",
+    "Read 10 pages of a book.",
+    "Do 20 pushups (or your variation).",
+    "Meditate for 5 minutes.",
+    "Reach out to an old friend just to say hi.",
+    "Go for a 15-minute walk without your phone.",
+    "Write down 3 things you are grateful for.",
+    "Clean one messy drawer or corner of your room.",
+    "Learn one new word and use it in a sentence.",
+    "Avoid social media for 2 hours.",
+    "Cook a healthy meal from scratch.",
+    "Listen to a podcast about a topic you know nothing about.",
+    "Take a cold shower.",
+    "Don't complain about anything for the entire day.",
+    "Donate to a charity or hold the door for someone.",
+    "Go to bed 30 minutes earlier than usual.",
+  ];
+
+  function newChallenge() {
+    const idx = Math.floor(Math.random() * challenges.length);
+    const display = document.getElementById("challengeDisplay");
+
+    // Fade out
+    display.style.opacity = 0;
+
+    setTimeout(() => {
+      display.textContent = challenges[idx];
+      // Fade in
+      display.animate(
+        [
+          { opacity: 0, transform: "translateY(10px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        { duration: 400, fill: "forwards" },
+      );
+      display.style.opacity = 1;
+    }, 200);
+
+    // Reset button state if needed
+    const btns = document
+      .getElementById("actionButtons")
+      .getElementsByTagName("button");
+    if (btns[1].classList.contains("disabled")) {
+      btns[1].classList.remove("disabled", "btn-success");
+      btns[1].classList.add("btn-neo");
+      btns[1].innerHTML = '<i class="bi bi-check-lg me-2"></i>Accept Challenge';
+    }
+  }
+
+  function acceptChallenge(btn) {
+    btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>ACCEPTE D!';
+    btn.classList.add("disabled", "btn-success");
+    btn.classList.remove("btn-neo");
+
+    // Simple confetti effect could go here
+    const card = document.querySelector(".challenge-card");
+    card.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.02)" },
+        { transform: "scale(1)" },
+      ],
+      { duration: 300 },
+    );
+  }
+
+  // Init
+  newChallenge();
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "layout.html" %} {% block title %}Text Formatter{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-code-square me-2"></i>Code/Text Formatter</h2>
+             <p class="text-muted">Beautify JSON, HTML, CSS, XML and SQL.</p>
+        </div>
+    </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-12 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-0 overflow-hidden">
+          <div class="bg-white border-bottom p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+               <div class="btn-group shadow-sm" role="group">
+                    <input type="radio" class="btn-check" name="lang" id="html" checked onclick="setLang('html')">
+                    <label class="btn btn-outline-primary" for="html">HTML</label>
+
+                    <input type="radio" class="btn-check" name="lang" id="css" onclick="setLang('css')">
+                    <label class="btn btn-outline-primary" for="css">CSS</label>
+
+                    <input type="radio" class="btn-check" name="lang" id="json" onclick="setLang('json')">
+                    <label class="btn btn-outline-primary" for="json">JSON</label>
+                    
+                    <input type="radio" class="btn-check" name="lang" id="sql" onclick="setLang('sql')">
+                    <label class="btn btn-outline-primary" for="sql">SQL</label>
+                    
+                    <input type="radio" class="btn-check" name="lang" id="xml" onclick="setLang('xml')">
+                    <label class="btn btn-outline-primary" for="xml">XML</label>
+               </div>
+               
+               <div>
+                   <button class="btn btn-success rounded-pill px-4 me-2" onclick="formatCode()">
+                       <i class="bi bi-magic me-2"></i> Format
+                   </button>
+                   <button class="btn btn-secondary rounded-pill me-2" onclick="document.getElementById('input').value=''">
+                       <i class="bi bi-trash"></i>
+                   </button>
+               </div>
+          </div>
+          
+          <div class="row g-0">
+               <div class="col-md-6 border-end">
+                   <div class="p-2 small text-muted bg-light border-bottom">Input</div>
+                   <textarea id="input" class="form-control border-0 rounded-0 p-3 font-monospace" style="height: 500px; resize: none;" placeholder="Paste minified code here..."></textarea>
+               </div>
+               <div class="col-md-6">
+                   <div class="p-2 small text-muted bg-light border-bottom d-flex justify-content-between">
+                       <span>Output</span>
+                       <a href="#" class="text-decoration-none" onclick="copyOutput()">Copy</a>
+                   </div>
+                   <textarea id="output" class="form-control border-0 rounded-0 p-3 font-monospace bg-white" style="height: 500px; resize: none;" readonly placeholder="Formatted code will appear here..."></textarea>
+               </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+
+<script>
+    let currentLang = 'html';
+    
+    function setLang(lang) {
+        currentLang = lang;
+    }
+
+    function formatCode() {
+        const input = document.getElementById('input').value;
+        let output = '';
+        
+        try {
+            if (currentLang === 'html' || currentLang === 'xml') {
+                output = html_beautify(input, { indent_size: 2 });
+            } else if (currentLang === 'css') {
+                output = css_beautify(input, { indent_size: 2 });
+            } else if (currentLang === 'json') {
+                 output = JSON.stringify(JSON.parse(input), null, 4);
+            } else if (currentLang === 'sql') {
+                output = input.replace(/\s+/g, ' ')
+                              .replace(/SELECT/gi, '\nSELECT')
+                              .replace(/FROM/gi, '\nFROM')
+                              .replace(/WHERE/gi, '\nWHERE')
+                              .replace(/AND/gi, '\n  AND')
+                              .replace(/OR/gi, '\n  OR')
+                              .replace(/ORDER BY/gi, '\nORDER BY')
+                              .replace(/GROUP BY/gi, '\nGROUP BY')
+                              .replace(/INSERT INTO/gi, '\nINSERT INTO')
+                              .replace(/VALUES/gi, '\nVALUES');
+            }
+        } catch(e) {
+            output = "Error formatting: " + e.message;
+        }
+        
+        document.getElementById('output').value = output;
+    }
+    
+    function copyOutput() {
+        const output = document.getElementById('output');
+        output.select();
+        document.execCommand('copy');
+        alert("Copied!");
+    }
+</script>
+{% endblock %}

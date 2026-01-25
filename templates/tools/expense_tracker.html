@@ -1,76 +1,200 @@
 {% extends "layout.html" %} {% block title %}{{ _('Expense Tracker') }}{%
 endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Expense Tracker') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Date') }}</label>
-      <input type="date" name="date" class="form-control" required />
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-md-12">
+      <h2 class="tool-header mb-2">{{ _('Expense Tracker') }}</h2>
+      <p class="text-muted">
+        Monitor your spending habits with visual analytics.
+      </p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Category') }}</label>
-      <select name="category" class="form-select">
-        <option value="food">{{ _('Food') }}</option>
-        <option value="transport">{{ _('Transport') }}</option>
-        <option value="shopping">{{ _('Shopping') }}</option>
-        <option value="bills">{{ _('Bills') }}</option>
-        <option value="entertainment">{{ _('Entertainment') }}</option>
-        <option value="health">{{ _('Health') }}</option>
-        <option value="other">{{ _('Other') }}</option>
-      </select>
+  </div>
+
+  <div class="row g-4">
+    <!-- Input Form -->
+    <div class="col-lg-4 fade-in-up">
+      <div class="glass-card p-4">
+        <h5 class="fw-bold mb-4">{{ _('Add Transaction') }}</h5>
+        <form method="post">
+          <div class="mb-3">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >{{ _('Date') }}</label
+            >
+            <input
+              type="date"
+              name="date"
+              class="form-control bg-light-subtle"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >{{ _('Category') }}</label
+            >
+            <select name="category" class="form-select bg-light-subtle">
+              <option value="food">🍔 {{ _('Food') }}</option>
+              <option value="transport">🚗 {{ _('Transport') }}</option>
+              <option value="shopping">🛍️ {{ _('Shopping') }}</option>
+              <option value="bills">📃 {{ _('Bills') }}</option>
+              <option value="entertainment">🎬 {{ _('Entertainment') }}</option>
+              <option value="health">💊 {{ _('Health') }}</option>
+              <option value="other">📝 {{ _('Other') }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >{{ _('Amount') }}</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0"
+                >$</span
+              >
+              <input
+                type="number"
+                name="amount"
+                class="form-control bg-light-subtle border-start-0"
+                step="0.01"
+                placeholder="0.00"
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >{{ _('Description') }}</label
+            >
+            <input
+              type="text"
+              name="description"
+              class="form-control bg-light-subtle"
+              placeholder="e.g. Lunch"
+            />
+          </div>
+          <button class="btn btn-neo w-100 py-3 rounded-pill" type="submit">
+            <i class="bi bi-plus-lg me-2"></i>{{ _('Save Expense') }}
+          </button>
+        </form>
+      </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Amount') }}</label>
-      <input
-        type="number"
-        name="amount"
-        class="form-control"
-        step="0.01"
-        required
-      />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Description') }}</label>
-      <input type="text" name="description" class="form-control" />
-    </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Expense') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Expenses') }}</div>
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0">
-        <thead>
-          <tr>
-            <th>{{ _('Date') }}</th>
-            <th>{{ _('Category') }}</th>
-            <th>{{ _('Amount') }}</th>
-            <th>{{ _('Description') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for exp in expenses %}
-          <tr>
-            <td>{{ exp.date }}</td>
-            <td>{{ exp.category }}</td>
-            <td>{{ exp.amount }}</td>
-            <td>{{ exp.description }}</td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="4" class="text-muted text-center">
-              {{ _('No expenses yet.') }}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    <!-- Chart & List -->
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <!-- Chart -->
+      <div class="glass-card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold mb-0">{{ _('Spending Breakdown') }}</h5>
+          <span class="badge bg-primary bg-opacity-10 text-primary"
+            >This Month</span
+          >
+        </div>
+        <div style="height: 300px; position: relative">
+          <canvas id="expenseChart"></canvas>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div class="glass-card p-4">
+        <h5 class="fw-bold mb-4">{{ _('Recent Transactions') }}</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="text-muted small text-uppercase">
+              <tr>
+                <th>{{ _('Date') }}</th>
+                <th>{{ _('Category') }}</th>
+                <th>{{ _('Description') }}</th>
+                <th class="text-end">{{ _('Amount') }}</th>
+              </tr>
+            </thead>
+            <tbody class="border-top-0">
+              {% for exp in expenses %}
+              <tr>
+                <td>{{ exp.date }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border"
+                    >{{ exp.category|capitalize }}</span
+                  >
+                </td>
+                <td>{{ exp.description }}</td>
+                <td class="text-end fw-bold text-danger">-{{ exp.amount }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-center py-5 text-muted">
+                  <i
+                    class="bi bi-wallet2 display-4 mb-3 d-block opacity-25"
+                  ></i>
+                  {{ _('No expenses recorded yet.') }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const expenses = {{ expenses | tojson | safe }};
+      if(expenses.length === 0) return;
+
+      // Group by category
+      const totals = {};
+      expenses.forEach(e => {
+          const cat = e.category || 'other';
+          totals[cat] = (totals[cat] || 0) + parseFloat(e.amount);
+      });
+
+      // Colors matching the aesthetic
+      const colors = {
+          'food': '#ffb74d',
+          'transport': '#64b5f6',
+          'shopping': '#e57373',
+          'bills': '#9575cd',
+          'entertainment': '#4db6ac',
+          'health': '#81c784',
+          'other': '#90a4ae'
+      };
+
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+
+      // Check if dark mode (optional check)
+      Chart.defaults.color = '#6c757d';
+      Chart.defaults.font.family = "'Inter', sans-serif";
+
+      new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+              labels: Object.keys(totals).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+              datasets: [{
+                  data: Object.values(totals),
+                  backgroundColor: Object.keys(totals).map(k => colors[k] || '#eee'),
+                  borderWidth: 0,
+                  hoverOffset: 10
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: {
+                      position: 'right',
+                      labels: {
+                          usePointStyle: true,
+                          padding: 20
+                      }
+                  }
+              },
+              cutout: '70%',
+          }
+      });
+  });
+</script>
 {% endblock %}

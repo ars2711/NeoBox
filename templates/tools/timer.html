@@ -1,212 +1,309 @@
-{% extends "layout.html" %} {% block title %}Timer{% endblock %} {% block main
-%}
-<div class="container py-4">
+{% extends "layout.html" %} {% block title %}Countdown Timer{% endblock %} {%
+block main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-hourglass-split me-2"></i>Countdown Timer
+      </h2>
+      <p class="text-muted">Set a timer for your tasks, cooking, or breaks.</p>
+    </div>
+  </div>
+
   <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow text-center mb-4">
-        <div class="card-body">
-          <h3 class="card-title mb-3"><i class="bi bi-stopwatch"></i> Timer</h3>
-          <form
-            method="post"
-            class="row g-2 justify-content-center align-items-end"
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-5 text-center position-relative overflow-hidden">
+        <!-- Setup View -->
+        <div id="setup-view">
+          <div
+            class="d-flex justify-content-center align-items-center gap-2 mb-5"
           >
-            <div class="col-12">
+            <div class="text-center">
               <input
-                name="timer_name"
-                class="form-control mb-2"
-                placeholder="Timer Name"
-              />
-            </div>
-            <div class="col-6 col-md-5">
-              <input
-                name="minutes"
                 type="number"
+                id="inputHours"
+                class="form-control form-control-lg text-center fs-2 bg-light border-0 shadow-inner rounded-4"
+                style="width: 80px; height: 80px"
                 min="0"
-                class="form-control"
-                placeholder="Min"
+                max="99"
+                value="00"
               />
+              <label class="text-muted small fw-bold mt-2">HRS</label>
             </div>
-            <div class="col-6 col-md-5">
+            <span class="display-4 fw-bold text-muted pb-4">:</span>
+            <div class="text-center">
               <input
-                name="seconds"
                 type="number"
+                id="inputMinutes"
+                class="form-control form-control-lg text-center fs-2 bg-light border-0 shadow-inner rounded-4"
+                style="width: 80px; height: 80px"
                 min="0"
                 max="59"
-                class="form-control"
-                placeholder="Sec"
+                value="05"
               />
+              <label class="text-muted small fw-bold mt-2">MIN</label>
             </div>
-            <div class="col-12">
-              <button class="btn btn-primary w-100">Add Timer</button>
+            <span class="display-4 fw-bold text-muted pb-4">:</span>
+            <div class="text-center">
+              <input
+                type="number"
+                id="inputSeconds"
+                class="form-control form-control-lg text-center fs-2 bg-light border-0 shadow-inner rounded-4"
+                style="width: 80px; height: 80px"
+                min="0"
+                max="59"
+                value="00"
+              />
+              <label class="text-muted small fw-bold mt-2">SEC</label>
             </div>
-          </form>
-          {% if error %}
-          <div class="alert alert-danger mt-3 mb-0 py-2 small" role="alert">
-            {{ error }}
           </div>
-          {% endif %}
+
+          <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+            <button
+              class="btn btn-outline-secondary rounded-pill px-3 btn-sm"
+              onclick="quickSet(1, 'min')"
+            >
+              +1 Min
+            </button>
+            <button
+              class="btn btn-outline-secondary rounded-pill px-3 btn-sm"
+              onclick="quickSet(5, 'min')"
+            >
+              +5 Min
+            </button>
+            <button
+              class="btn btn-outline-secondary rounded-pill px-3 btn-sm"
+              onclick="quickSet(10, 'min')"
+            >
+              +10 Min
+            </button>
+            <button
+              class="btn btn-outline-secondary rounded-pill px-3 btn-sm"
+              onclick="quickSet(30, 'min')"
+            >
+              +30 Min
+            </button>
+          </div>
+
+          <button
+            class="btn btn-neo btn-lg rounded-pill px-5 shadow-lg"
+            onclick="startTimer()"
+          >
+            <i class="bi bi-play-fill me-2"></i>Start Timer
+          </button>
         </div>
+
+        <!-- Active View (Hidden) -->
+        <div id="active-view" class="d-none">
+          <!-- Progress Circle -->
+          <div
+            class="position-relative mx-auto mb-4"
+            style="width: 250px; height: 250px"
+          >
+            <svg class="w-100 h-100" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="#e9ecef"
+                stroke-width="5"
+              ></circle>
+              <circle
+                id="progress-ring"
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="var(--neo-primary)"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-dasharray="283"
+                stroke-dashoffset="0"
+                transform="rotate(-90 50 50)"
+              ></circle>
+            </svg>
+            <div
+              class="position-absolute top-50 start-50 translate-middle text-center"
+            >
+              <div
+                class="display-3 fw-bold font-monospace text-dark"
+                id="display"
+              >
+                05:00
+              </div>
+              <div class="text-muted small text-uppercase" id="status-text">
+                Remaining
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-center gap-3">
+            <button
+              class="btn btn-warning btn-lg rounded-pill px-5 text-white shadow-sm"
+              id="pauseBtn"
+              onclick="togglePause()"
+            >
+              <i class="bi bi-pause-fill me-1"></i> Pause
+            </button>
+            <button
+              class="btn btn-outline-danger btn-lg rounded-pill px-4"
+              onclick="stopTimer()"
+            >
+              <i class="bi bi-stop-fill"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Alarm Audio -->
+        <audio
+          id="timer-alarm"
+          src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+          preload="auto"
+        ></audio>
       </div>
     </div>
-  </div>
-  <div class="row g-4 justify-content-center">
-    {% for timer in timers %}
-    <div class="col-12 col-md-6 col-lg-5 col-xl-4 d-flex align-items-stretch">
-      <div
-        class="card timer-card neo-card neo-card-hover text-center position-relative mb-4 w-100"
-      >
-        <form
-          method="post"
-          class="delete-timer-form position-absolute"
-          style="top: 1.2em; right: 1.2em; z-index: 2"
-        >
-          <input type="hidden" name="delete_timer" value="{{ timer.id }}" />
-          <button
-            class="btn btn-danger btn-sm px-3 py-2"
-            title="Delete"
-            type="submit"
-            style="
-              border-radius: 1.1em;
-              font-size: 1.3em;
-              background: #f44336;
-              color: #fff;
-              border: none;
-              box-shadow: none;
-            "
-          >
-            <i class="bi bi-trash"></i>
-          </button>
-        </form>
-        <div class="fw-bold mb-2" style="font-size: 1.35em; margin-top: 0.5em">
-          {{ timer.name or 'Timer' }}
-        </div>
-        <svg width="170" height="170" class="mb-3">
-          <circle
-            cx="85"
-            cy="85"
-            r="70"
-            stroke="#e9ecef"
-            stroke-width="12"
-            fill="none"
-          />
-          <circle
-            id="timerProgress-{{ timer.id }}"
-            cx="85"
-            cy="85"
-            r="70"
-            stroke="#2196f3"
-            stroke-width="12"
-            fill="none"
-            stroke-linecap="round"
-            stroke-dasharray="440"
-            stroke-dashoffset="440"
-            style="
-              transition: stroke-dashoffset 0.3s cubic-bezier(0.4, 2, 0.6, 1);
-            "
-          />
-          <text
-            id="timerTimeText-{{ timer.id }}"
-            x="85"
-            y="98"
-            text-anchor="middle"
-            font-size="2.4em"
-            fill="currentColor"
-            font-weight="600"
-          >
-            00:00
-          </text>
-        </svg>
-        <div class="mb-3 d-flex justify-content-center gap-3">
-          <button
-            class="btn btn-primary btn-lg px-4"
-            onclick="startTimer('{{ timer.id }}'); return false;"
-          >
-            <i class="bi bi-play-fill"></i> Start
-          </button>
-          <button
-            class="btn btn-secondary btn-lg px-4"
-            onclick="resetTimer('{{ timer.id }}'); return false;"
-          >
-            <i class="bi bi-arrow-counterclockwise"></i> Reset
-          </button>
-        </div>
-        <div
-          id="timerStatus-{{ timer.id }}"
-          class="mt-2 small text-muted"
-        ></div>
-      </div>
-    </div>
-    {% endfor %}
   </div>
 </div>
+
 <script>
-  let timers = {};
-  function updateTimer(timerId) {
-    let timer = timers[timerId];
-    let m = Math.floor(timer.left / 60),
-      s = timer.left % 60;
-    document.getElementById(`timerTimeText-${timerId}`).textContent = `${m
-      .toString()
-      .padStart(2, 0)}:${s.toString().padStart(2, 0)}`;
-    let percent = timer.set ? timer.left / timer.set : 0;
-    let offset = 377 * (1 - percent);
+  let timerInterval;
+  let totalSeconds = 0;
+  let remainingSeconds = 0;
+  let isPaused = false;
+  const alarm = document.getElementById("timer-alarm");
+  const ring = document.getElementById("progress-ring");
+  const circumference = 283; // 2 * pi * 45
+
+  function quickSet(val, unit) {
+    if (unit === "min") {
+      document.getElementById("inputMinutes").value = val;
+      document.getElementById("inputHours").value = 0;
+      document.getElementById("inputSeconds").value = 0;
+    }
+  }
+
+  function updateDisplay() {
+    const hrs = Math.floor(remainingSeconds / 3600);
+    const mins = Math.floor((remainingSeconds % 3600) / 60);
+    const secs = remainingSeconds % 60;
+
+    let text = "";
+    if (hrs > 0) {
+      text += `${hrs.toString().padStart(2, "0")}:`;
+    }
+    text += `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+
+    document.getElementById("display").textContent = text;
+    document.title = `${text} - Timer`;
+
+    // Progress Ring
+    const offset =
+      circumference - (remainingSeconds / totalSeconds) * circumference;
+    ring.style.strokeDashoffset = offset;
+  }
+
+  function startTimer() {
+    const h = parseInt(document.getElementById("inputHours").value) || 0;
+    const m = parseInt(document.getElementById("inputMinutes").value) || 0;
+    const s = parseInt(document.getElementById("inputSeconds").value) || 0;
+
+    totalSeconds = h * 3600 + m * 60 + s;
+    if (totalSeconds <= 0) return;
+
+    remainingSeconds = totalSeconds;
+    isPaused = false;
+
+    document.getElementById("setup-view").classList.add("d-none");
+    document.getElementById("active-view").classList.remove("d-none");
+    document.getElementById("pauseBtn").innerHTML =
+      '<i class="bi bi-pause-fill me-1"></i> Pause';
+    document.getElementById("status-text").textContent = "Remaining";
     document
-      .getElementById(`timerProgress-${timerId}`)
-      .setAttribute("stroke-dashoffset", offset);
-  }
-  function setTimer(timerId, minutes, seconds) {
-    let m = parseInt(minutes) || 0;
-    let s = parseInt(seconds) || 0;
-    timers[timerId] = {
-      set: m * 60 + s,
-      left: m * 60 + s,
-      interval: null,
-      running: false,
-    };
-    updateTimer(timerId);
-  }
-  function startTimer(timerId) {
-    let timer = timers[timerId];
-    if (timer.running || timer.left <= 0) return;
-    timer.running = true;
-    updateTimer(timerId);
-    timer.interval = setInterval(() => {
-      if (timer.left > 0) {
-        timer.left--;
-        updateTimer(timerId);
-      } else {
-        clearInterval(timer.interval);
-        timer.running = false;
-        document.getElementById(`timerStatus-${timerId}`).textContent = "Time's up!";
+      .getElementById("status-text")
+      .classList.remove("text-danger", "blink");
+
+    updateDisplay();
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (!isPaused) {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateDisplay();
+        } else {
+          timerComplete();
+        }
       }
     }, 1000);
   }
-  function resetTimer(timerId) {
-    let timer = timers[timerId];
-    clearInterval(timer.interval);
-    timer.left = timer.set;
-    updateTimer(timerId);
-    timer.running = false;
-    document.getElementById(`timerStatus-${timerId}`).textContent = "";
+
+  function togglePause() {
+    isPaused = !isPaused;
+    const btn = document.getElementById("pauseBtn");
+    if (isPaused) {
+      btn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Resume';
+      btn.classList.replace("btn-warning", "btn-success");
+    } else {
+      btn.innerHTML = '<i class="bi bi-pause-fill me-1"></i> Pause';
+      btn.classList.replace("btn-success", "btn-warning");
+    }
   }
-  document.addEventListener("DOMContentLoaded", () => {
-    {% for timer in timers %}
-    setTimer("{{ timer.id }}", "{{ timer.minutes }}", "{{ timer.seconds }}");
-    // Attach delete handler for AJAX delete
-    document.querySelectorAll('.delete-timer-form').forEach(form => {
-      form.onsubmit = function(e) {
-        e.preventDefault();
-        fetch(window.location.pathname, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams(new FormData(form))
-        }).then(() => {
-          form.closest('.col-12, .col-md-6, .col-lg-5, .col-xl-4').remove();
-        });
-        return false;
-      };
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    alarm.pause();
+    alarm.currentTime = 0;
+    document.title = "Timer";
+    document.getElementById("active-view").classList.add("d-none");
+    document.getElementById("setup-view").classList.remove("d-none");
+  }
+
+  function timerComplete() {
+    clearInterval(timerInterval);
+    alarm.play();
+    document.getElementById("display").textContent = "00:00";
+    document.getElementById("status-text").textContent = "Time's Up!";
+    document
+      .getElementById("status-text")
+      .classList.add("text-danger", "blink");
+    document.title = "Time's Up!";
+
+    // Show notification if supported
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Timer Finished!");
+    } else if (
+      "Notification" in window &&
+      Notification.permission !== "denied"
+    ) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") new Notification("Timer Finished!");
+      });
+    }
+  }
+
+  // Validate inputs
+  document.querySelectorAll('input[type="number"]').forEach((input) => {
+    input.addEventListener("change", function () {
+      if (this.value < 0) this.value = 0;
+      if (this.id !== "inputHours" && this.value > 59) this.value = 59;
     });
-    {% endfor %}
   });
 </script>
+
+<style>
+  .blink {
+    animation: blinker 1s linear infinite;
+  }
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>
 {% endblock %}

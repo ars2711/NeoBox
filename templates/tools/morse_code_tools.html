@@ -1,33 +1,121 @@
 {% extends "layout.html" %} {% block title %}Morse Code Tools{% endblock %} {%
 block main %}
-<div class="container py-4">
-  <h2 class="mb-3"><i class="bi bi-dot"></i> Morse Code Tools</h2>
-  <form method="POST" class="mb-3">
-    <textarea
-      name="text"
-      rows="5"
-      class="form-control mb-2"
-      placeholder="Enter text or morse code..."
-    >
-{{ text }}</textarea
-    >
-    <div class="mb-2">
-      <label class="me-2"
-        ><input type="radio" name="mode" value="encode" {% if mode == "encode"
-        %}checked{% endif %}> Encode</label
-      >
-      <label
-        ><input type="radio" name="mode" value="decode" {% if mode == "decode"
-        %}checked{% endif %}> Decode</label
-      >
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-dot me-1"></i><i class="bi bi-dash me-2"></i>Morse Code
+        Converter
+      </h2>
+      <p class="text-muted">
+        Encode text to Morse code or decode back to text.
+      </p>
     </div>
-    <button class="btn btn-primary" type="submit">Convert</button>
-  </form>
-  {% if result %}
-  <div class="card p-3 shadow-sm">
-    <div class="fw-bold">Result:</div>
-    <div class="mt-2">{{ result }}</div>
   </div>
-  {% endif %}
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5 mb-4">
+        <form method="POST">
+          <div class="mb-4">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Input</label
+            >
+            <textarea
+              name="text"
+              rows="5"
+              class="form-control form-control-lg bg-light-subtle mb-3 rounded-4 border-0 shadow-inner fs-5 font-monospace"
+              placeholder="Enter text or morse code..."
+              required
+            >
+{{ text }}</textarea
+            >
+          </div>
+
+          <div
+            class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light bg-opacity-50 rounded-4 border"
+          >
+            <div class="btn-group" role="group">
+              <input
+                type="radio"
+                class="btn-check"
+                name="mode"
+                id="mode1"
+                value="encode"
+                {%
+                if
+                mode=""
+                ="encode"
+                or
+                not
+                mode
+                %}checked{%
+                endif
+                %}
+                autocomplete="off"
+              />
+              <label class="btn btn-outline-primary" for="mode1"
+                >To Morse</label
+              >
+
+              <input
+                type="radio"
+                class="btn-check"
+                name="mode"
+                id="mode2"
+                value="decode"
+                {%
+                if
+                mode=""
+                ="decode"
+                %}checked{%
+                endif
+                %}
+                autocomplete="off"
+              />
+              <label class="btn btn-outline-primary" for="mode2">To Text</label>
+            </div>
+            <div class="text-muted small">Select conversion direction</div>
+          </div>
+
+          <button
+            class="btn btn-neo w-100 py-3 rounded-pill shadow-sm"
+            type="submit"
+          >
+            <i class="bi bi-arrow-left-right me-2"></i>Convert
+          </button>
+        </form>
+      </div>
+
+      {% if result %}
+      <div class="glass-card p-4 fade-in-up" style="animation-delay: 0.2s">
+        <label
+          class="form-label text-muted small fw-bold text-uppercase d-flex justify-content-between mb-3"
+        >
+          <span>Result</span>
+          <button
+            class="btn btn-xs btn-link text-decoration-none p-0"
+            onclick="
+              navigator.clipboard.writeText(
+                document.getElementById('resultText').innerText,
+              )
+            "
+          >
+            Copy
+          </button>
+        </label>
+        <div class="p-4 bg-white rounded-4 border shadow-sm">
+          <div
+            id="resultText"
+            class="fs-4 font-monospace text-wrap text-break"
+            style="letter-spacing: 2px; line-height: 1.8"
+          >
+            {{ result }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,36 +1,46 @@
 {% extends "layout.html" %} {% block title %}Text Case Converter{% endblock %}
 {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Text Case Converter') }}</h2>
-  <form method="post" class="mb-3">
-    <textarea
-      name="text"
-      class="form-control mb-2"
-      rows="5"
-      placeholder="{{ _('Enter your text here...') }}"
-    >
-{{ text or '' }}</textarea
-    >
-    <div class="d-flex flex-wrap gap-2 justify-content-center">
-      <button name="case" value="upper" class="btn btn-primary">
-        {{ _('UPPERCASE') }}
-      </button>
-      <button name="case" value="lower" class="btn btn-secondary">
-        {{ _('lowercase') }}
-      </button>
-      <button name="case" value="title" class="btn btn-success">
-        {{ _('Title Case') }}
-      </button>
-      <button name="case" value="sentence" class="btn btn-info">
-        {{ _('Sentence case') }}
-      </button>
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-fonts me-2"></i>Text Case Converter</h2>
+             <p class="text-muted">Convert text to UPPERCASE, lowercase, Title Case, and more.</p>
+        </div>
     </div>
-  </form>
-  {% if result %}
-  <div class="alert alert-success mt-3">
-    <strong>{{ _('Result:') }}</strong>
-    <div style="white-space: pre-wrap">{{ result }}</div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post">
+            <div class="mb-4">
+                <textarea
+                  name="text"
+                  class="form-control form-control-lg border-0 bg-light shadow-inner p-4"
+                  rows="6"
+                  placeholder="Paste text here..."
+                >{{ text or '' }}</textarea>
+            </div>
+            
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <button name="case" value="upper" class="btn btn-outline-primary px-4">UPPERCASE</button>
+                <button name="case" value="lower" class="btn btn-outline-secondary px-4">lowercase</button>
+                <button name="case" value="title" class="btn btn-outline-success px-4">Title Case</button>
+                <button name="case" value="sentence" class="btn btn-outline-info px-4">Sentence case</button>
+            </div>
+        </form>
+
+        {% if result %}
+        <div class="mt-5 animate__animated animate__fadeIn">
+            <label class="form-label fw-bold text-muted small text-uppercase">Result</label>
+            <div class="bg-white p-4 rounded-3 shadow-inner border position-relative">
+                <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 1500);">Copy</button>
+                <div style="white-space: pre-wrap;" class="font-monospace text-dark">{{ result }}</div>
+            </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
-  {% endif %}
 </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 {% endblock %}

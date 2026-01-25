@@ -1,0 +1,131 @@
+{% extends "layout.html" %} {% block title %}Reaction Time Test{% endblock %} {%
+block content %}
+<style>
+  #clickArea {
+    height: 400px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+  }
+  .state-waiting {
+    background-color: rgba(13, 110, 253, 0.2);
+  } /* Blue-ish waiting to start */
+  .state-ready {
+    background-color: rgba(220, 53, 69, 0.8) !important;
+    color: white;
+  } /* Red - Wait for green */
+  .state-go {
+    background-color: rgba(25, 135, 84, 0.9) !important;
+    color: white;
+  } /* Green - Click now! */
+</style>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-lightning text-warning me-2"></i>Reaction Time
+      </h2>
+
+      <div
+        id="clickArea"
+        class="glass-card mb-4 state-waiting"
+        onclick="handleClick()"
+      >
+        <i class="bi bi-mouse display-1 mb-3"></i>
+        <h3 id="statusText" class="display-6 fw-bold">Click to Start</h3>
+        <p id="subText" class="lead">Test your visual reflexes.</p>
+      </div>
+
+      <div class="row">
+        <div class="col-6">
+          <div class="card bg-transparent border-light text-center p-3">
+            <h6>Last Result</h6>
+            <span id="lastResult" class="display-6">-- ms</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card bg-transparent border-light text-center p-3">
+            <h6>Best Score</h6>
+            <span id="bestResult" class="display-6 text-success">-- ms</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-3">
+        <p class="text-muted small">
+          Note: Latency depends on your screen refresh rate and input device.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let state = "waiting"; // waiting, ready, go, result
+  let startTime = 0;
+  let timerId = null;
+  let bestScore = Infinity;
+
+  const area = document.getElementById("clickArea");
+  const text = document.getElementById("statusText");
+  const sub = document.getElementById("subText");
+
+  function handleClick() {
+    if (state === "waiting" || state === "result") {
+      startTest();
+    } else if (state === "ready") {
+      tooSoon();
+    } else if (state === "go") {
+      finishTest();
+    }
+  }
+
+  function startTest() {
+    state = "ready";
+    area.className = "glass-card mb-4 state-ready";
+    text.innerText = "Wait for Green...";
+    sub.innerText = "";
+
+    // Random delay between 2 and 5 seconds
+    const delay = Math.floor(Math.random() * 3000) + 2000;
+
+    clearTimeout(timerId);
+    timerId = setTimeout(() => {
+      state = "go";
+      area.className = "glass-card mb-4 state-go";
+      text.innerText = "CLICK NOW!";
+      startTime = Date.now();
+    }, delay);
+  }
+
+  function tooSoon() {
+    clearTimeout(timerId);
+    state = "result"; // Go to result state (failure)
+    area.className = "glass-card mb-4 state-waiting"; // Back to blue
+    text.innerText = "Too Soon!";
+    sub.innerText = "Click to try again.";
+  }
+
+  function finishTest() {
+    const endTime = Date.now();
+    const diff = endTime - startTime;
+    state = "result";
+
+    // Update Stats
+    document.getElementById("lastResult").innerText = diff + " ms";
+    if (diff < bestScore) {
+      bestScore = diff;
+      document.getElementById("bestResult").innerText = bestScore + " ms";
+    }
+
+    area.className = "glass-card mb-4 state-waiting";
+    text.innerText = diff + " ms";
+    sub.innerText = "Click to try again.";
+  }
+</script>
+{% endblock %}

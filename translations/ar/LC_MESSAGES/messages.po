@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-05-19 21:52+0300\n"
+"POT-Creation-Date: 2026-01-21 10:16+0500\n"
 "PO-Revision-Date: 2025-05-19 16:10+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ar\n"
@@ -19,39 +19,2125 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
+#: application.py:527
+msgid "White Noise"
+msgstr ""
+
+#: application.py:527
+msgid "Classic static"
+msgstr ""
+
+#: application.py:528
+msgid "Pink Noise"
+msgstr ""
+
+#: application.py:528
+msgid "Balanced static"
+msgstr ""
+
+#: application.py:529
+msgid "Brown Noise"
+msgstr ""
+
+#: application.py:529
+msgid "Deep static"
+msgstr ""
+
+#: application.py:530
+msgid "Rain"
+msgstr ""
+
+#: application.py:530
+msgid "Gentle rain"
+msgstr ""
+
+#: application.py:531
+msgid "Forest"
+msgstr ""
+
+#: application.py:531
+msgid "Birds & trees"
+msgstr ""
+
+#: application.py:532
+msgid "Night"
+msgstr ""
+
+#: application.py:532
+msgid "Crickets & night air"
+msgstr ""
+
+#: application.py:533
+msgid "Ocean"
+msgstr ""
+
+#: application.py:533 application.py:546
+msgid "Waves"
+msgstr ""
+
+#: application.py:534
+msgid "Wind"
+msgstr ""
+
+#: application.py:534
+msgid "Soft wind"
+msgstr ""
+
+#: application.py:535
+msgid "Fire"
+msgstr ""
+
+#: application.py:535
+msgid "Campfire crackle"
+msgstr ""
+
+#: application.py:536
+msgid "Thunderstorm"
+msgstr ""
+
+#: application.py:536
+msgid "Rain & thunder"
+msgstr ""
+
+#: application.py:537
+msgid "Cafe"
+msgstr ""
+
+#: application.py:537
+msgid "Coffee shop"
+msgstr ""
+
+#: application.py:538
+msgid "Train"
+msgstr ""
+
+#: application.py:538
+msgid "Train ride"
+msgstr ""
+
+#: application.py:539
+msgid "Fan"
+msgstr ""
+
+#: application.py:539
+msgid "Electric fan"
+msgstr ""
+
+#: application.py:540
+msgid "Fireplace"
+msgstr ""
+
+#: application.py:540
+msgid "Indoor fire"
+msgstr ""
+
+#: application.py:541
+#, fuzzy
+msgid "River"
+msgstr "يسجل"
+
+#: application.py:541
+msgid "Flowing water"
+msgstr ""
+
+#: application.py:542
+msgid "Birds"
+msgstr ""
+
+#: application.py:542
+msgid "Morning birds"
+msgstr ""
+
+#: application.py:543
+msgid "City"
+msgstr ""
+
+#: application.py:543
+msgid "Urban ambience"
+msgstr ""
+
+#: application.py:544
+msgid "Library"
+msgstr ""
+
+#: application.py:544
+msgid "Quiet study"
+msgstr ""
+
+#: application.py:545
+msgid "Rain on Roof"
+msgstr ""
+
+#: application.py:545
+msgid "Rain hitting roof"
+msgstr ""
+
+#: application.py:546
+msgid "Sea shore"
+msgstr ""
+
+#: application.py:547
+msgid "Fireplace 2"
+msgstr ""
+
+#: application.py:547
+msgid "Cozy fire"
+msgstr ""
+
+#: application.py:548
+msgid "Leaves"
+msgstr ""
+
+#: application.py:548
+msgid "Rustling leaves"
+msgstr ""
+
+#: application.py:549
+msgid "Stream"
+msgstr ""
+
+#: application.py:549
+msgid "Small creek"
+msgstr ""
+
+#: application.py:550
+msgid "Waterfall"
+msgstr ""
+
+#: application.py:550
+msgid "Falling water"
+msgstr ""
+
+#: application.py:551
+msgid "Crowd"
+msgstr ""
+
+#: application.py:551
+msgid "People talking"
+msgstr ""
+
+#: application.py:552
+msgid "Market"
+msgstr ""
+
+#: application.py:552
+msgid "Busy market"
+msgstr ""
+
+#: application.py:553
+msgid "Jungle"
+msgstr ""
+
+#: application.py:553
+msgid "Tropical forest"
+msgstr ""
+
+#: application.py:554
+msgid "Highway"
+msgstr ""
+
+#: application.py:554
+msgid "Cars passing"
+msgstr ""
+
+#: application.py:555
+msgid "Subway"
+msgstr ""
+
+#: application.py:555
+msgid "Underground train"
+msgstr ""
+
+#: application.py:556
+msgid "Train Station"
+msgstr ""
+
+#: application.py:556
+msgid "Station ambience"
+msgstr ""
+
+#: application.py:557
+msgid "Fountain"
+msgstr ""
+
+#: application.py:557
+msgid "Water fountain"
+msgstr ""
+
+#: application.py:558
+msgid "Wind Chimes"
+msgstr ""
+
+#: application.py:558
+msgid "Chimes in wind"
+msgstr ""
+
+#: application.py:559
+msgid "Birds Forest"
+msgstr ""
+
+#: application.py:559
+msgid "Forest birds"
+msgstr ""
+
+#: application.py:560
+msgid "Night 2"
+msgstr ""
+
+#: application.py:560
+msgid "Night ambience"
+msgstr ""
+
+#: application.py:561
+msgid "Snow"
+msgstr ""
+
+#: application.py:561
+msgid "Falling snow"
+msgstr ""
+
+#: application.py:562
+msgid "Typing"
+msgstr ""
+
+#: application.py:562
+msgid "Keyboard typing"
+msgstr ""
+
+#: application.py:563
+msgid "Clock"
+msgstr ""
+
+#: application.py:563
+msgid "Ticking clock"
+msgstr ""
+
+#: application.py:564
+msgid "Laundry"
+msgstr ""
+
+#: application.py:564
+msgid "Washing machine"
+msgstr ""
+
+#: application.py:565
+msgid "Vacuum"
+msgstr ""
+
+#: application.py:565
+msgid "Vacuum cleaner"
+msgstr ""
+
+#: application.py:566
+msgid "Hair Dryer"
+msgstr ""
+
+#: application.py:566
+msgid "Blowing air"
+msgstr ""
+
+#: application.py:567
+msgid "Car Ride"
+msgstr ""
+
+#: application.py:567
+msgid "Inside a car"
+msgstr ""
+
+#: application.py:568
+msgid "Airplane"
+msgstr ""
+
+#: application.py:568
+msgid "In-flight hum"
+msgstr ""
+
+#: application.py:569
+msgid "Boat"
+msgstr ""
+
+#: application.py:569
+msgid "On a boat"
+msgstr ""
+
+#: application.py:570
+msgid "Heartbeat"
+msgstr ""
+
+#: application.py:570
+msgid "Heartbeat sound"
+msgstr ""
+
+#: application.py:571
+msgid "Cat Purr"
+msgstr ""
+
+#: application.py:571
+msgid "Purring cat"
+msgstr ""
+
+#: application.py:572
+msgid "Dog Bark"
+msgstr ""
+
+#: application.py:572
+msgid "Dog barking"
+msgstr ""
+
+#: application.py:573
+msgid "Frogs"
+msgstr ""
+
+#: application.py:573
+msgid "Frogs croaking"
+msgstr ""
+
+#: application.py:574
+msgid "Crickets"
+msgstr ""
+
+#: application.py:574
+msgid "Night crickets"
+msgstr ""
+
+#: application.py:575
+msgid "Beach"
+msgstr ""
+
+#: application.py:575
+msgid "Beach waves"
+msgstr ""
+
+#: application.py:576
+msgid "Campfire"
+msgstr ""
+
+#: application.py:576
+msgid "Outdoor fire"
+msgstr ""
+
+#: application.py:577
+msgid "Rainforest"
+msgstr ""
+
+#: application.py:577
+msgid "Rainforest ambience"
+msgstr ""
+
+#: application.py:578
+msgid "Windy"
+msgstr ""
+
+#: application.py:578
+msgid "Strong wind"
+msgstr ""
+
+#: application.py:579
+msgid "Seagulls"
+msgstr ""
+
+#: application.py:579
+msgid "Seagulls at sea"
+msgstr ""
+
+#: application.py:580
+msgid "Barn"
+msgstr ""
+
+#: application.py:580
+msgid "Barn animals"
+msgstr ""
+
+#: application.py:581
+msgid "Train Whistle"
+msgstr ""
+
+#: application.py:581
+msgid "Train horn"
+msgstr ""
+
+#: application.py:582
+msgid "Church Bells"
+msgstr ""
+
+#: application.py:582
+msgid "Bells ringing"
+msgstr ""
+
+#: application.py:583
+msgid "Windmill"
+msgstr ""
+
+#: application.py:583
+msgid "Windmill blades"
+msgstr ""
+
+#: application.py:584
+msgid "Rain on Window"
+msgstr ""
+
+#: application.py:584
+msgid "Rain hitting glass"
+msgstr ""
+
+#: application.py:2232
+msgid "Set name must be unique and not empty."
+msgstr ""
+
+#: application.py:2241 application.py:2380
+msgid "Cannot delete the last set."
+msgstr ""
+
+#: application.py:2265 application.py:2369 application.py:2404
+msgid "Set not found."
+msgstr ""
+
+#: application.py:2276 templates/tools/flashcards.html:323
+#: templates/tools/flashcards.html:420
+msgid "Both front and back are required."
+msgstr ""
+
+#: application.py:2306
+msgid "Too many flashcards! Please clear some cards or sets."
+msgstr ""
+
+#: application.py:2340 application.py:2348
+msgid "Invalid card index."
+msgstr ""
+
+#: application.py:2344
+msgid "Invalid set."
+msgstr ""
+
+#: application.py:2419 templates/tools/flashcards.html:308
+#: templates/tools/flashcards.html:357 templates/tools/flashcards.html:474
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: application.py:2774
+msgid "Error generating QR code: "
+msgstr ""
+
+#: application.py:2782
+msgid "No QR code found."
+msgstr ""
+
+#: application.py:2784
+msgid "Error reading QR code: "
+msgstr ""
+
+#: application.py:2786
+msgid "No data or image provided."
+msgstr ""
+
+#: application.py:2804
+msgid "Could not fetch quote. Try again later."
+msgstr ""
+
+#: application.py:2815
+msgid "Could not fetch questions. Try again later."
+msgstr ""
+
+#: templates/credit.html:5
+msgid "Credits & Acknowledgements"
+msgstr ""
+
+#: templates/credit.html:8
+msgid ""
+"NeoBox would not have been possible without the help of these amazing\n"
+"    people, tools, and resources."
+msgstr ""
+
+#: templates/credit.html:14
+msgid "Frameworks & Libraries"
+msgstr ""
+
+#: templates/credit.html:72
+msgid "Icons & Visuals"
+msgstr ""
+
+#: templates/credit.html:97
+msgid "AI & Assistants"
+msgstr ""
+
+#: templates/credit.html:121
+msgid "Inspiration & Education"
+msgstr ""
+
+#: templates/feedback.html:8
+msgid "Feedback & Suggestions"
+msgstr ""
+
+#: templates/feedback.html:11
+msgid ""
+"Help us improve by sharing your thoughts, reporting bugs, or\n"
+"        suggesting new features."
+msgstr ""
+
+#: templates/feedback.html:25
+msgid "Your Email"
+msgstr ""
+
+#: templates/feedback.html:41
+msgid "Please enter a valid email address."
+msgstr ""
+
+#: templates/feedback.html:48 templates/tools/budget_tracker.html:15
+#: templates/tools/budget_tracker.html:50
+#: templates/tools/expense_tracker.html:15
+#: templates/tools/expense_tracker.html:60
+msgid "Category"
+msgstr ""
+
+#: templates/feedback.html:51
+msgid "Select a category"
+msgstr ""
+
+#: templates/feedback.html:52
+msgid "Bug Report"
+msgstr ""
+
+#: templates/feedback.html:53
+msgid "Feature Request"
+msgstr ""
+
+#: templates/feedback.html:55
+msgid "Improvement Suggestion"
+msgstr ""
+
+#: templates/feedback.html:57
+msgid "General Feedback"
+msgstr ""
+
+#: templates/feedback.html:60
+msgid "Please select a category."
+msgstr ""
+
+#: templates/feedback.html:66
+msgid "Rating"
+msgstr ""
+
+#: templates/feedback.html:86
+msgid "Please select a rating."
+msgstr ""
+
+#: templates/feedback.html:93
+msgid "Your Feedback"
+msgstr ""
+
+#: templates/feedback.html:101
+msgid "Please describe your feedback, issue, or suggestion in detail..."
+msgstr ""
+
+#: templates/feedback.html:104
+msgid "Please provide your feedback."
+msgstr ""
+
+#: templates/feedback.html:111
+msgid "Related Code"
+msgstr ""
+
+#: templates/feedback.html:112 templates/feedback.html:126
+msgid "optional"
+msgstr ""
+
+#: templates/feedback.html:118
+msgid "If your feedback is about code, paste it here..."
+msgstr ""
+
+#: templates/feedback.html:125
+msgid "Screenshot"
+msgstr ""
+
+#: templates/feedback.html:135
+msgid "Accepted formats: PNG, JPG, GIF. Max size: 5MB"
+msgstr ""
+
+#: templates/feedback.html:143
+msgid "Submit Feedback"
+msgstr ""
+
 #: templates/landing.html:1
 msgid "Welcome to NeoBox"
 msgstr "مرحباً بكم في نيوبوكس"
 
-#: templates/landing.html:4
+#: templates/landing.html:2
+msgid ""
+"NeoBox: The all-in-one productivity,\n"
+"study, and utility web app. Calculators, converters, notes, reminders, "
+"and\n"
+"more-ad-free, privacy-first, and always free!"
+msgstr ""
+
+#: templates/landing.html:24
 msgid "Welcome to NeoBox!"
 msgstr "!مرحباً بكم في نيوبوكس"
 
-#: templates/landing.html:6
-msgid "Your all-in-one productivity and utility web app."
-msgstr "تطبيق الويب الشامل للإنتاجية والأدوات المساعدة"
+#: templates/landing.html:37
+msgid ""
+"Your all-in-one productivity and utility web app. Free,\n"
+"        privacy-first, and packed with features for students, "
+"professionals, and\n"
+"        lifelong learners."
+msgstr ""
 
-#: templates/landing.html:9
+#: templates/landing.html:44
+#, python-format
+msgid "100% free, no ads, no tracking"
+msgstr ""
+
+#: templates/landing.html:48
+msgid "Modern calculators, converters, and study tools"
+msgstr ""
+
+#: templates/landing.html:52
+msgid "Dark mode, i18n, and accessibility built-in"
+msgstr ""
+
+#: templates/landing.html:56
+msgid "Cloud sync, reminders, and more for registered users"
+msgstr ""
+
+#: templates/landing.html:60
 msgid "Explore Tools"
 msgstr "استكشاف الأدوات"
 
-#: templates/landing.html:12
+#: templates/landing.html:64
+msgid "Get Started"
+msgstr ""
+
+#: templates/landing.html:69
+msgid "Unique visitors:"
+msgstr "الزوار الفريدون:"
+
+#: templates/landing.html:75
+msgid "Productivity is never an accident."
+msgstr ""
+
+#: templates/landing.html:76
+msgid "Small steps every day make big results."
+msgstr ""
+
+#: templates/landing.html:77
+msgid "You don’t need more time, you just need to decide."
+msgstr ""
+
+#: templates/landing.html:78
+msgid "Focus on being productive, not busy."
+msgstr ""
+
+#: templates/landing.html:79
+msgid "NeoBox helps me ace my exams!"
+msgstr ""
+
+#: templates/landing.html:80
+msgid "The best all-in-one study and work toolkit."
+msgstr ""
+
+#: templates/landing.html:99
+#, fuzzy
+msgid "About NeoBox"
+msgstr "مرحباً بكم في نيوبوكس"
+
+#: templates/landing.html:101
+msgid ""
+"NeoBox is your digital Swiss Army knife. Access calculators,\n"
+"        converters, note-taking, reminders, flashcards, world clocks, and"
+" dozens\n"
+"        of other tools; all in one place. No ads, no clutter, just pure\n"
+"        productivity. Built for students, professionals, and anyone who "
+"wants to\n"
+"        get more done, faster."
+msgstr ""
+
+#: templates/landing.html:119
+msgid "Smart Tools"
+msgstr ""
+
+#: templates/landing.html:121
+msgid ""
+"From calculators to converters, flashcards to clocks, find\n"
+"            everything you need in one place."
+msgstr ""
+
+#: templates/landing.html:135
+msgid "Cloud Sync"
+msgstr ""
+
+#: templates/landing.html:137
+msgid ""
+"Access your notes, flashcards, and settings anywhere, anytime,\n"
+"            on any device."
+msgstr ""
+
+#: templates/landing.html:151
+msgid "Privacy First"
+msgstr ""
+
+#: templates/landing.html:153
+msgid "Your data is yours. We never sell or share your information."
+msgstr ""
+
+#: templates/landing.html:169
+msgid "Internationalization"
+msgstr ""
+
+#: templates/landing.html:171
+msgid ""
+"NeoBox is available in English, Urdu, Arabic, Spanish, and\n"
+"            more!"
+msgstr ""
+
+#: templates/landing.html:186
+msgid "Dark Mode"
+msgstr ""
+
+#: templates/landing.html:188
+msgid "Switch between light and dark themes for comfort anytime."
+msgstr ""
+
+#: templates/landing.html:201
+msgid "Fast & Lightweight"
+msgstr ""
+
+#: templates/landing.html:203
+msgid ""
+"Loads instantly, works offline, and is optimized for all\n"
+"            devices."
+msgstr ""
+
+#: templates/landing.html:215
+msgid "What Our Users Say"
+msgstr ""
+
+#: templates/landing.html:222
+msgid ""
+"NeoBox has made my daily workflow so much easier. All my\n"
+"                tools in one place!"
+msgstr ""
+
+#: templates/landing.html:226
+msgid "Sara, Student"
+msgstr ""
+
+#: templates/landing.html:235
+msgid ""
+"I love the clean interface and the variety of utilities.\n"
+"                Highly recommended!"
+msgstr ""
+
+#: templates/landing.html:239
+msgid "Alex, Developer"
+msgstr ""
+
+#: templates/landing.html:248
+msgid ""
+"NeoBox is a must-have for students and professionals\n"
+"                alike!"
+msgstr ""
+
+#: templates/landing.html:252
+msgid "Maria, Teacher"
+msgstr ""
+
+#: templates/landing.html:261
+msgid "The best productivity app I have ever used."
+msgstr ""
+
+#: templates/landing.html:264
+msgid "Omar, Engineer"
+msgstr ""
+
+#: templates/landing.html:277
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: templates/landing.html:288
+msgid "Is NeoBox free to use?"
+msgstr ""
+
+#: templates/landing.html:297
+msgid "Yes! NeoBox is completely free for everyone."
+msgstr ""
+
+#: templates/landing.html:309
+msgid "Do I need to create an account?"
+msgstr ""
+
+#: templates/landing.html:318
+msgid ""
+"You can use many tools without an account, but registering\n"
+"              unlocks more features and personalization."
+msgstr ""
+
+#: templates/landing.html:331
+msgid "Is my data safe?"
+msgstr ""
+
+#: templates/landing.html:340
+msgid ""
+"Absolutely. Your data is encrypted and never shared with\n"
+"              third parties."
+msgstr ""
+
+#: templates/landing.html:353
+msgid "Which languages are supported?"
+msgstr ""
+
+#: templates/landing.html:362
+msgid "English, Urdu, Arabic, Spanish, and more coming soon!"
+msgstr ""
+
+#: templates/landing.html:374
+msgid "Can I contribute to NeoBox?"
+msgstr ""
+
+#: templates/landing.html:383
+msgid ""
+"Yes! NeoBox is open source. Visit our GitHub to contribute\n"
+"              or suggest features."
+msgstr ""
+
+#: templates/login.html:1 templates/login.html:60
+#, fuzzy
+msgid "Log In"
+msgstr "تسجيل الدخول"
+
+#: templates/login.html:6
+#, fuzzy
+msgid "Welcome Back"
+msgstr "مرحباً بكم في نيوبوكس"
+
+#: templates/login.html:8
+msgid "Please enter your credentials to log in"
+msgstr ""
+
+#: templates/login.html:14
+msgid "Username, Email, or Phone"
+msgstr ""
+
+#: templates/login.html:24
+msgid "Enter your identifier"
+msgstr ""
+
+#: templates/login.html:28
+msgid "Please enter your username, email, or phone."
+msgstr ""
+
+#: templates/login.html:34 templates/register.html:113
+#: templates/tools/password_manager.html:19
+#: templates/tools/random_generator.html:14
+msgid "Password"
+msgstr ""
+
+#: templates/login.html:43
+msgid "Enter your password"
+msgstr ""
+
+#: templates/login.html:54
+msgid "Please enter your password."
+msgstr ""
+
+#: templates/login.html:69
+msgid "Login with Passkey"
+msgstr ""
+
+#: templates/login.html:74
+msgid "Sign in with Google"
+msgstr ""
+
+#: templates/login.html:82
+#, fuzzy
+msgid "Don't have an account?"
+msgstr "هل لديك حساب بالفعل؟"
+
+#: templates/login.html:83
+#, fuzzy
+msgid "Register here"
+msgstr "يسجل"
+
+#: templates/login.html:87
+msgid "Forgot your password?"
+msgstr ""
+
+#: templates/login.html:128
+msgid "Please enter your username, email, or phone first."
+msgstr ""
+
+#: templates/login.html:140
+msgid "No passkey registered for this user."
+msgstr ""
+
+#: templates/login.html:161
+msgid "Passkey login failed."
+msgstr ""
+
+#: templates/privacy.html:1 templates/privacy.html:5
+#: templates/register.html:182
+msgid "Privacy Policy"
+msgstr ""
+
+#: templates/privacy.html:8
+msgid ""
+"Your privacy matters. This policy explains how we collect, use, and\n"
+"    protect your data."
+msgstr ""
+
+#: templates/privacy.html:13
+msgid "Information We Collect"
+msgstr ""
+
+#: templates/privacy.html:16
+msgid "Account info (username, email, phone)"
+msgstr ""
+
+#: templates/privacy.html:19
+msgid "Usage preferences and app activity"
+msgstr ""
+
+#: templates/privacy.html:22
+msgid "Content created or submitted by you"
+msgstr ""
+
+#: templates/privacy.html:25
+msgid "Device/browser details"
+msgstr ""
+
+#: templates/privacy.html:31
+msgid "How We Use Your Information"
+msgstr ""
+
+#: templates/privacy.html:34
+msgid "Deliver and improve services"
+msgstr ""
+
+#: templates/privacy.html:37
+msgid "Tailor your experience"
+msgstr ""
+
+#: templates/privacy.html:40
+msgid "Maintain security and performance"
+msgstr ""
+
+#: templates/privacy.html:43
+msgid "Send important communications"
+msgstr ""
+
+#: templates/privacy.html:49
+msgid "Data Storage & Security"
+msgstr ""
+
+#: templates/privacy.html:51
+msgid ""
+"Your data is encrypted and securely stored. Only authorized systems\n"
+"      and personnel have access to your data when necessary."
+msgstr ""
+
+#: templates/privacy.html:57
+msgid "Cookies & Tracking"
+msgstr ""
+
+#: templates/privacy.html:58
+msgid "We use cookies to:"
+msgstr ""
+
+#: templates/privacy.html:61
+msgid "Remember login preferences"
+msgstr ""
+
+#: templates/privacy.html:64
+msgid "Analyze usage for improvement"
+msgstr ""
+
+#: templates/privacy.html:67
+msgid "Ensure secure sessions"
+msgstr ""
+
+#: templates/privacy.html:73
+msgid "Data Sharing"
+msgstr ""
+
+#: templates/privacy.html:75
+msgid "We do not sell your personal data. We may share information:"
+msgstr ""
+
+#: templates/privacy.html:79
+msgid "When legally required"
+msgstr ""
+
+#: templates/privacy.html:82
+msgid "With your explicit consent"
+msgstr ""
+
+#: templates/privacy.html:85
+msgid "With trusted services that help us operate NeoBox"
+msgstr ""
+
+#: templates/privacy.html:91
+msgid "Your Rights"
+msgstr ""
+
+#: templates/privacy.html:94
+msgid "Access the data we hold about you"
+msgstr ""
+
+#: templates/privacy.html:97
+msgid "Request corrections or updates"
+msgstr ""
+
+#: templates/privacy.html:100
+msgid "Request deletion of your data"
+msgstr ""
+
+#: templates/privacy.html:103
+msgid "Export your data"
+msgstr ""
+
+#: templates/privacy.html:109
+msgid "Contact Us"
+msgstr ""
+
+#: templates/privacy.html:111
+msgid ""
+"If you have any concerns about your privacy or data usage, feel free\n"
+"      to reach out at"
+msgstr ""
+
+#: templates/privacy.html:118 templates/terms.html:100
+msgid "Last updated: June 15, 2025"
+msgstr ""
+
+#: templates/register.html:6 templates/register.html:191
+#, fuzzy
+msgid "Create Account"
+msgstr "هل لديك حساب بالفعل؟"
+
+#: templates/register.html:8
+msgid "Join NeoBox by filling out the form below"
+msgstr ""
+
+#: templates/register.html:19
+msgid "Username"
+msgstr ""
+
+#: templates/register.html:30
+msgid "Choose a unique username"
+msgstr ""
+
+#: templates/register.html:34
+msgid "3-20 characters, letters, numbers, and underscores only"
+msgstr ""
+
+#: templates/register.html:41
+msgid "Email"
+msgstr ""
+
+#: templates/register.html:51
+msgid "Enter your email address"
+msgstr ""
+
+#: templates/register.html:58
+msgid "Phone Number"
+msgstr ""
+
+#: templates/register.html:67
+msgid "+1234567890"
+msgstr ""
+
+#: templates/register.html:71
+msgid "Optional, but recommended for account recovery"
+msgstr ""
+
+#: templates/register.html:78
+msgid "Date of Birth"
+msgstr ""
+
+#: templates/register.html:91
+msgid "Must be at least 13 years old"
+msgstr ""
+
+#: templates/register.html:96
+msgid "Gender"
+msgstr ""
+
+#: templates/register.html:102
+msgid "Prefer not to say"
+msgstr ""
+
+#: templates/register.html:103
+msgid "Male"
+msgstr ""
+
+#: templates/register.html:104
+msgid "Female"
+msgstr ""
+
+#: templates/register.html:105 templates/tools/expense_tracker.html:23
+msgid "Other"
+msgstr ""
+
+#: templates/register.html:124
+msgid "Create a strong password"
+msgstr ""
+
+#: templates/register.html:135
+msgid "At least 8 characters with uppercase, lowercase, and numbers"
+msgstr ""
+
+#: templates/register.html:143
+msgid "Confirm Password"
+msgstr ""
+
+#: templates/register.html:154
+msgid "Re-enter your password"
+msgstr ""
+
+#: templates/register.html:176
+msgid "I agree to the"
+msgstr ""
+
+#: templates/register.html:178 templates/terms.html:1 templates/terms.html:5
+msgid "Terms of Service"
+msgstr ""
+
+#: templates/register.html:180
+msgid "and"
+msgstr ""
+
+#: templates/register.html:200
 msgid "Already have an account?"
 msgstr "هل لديك حساب بالفعل؟"
 
-#: templates/landing.html:13
-msgid "Log in"
+#: templates/register.html:201
+#, fuzzy
+msgid "Log in here"
 msgstr "تسجيل الدخول"
 
-#: templates/landing.html:14
-msgid "or"
-msgstr "أو"
+#: templates/terms.html:8
+msgid "Please read these Terms of Service carefully before using NeoBox."
+msgstr ""
 
-#: templates/landing.html:15
-msgid "Register"
-msgstr "يسجل"
+#: templates/terms.html:12
+msgid "Acceptance of Terms"
+msgstr ""
 
-#: templates/landing.html:17
-msgid "Unique visitors:"
-msgstr "الزوار الفريدون:"
+#: templates/terms.html:14
+msgid ""
+"By accessing and using NeoBox, you agree to be bound by these terms\n"
+"      and all applicable laws and regulations."
+msgstr ""
+
+#: templates/terms.html:20
+msgid "Description of Service"
+msgstr ""
+
+#: templates/terms.html:22
+msgid ""
+"NeoBox offers a suite of productivity and utility tools. We reserve\n"
+"      the right to modify or discontinue any part of the service at any "
+"time."
+msgstr ""
+
+#: templates/terms.html:29
+msgid "User Accounts"
+msgstr ""
+
+#: templates/terms.html:32
+msgid "Minimum age is 13"
+msgstr ""
+
+#: templates/terms.html:35
+msgid "You are responsible for your account’s security"
+msgstr ""
+
+#: templates/terms.html:38
+msgid "Information provided must be accurate and up-to-date"
+msgstr ""
+
+#: templates/terms.html:44
+msgid "User Content"
+msgstr ""
+
+#: templates/terms.html:46
+msgid ""
+"You retain ownership of your content. By using NeoBox, you grant us\n"
+"      permission to store and process your content solely to provide "
+"services."
+msgstr ""
+
+#: templates/terms.html:53
+msgid "Data Storage"
+msgstr ""
+
+#: templates/terms.html:56
+msgid "Data is stored securely and responsibly"
+msgstr ""
+
+#: templates/terms.html:59
+msgid "Inactive accounts may be removed after extended periods"
+msgstr ""
+
+#: templates/terms.html:62
+msgid "We recommend backing up your own data regularly"
+msgstr ""
+
+#: templates/terms.html:68
+msgid "Prohibited Activities"
+msgstr ""
+
+#: templates/terms.html:69
+msgid "Users are strictly prohibited from:"
+msgstr ""
+
+#: templates/terms.html:72
+msgid "Violating local or international laws"
+msgstr ""
+
+#: templates/terms.html:75
+msgid "Disrupting or tampering with service integrity"
+msgstr ""
+
+#: templates/terms.html:78
+msgid "Sharing or selling your account credentials"
+msgstr ""
+
+#: templates/terms.html:84
+msgid "Termination"
+msgstr ""
+
+#: templates/terms.html:86
+msgid ""
+"NeoBox reserves the right to suspend or terminate accounts violating\n"
+"      these terms at its sole discretion."
+msgstr ""
+
+#: templates/terms.html:92
+msgid "Changes to Terms"
+msgstr ""
+
+#: templates/terms.html:94
+msgid ""
+"We may update these Terms of Service from time to time. Continued\n"
+"      use of the platform indicates your acceptance of the latest version."
+msgstr ""
+
+#: templates/tools/basic_drawing.html:1 templates/tools/basic_drawing.html:4
+msgid "Basic Drawing"
+msgstr ""
+
+#: templates/tools/basic_drawing.html:12
+msgid "Brush Color"
+msgstr ""
+
+#: templates/tools/basic_drawing.html:24 templates/tools/mind_maps.html:27
+msgid "Clear"
+msgstr ""
+
+#: templates/tools/basic_drawing.html:27
+msgid "Download"
+msgstr ""
+
+#: templates/tools/bookmark_manager.html:1
+#: templates/tools/bookmark_manager.html:4
+msgid "Bookmark Manager"
+msgstr ""
+
+#: templates/tools/bookmark_manager.html:11
+#: templates/tools/collaborative_notes.html:11
+msgid "Title"
+msgstr ""
+
+#: templates/tools/bookmark_manager.html:15
+msgid "URL"
+msgstr ""
+
+#: templates/tools/bookmark_manager.html:19
+msgid "Add Bookmark"
+msgstr ""
+
+#: templates/tools/bookmark_manager.html:23
+msgid "Your Bookmarks"
+msgstr ""
+
+#: templates/tools/bookmark_manager.html:30
+msgid "No bookmarks yet."
+msgstr ""
+
+#: templates/tools/budget_tracker.html:1 templates/tools/budget_tracker.html:4
+msgid "Budget Tracker"
+msgstr ""
+
+#: templates/tools/budget_tracker.html:11
+#: templates/tools/budget_tracker.html:49
+msgid "Month"
+msgstr ""
+
+#: templates/tools/budget_tracker.html:19
+#: templates/tools/budget_tracker.html:51
+#: templates/tools/expense_tracker.html:27
+#: templates/tools/expense_tracker.html:61
+msgid "Amount"
+msgstr ""
+
+#: templates/tools/budget_tracker.html:29
+msgid "Save Budget"
+msgstr ""
+
+#: templates/tools/budget_tracker.html:44
+msgid "Your Budgets"
+msgstr ""
+
+#: templates/tools/budget_tracker.html:65
+msgid "No budgets yet."
+msgstr ""
+
+#: templates/tools/code_formatter.html:1
+msgid "Code Formatter"
+msgstr ""
+
+#: templates/tools/code_formatter.html:4
+msgid "Code Formatter & Beautifier"
+msgstr ""
+
+#: templates/tools/code_formatter.html:11
+msgid "Paste your code"
+msgstr ""
+
+#: templates/tools/code_formatter.html:23
+msgid "Language"
+msgstr ""
+
+#: templates/tools/code_formatter.html:40
+msgid "Style"
+msgstr ""
+
+#: templates/tools/code_formatter.html:49
+msgid "Indent Size"
+msgstr ""
+
+#: templates/tools/code_formatter.html:61
+msgid "Format Code"
+msgstr ""
+
+#: templates/tools/code_formatter.html:66
+msgid "Formatted Code"
+msgstr ""
+
+#: templates/tools/code_formatter.html:72
+msgid "Copy"
+msgstr ""
+
+#: templates/tools/collaborative_notes.html:1
+#: templates/tools/collaborative_notes.html:4
+msgid "Collaborative Notes"
+msgstr ""
+
+#: templates/tools/collaborative_notes.html:15
+msgid "Content"
+msgstr ""
+
+#: templates/tools/collaborative_notes.html:24
+msgid "Add Note"
+msgstr ""
+
+#: templates/tools/collaborative_notes.html:28
+msgid "Your Notes"
+msgstr ""
+
+#: templates/tools/collaborative_notes.html:36
+msgid "No notes yet."
+msgstr ""
+
+#: templates/tools/daily_questions.html:1
+#: templates/tools/daily_questions.html:4
+msgid "Daily Questions"
+msgstr ""
+
+#: templates/tools/daily_quotes.html:1 templates/tools/daily_quotes.html:4
+msgid "Daily Quotes"
+msgstr ""
+
+#: templates/tools/daily_routines.html:1 templates/tools/daily_routines.html:4
+msgid "Daily Routines & Reminders"
+msgstr ""
+
+#: templates/tools/daily_routines.html:11
+msgid "Routine Title"
+msgstr ""
+
+#: templates/tools/daily_routines.html:16
+msgid "Time"
+msgstr ""
+
+#: templates/tools/daily_routines.html:20 templates/tools/habit_tracker.html:15
+msgid "Frequency"
+msgstr ""
+
+#: templates/tools/daily_routines.html:22 templates/tools/habit_tracker.html:17
+msgid "Daily"
+msgstr ""
+
+#: templates/tools/daily_routines.html:23 templates/tools/habit_tracker.html:18
+msgid "Weekly"
+msgstr ""
+
+#: templates/tools/daily_routines.html:24 templates/tools/habit_tracker.html:19
+msgid "Monthly"
+msgstr ""
+
+#: templates/tools/daily_routines.html:29
+msgid "Add Routine"
+msgstr ""
+
+#: templates/tools/daily_routines.html:33
+msgid "Your Routines"
+msgstr ""
+
+#: templates/tools/daily_routines.html:48
+msgid "No routines yet."
+msgstr ""
+
+#: templates/tools/expense_tracker.html:1
+#: templates/tools/expense_tracker.html:4
+msgid "Expense Tracker"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:11
+#: templates/tools/expense_tracker.html:59
+#: templates/tools/health_tracker.html:11
+#: templates/tools/health_tracker.html:68
+msgid "Date"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:17
+msgid "Food"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:18
+msgid "Transport"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:19
+msgid "Shopping"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:20
+msgid "Bills"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:21
+msgid "Entertainment"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:22
+msgid "Health"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:37
+#: templates/tools/expense_tracker.html:62
+msgid "Description"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:41
+msgid "Add Expense"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:47
+msgid "Spending Breakdown"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:54
+msgid "Your Expenses"
+msgstr ""
+
+#: templates/tools/expense_tracker.html:76
+msgid "No expenses yet."
+msgstr ""
+
+#: templates/tools/file_converter.html:23
+msgid "Drag & drop files here or click to select"
+msgstr ""
+
+#: templates/tools/file_renamer.html:1
+msgid "File Renamer"
+msgstr ""
+
+#: templates/tools/file_renamer.html:4
+msgid "File Renamer & Batch Renamer"
+msgstr ""
+
+#: templates/tools/file_renamer.html:12
+msgid "Select Files"
+msgstr ""
+
+#: templates/tools/file_renamer.html:15
+msgid "Supports images, documents, and more."
+msgstr ""
+
+#: templates/tools/file_renamer.html:19
+msgid "New Name Pattern"
+msgstr ""
+
+#: templates/tools/file_renamer.html:24
+#, python-brace-format
+msgid "e.g. Vacation_{num}_{date}"
+msgstr ""
+
+#: templates/tools/file_renamer.html:27
+#, python-brace-format
+msgid ""
+"Use {num} for numbering, {date} for today, {orig} for original\n"
+"        name, {ext} for extension."
+msgstr ""
+
+#: templates/tools/file_renamer.html:32
+msgid "Filters & Options"
+msgstr ""
+
+#: templates/tools/file_renamer.html:36
+msgid "All Extensions"
+msgstr ""
+
+#: templates/tools/file_renamer.html:46
+msgid "Keep Case"
+msgstr ""
+
+#: templates/tools/file_renamer.html:47
+msgid "Lowercase"
+msgstr ""
+
+#: templates/tools/file_renamer.html:48
+#: templates/tools/text_case_convertor.html:16
+msgid "UPPERCASE"
+msgstr ""
+
+#: templates/tools/file_renamer.html:49
+#: templates/tools/text_case_convertor.html:22
+msgid "Title Case"
+msgstr ""
+
+#: templates/tools/file_renamer.html:61
+msgid "Replace spaces with underscores"
+msgstr ""
+
+#: templates/tools/file_renamer.html:72
+msgid "Preview only (no changes)"
+msgstr ""
+
+#: templates/tools/file_renamer.html:77
+msgid "Rename Files"
+msgstr ""
+
+#: templates/tools/flashcards.html:2 templates/tools/flashcards.html:11
+msgid "Flashcards"
+msgstr ""
+
+#: templates/tools/flashcards.html:3 templates/tools/flashcards.html:12
+msgid ""
+"Create, flip, and study your own flashcards. Organize them into sets for "
+"different subjects."
+msgstr ""
+
+#: templates/tools/flashcards.html:23
+msgid "New Set"
+msgstr ""
+
+#: templates/tools/flashcards.html:27
+msgid "Delete Set"
+msgstr ""
+
+#: templates/tools/flashcards.html:39
+msgid "New Set Name"
+msgstr ""
+
+#: templates/tools/flashcards.html:40
+msgid "Enter set name..."
+msgstr ""
+
+#: templates/tools/flashcards.html:43
+msgid "Create Set"
+msgstr ""
+
+#: templates/tools/flashcards.html:53
+msgid "Front (Question/Term)"
+msgstr ""
+
+#: templates/tools/flashcards.html:54
+msgid "Enter your question or term"
+msgstr ""
+
+#: templates/tools/flashcards.html:57
+msgid "Back (Answer/Definition)"
+msgstr ""
+
+#: templates/tools/flashcards.html:58
+msgid "Enter the answer or definition"
+msgstr ""
+
+#: templates/tools/flashcards.html:61
+msgid "Add Card"
+msgstr ""
+
+#: templates/tools/flashcards.html:76
+msgid "Shuffle"
+msgstr ""
+
+#: templates/tools/flashcards.html:81
+#, fuzzy
+msgid "Export"
+msgstr "استكشاف الأدوات"
+
+#: templates/tools/flashcards.html:87 templates/tools/flashcards.html:385
+msgid "Are you sure you want to clear this set?"
+msgstr ""
+
+#: templates/tools/flashcards.html:88
+msgid "Clear Set"
+msgstr ""
+
+#: templates/tools/flashcards.html:104
+msgid "Click to flip"
+msgstr ""
+
+#: templates/tools/flashcards.html:112
+msgid "Click to flip back"
+msgstr ""
+
+#: templates/tools/flashcards.html:119
+msgid "Delete Card"
+msgstr ""
+
+#: templates/tools/flashcards.html:120 templates/tools/flashcards.html:271
+msgid "Delete this card?"
+msgstr ""
+
+#: templates/tools/flashcards.html:132
+msgid "No flashcards yet. Add some above!"
+msgstr ""
+
+#: templates/tools/flashcards.html:302
+msgid "Failed to delete card"
+msgstr ""
+
+#: templates/tools/flashcards.html:352
+msgid "Failed to add card"
+msgstr ""
+
+#: templates/tools/flashcards.html:369
+msgid "Set name cannot be empty."
+msgstr ""
+
+#: templates/tools/flashcards.html:375
+msgid "A set with this name already exists."
+msgstr ""
+
+#: templates/tools/flashcards.html:425
+msgid "Please select a set first."
+msgstr ""
+
+#: templates/tools/flashcards.html:434
+msgid "Are you sure you want to delete the set"
+msgstr ""
+
+#: templates/tools/flashcards.html:469
+msgid "Failed to delete set"
+msgstr ""
+
+#: templates/tools/gradient_generator.html:2
+msgid "Gradient Generator"
+msgstr ""
+
+#: templates/tools/grocery_list.html:1 templates/tools/grocery_list.html:4
+msgid "Grocery List Manager"
+msgstr ""
+
+#: templates/tools/grocery_list.html:11
+msgid "Item"
+msgstr ""
+
+#: templates/tools/grocery_list.html:15
+msgid "Quantity"
+msgstr ""
+
+#: templates/tools/grocery_list.html:19
+msgid "Add Item"
+msgstr ""
+
+#: templates/tools/grocery_list.html:23
+msgid "Your Grocery List"
+msgstr ""
+
+#: templates/tools/grocery_list.html:33
+msgid "No items yet."
+msgstr ""
+
+#: templates/tools/habit_tracker.html:1 templates/tools/habit_tracker.html:4
+msgid "Habit Tracker"
+msgstr ""
+
+#: templates/tools/habit_tracker.html:11
+msgid "Habit"
+msgstr ""
+
+#: templates/tools/habit_tracker.html:23
+msgid "Start Date"
+msgstr ""
+
+#: templates/tools/habit_tracker.html:27
+msgid "Add Habit"
+msgstr ""
+
+#: templates/tools/habit_tracker.html:31
+msgid "Your Habits"
+msgstr ""
+
+#: templates/tools/habit_tracker.html:45
+msgid "No habits yet."
+msgstr ""
+
+#: templates/tools/health_tracker.html:1 templates/tools/health_tracker.html:4
+msgid "Health Tracker"
+msgstr ""
+
+#: templates/tools/health_tracker.html:15
+#: templates/tools/health_tracker.html:69
+msgid "Weight (kg)"
+msgstr ""
+
+#: templates/tools/health_tracker.html:25
+#: templates/tools/health_tracker.html:70
+msgid "Height (cm)"
+msgstr ""
+
+#: templates/tools/health_tracker.html:35
+#: templates/tools/health_tracker.html:71
+msgid "BMI"
+msgstr ""
+
+#: templates/tools/health_tracker.html:44
+msgid "Calculate BMI: weight (kg) / (height (m))²"
+msgstr ""
+
+#: templates/tools/health_tracker.html:48
+msgid "Add Entry"
+msgstr ""
+
+#: templates/tools/health_tracker.html:63
+msgid "Your Health Data"
+msgstr ""
+
+#: templates/tools/health_tracker.html:85
+msgid "No health data yet."
+msgstr ""
+
+#: templates/tools/markdown_previewer.html:4
+msgid "Markdown Previewer"
+msgstr ""
+
+#: templates/tools/markdown_previewer.html:7
+msgid "Markdown Input"
+msgstr ""
+
+#: templates/tools/markdown_previewer.html:11
+msgid "Preview"
+msgstr ""
+
+#: templates/tools/mind_maps.html:1 templates/tools/mind_maps.html:4
+msgid "Mind Maps & Flowcharts"
+msgstr ""
+
+#: templates/tools/mind_maps.html:8
+msgid "Add Node"
+msgstr ""
+
+#: templates/tools/mind_maps.html:11
+msgid "Add Connection"
+msgstr ""
+
+#: templates/tools/mind_maps.html:14
+msgid "Undo"
+msgstr ""
+
+#: templates/tools/mind_maps.html:17
+msgid "Redo"
+msgstr ""
+
+#: templates/tools/mind_maps.html:20
+msgid "Export as PNG"
+msgstr ""
+
+#: templates/tools/mind_maps.html:23
+msgid "Import"
+msgstr ""
+
+#: templates/tools/mind_maps.html:47
+msgid "Central Idea"
+msgstr ""
+
+#: templates/tools/mind_maps.html:63
+msgid "Enter node label:"
+msgstr ""
+
+#: templates/tools/mind_maps.html:67
+msgid "From node ID:"
+msgstr ""
+
+#: templates/tools/mind_maps.html:68
+msgid "To node ID:"
+msgstr ""
+
+#: templates/tools/palette_generator.html:2
+msgid "Palette Generator"
+msgstr ""
+
+#: templates/tools/password_generator.html:4
+msgid "Password Generator"
+msgstr ""
+
+#: templates/tools/password_generator.html:6
+#: templates/tools/random_generator.html:72
+#: templates/tools/random_generator.html:74
+msgid "Length"
+msgstr ""
+
+#: templates/tools/password_generator.html:30
+msgid "Uppercase"
+msgstr ""
+
+#: templates/tools/password_generator.html:46
+msgid "Numbers"
+msgstr ""
+
+#: templates/tools/password_generator.html:61
+msgid "Symbols"
+msgstr ""
+
+#: templates/tools/password_generator.html:64
+#: templates/tools/random_generator.html:19
+msgid "Generate"
+msgstr ""
+
+#: templates/tools/password_generator.html:69
+msgid "Generated Password:"
+msgstr ""
+
+#: templates/tools/password_manager.html:1
+#: templates/tools/password_manager.html:4
+msgid "Password Manager"
+msgstr ""
+
+#: templates/tools/password_manager.html:11
+msgid "Site/Service"
+msgstr ""
+
+#: templates/tools/password_manager.html:15
+msgid "Username/Email"
+msgstr ""
+
+#: templates/tools/password_manager.html:23
+msgid "Save Password"
+msgstr ""
+
+#: templates/tools/password_manager.html:27
+msgid "Your Vault"
+msgstr ""
+
+#: templates/tools/password_manager.html:46
+msgid "No passwords saved."
+msgstr ""
+
+#: templates/tools/random_generator.html:1
+#: templates/tools/random_generator.html:4
+msgid "Random Generator"
+msgstr ""
+
+#: templates/tools/random_generator.html:7
+msgid "Type"
+msgstr ""
+
+#: templates/tools/random_generator.html:9
+msgid "Random Number"
+msgstr ""
+
+#: templates/tools/random_generator.html:10
+msgid "Random String"
+msgstr ""
+
+#: templates/tools/random_generator.html:11
+msgid "Random Color"
+msgstr ""
+
+#: templates/tools/random_generator.html:12
+msgid "Coin Toss"
+msgstr ""
+
+#: templates/tools/random_generator.html:13
+msgid "Dice Roll"
+msgstr ""
+
+#: templates/tools/random_generator.html:47
+msgid "Heads"
+msgstr ""
+
+#: templates/tools/random_generator.html:47
+msgid "Tails"
+msgstr ""
+
+#: templates/tools/random_generator.html:68
+msgid "Min"
+msgstr ""
+
+#: templates/tools/random_generator.html:69
+msgid "Max"
+msgstr ""
+
+#: templates/tools/stock_market_tracker.html:2
+msgid "Stock/Market Tracker"
+msgstr ""
+
+#: templates/tools/stock_market_tracker.html:43
+msgid "Stock Market Tracker"
+msgstr ""
+
+#: templates/tools/stock_market_tracker.html:65
+msgid "Your Watchlist"
+msgstr ""
+
+#: templates/tools/stock_market_tracker.html:74
+msgid "No stocks yet. Add one!"
+msgstr ""
+
+#: templates/tools/text_case_convertor.html:4
+msgid "Text Case Converter"
+msgstr ""
+
+#: templates/tools/text_case_convertor.html:10
+msgid "Enter your text here..."
+msgstr ""
+
+#: templates/tools/text_case_convertor.html:19
+msgid "lowercase"
+msgstr ""
+
+#: templates/tools/text_case_convertor.html:25
+msgid "Sentence case"
+msgstr ""
+
+#: templates/tools/text_case_convertor.html:31
+msgid "Result:"
+msgstr ""
+
+#: templates/tools/translator.html:2 templates/tools/translator.html:5
+msgid "Text Translator"
+msgstr ""
+
+#: templates/tools/translator.html:9
+msgid "From"
+msgstr ""
+
+#: templates/tools/translator.html:11
+msgid "Auto-Detect"
+msgstr ""
+
+#: templates/tools/translator.html:18
+msgid "Switch languages"
+msgstr ""
+
+#: templates/tools/translator.html:23
+msgid "To"
+msgstr ""
+
+#: templates/tools/translator.html:31
+msgid "Translate"
+msgstr ""
+
+#: templates/tools/translator.html:36
+msgid "Enter text to translate"
+msgstr ""
+
+#: templates/tools/white_noise.html:1
+msgid "White Noise Generator"
+msgstr ""
+
+#: templates/tools/white_noise.html:9
+msgid "Search sounds..."
+msgstr ""
+
+#: templates/tools/white_noise.html:10
+msgid "Search sounds"
+msgstr ""
+
+#: templates/tools/white_noise.html:26
+msgid "Add to mix"
+msgstr ""
+
+#: templates/tools/white_noise.html:33
+msgid "Play now"
+msgstr ""
+
+#: templates/tools/white_noise.html:47
+msgid "Mix"
+msgstr ""
+
+#: templates/tools/white_noise.html:52 templates/tools/white_noise.html:53
+msgid "Play/Pause all"
+msgstr ""
+
+#: templates/tools/white_noise.html:60
+msgid "Stop all"
+msgstr ""
+
+#: templates/tools/white_noise.html:73
+msgid "Global volume"
+msgstr ""
+
+#: templates/tools/white_noise.html:83
+msgid "No sounds in your mix. Add some from the left!"
+msgstr ""
+
+#: templates/tools/world_clock.html:1 templates/tools/world_clock.html:10
+msgid "World Clock"
+msgstr ""
+
+#: templates/tools/world_clock.html:21
+msgid "Search for a city or timezone..."
+msgstr ""
+
+#: templates/tools/world_clock.html:24
+msgid "Add"
+msgstr ""
+
+#: templates/tools/world_clock.html:46
+msgid "Popular Cities"
+msgstr ""
+
+#: templates/tools/world_clock.html:52
+msgid "New York"
+msgstr ""
+
+#: templates/tools/world_clock.html:58
+msgid "London"
+msgstr ""
+
+#: templates/tools/world_clock.html:64
+msgid "Tokyo"
+msgstr ""
+
+#: templates/tools/world_clock.html:70
+msgid "Sydney"
+msgstr ""
+
+#: templates/tools/world_clock.html:76
+msgid "Paris"
+msgstr ""
+
+#: templates/tools/world_clock.html:82
+msgid "Dubai"
+msgstr ""
+
+#~ msgid "Your all-in-one productivity and utility web app."
+#~ msgstr "تطبيق الويب الشامل للإنتاجية والأدوات المساعدة"
+
+#~ msgid "or"
+#~ msgstr "أو"
 

@@ -1,49 +1,55 @@
-{% extends "layout.html" %} {% block title %}Text Encryptor/Decryptor{% endblock
-%} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">Text Encryptor / Decryptor</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">Your Text</label>
-      <textarea name="text" rows="4" class="form-control" required>
-{{ text or '' }}</textarea
-      >
+{% extends "layout.html" %} {% block title %}Text Encryptor{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-shield-lock me-2"></i>Secure Text Encryptor</h2>
+             <p class="text-muted">Encrypt messages using a secret key (AES-like logic via backend).</p>
+        </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Encryption Key</label>
-      <input
-        type="text"
-        name="user_key"
-        class="form-control"
-        value="{{ user_key }}"
-        required
-      />
-      <div class="form-text">Keep this key safe! You need it to decrypt.</div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label fw-bold text-muted small text-uppercase">Message</label>
+                <textarea name="text" rows="5" class="form-control bg-light border-0 shadow-inner" placeholder="Enter secret message..." required>{{ text if text else '' }}</textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label fw-bold text-muted small text-uppercase">Secret Key</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0"><i class="bi bi-key"></i></span>
+                    <input type="text" name="user_key" class="form-control border-0 bg-light shadow-inner" placeholder="Enter a key..." value="{{ user_key if user_key else '' }}" required>
+                </div>
+                <div class="form-text text-end fst-italic">Do not forget this key!</div>
+            </div>
+            
+            <div class="d-flex gap-3">
+                <button name="action" value="encrypt" class="btn btn-success flex-fill shadow-sm">
+                    <i class="bi bi-lock-fill me-2"></i>Encrypt
+                </button>
+                <button name="action" value="decrypt" class="btn btn-warning flex-fill shadow-sm text-white">
+                    <i class="bi bi-unlock-fill me-2"></i>Decrypt
+                </button>
+            </div>
+        </form>
+
+        {% if result %}
+        <div class="mt-4 animate__animated animate__fadeIn">
+            <div class="alert alert-primary border-0 shadow-sm rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong class="text-uppercase small ls-1"><i class="bi bi-terminal me-2"></i>Output</strong>
+                    <button class="btn btn-sm btn-light py-0" onclick="navigator.clipboard.writeText(document.getElementById('out').innerText)">Copy</button>
+                </div>
+                <div class="font-monospace text-break bg-white p-2 rounded text-dark" id="out">{{ result }}</div>
+            </div>
+        </div>
+        {% endif %}
+      </div>
     </div>
-    <div class="mb-3 d-flex gap-2">
-      <button name="action" value="encrypt" class="btn btn-success flex-fill">
-        Encrypt
-      </button>
-      <button name="action" value="decrypt" class="btn btn-warning flex-fill">
-        Decrypt
-      </button>
-    </div>
-  </form>
-  {% if result %}
-  <div class="alert alert-info mt-4 text-break">
-    <strong>Result:</strong>
-    <div style="word-break: break-all">{{ result }}</div>
-    <button
-      class="btn btn-sm btn-outline-secondary mt-2"
-      onclick="navigator.clipboard.writeText('{{ result }}')"
-    >
-      Copy
-    </button>
   </div>
-  {% endif %}
 </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 {% endblock %}

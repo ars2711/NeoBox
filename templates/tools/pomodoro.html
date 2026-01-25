@@ -1,85 +1,138 @@
 {% extends "layout.html" %} {% block title %}Pomodoro Timer{% endblock %} {%
 block main %}
-<div class="container py-4">
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-hourglass-top me-2"></i>Pomodoro Timer
+      </h2>
+      <p class="text-muted">Boost productivity with focused work intervals.</p>
+    </div>
+  </div>
+
   <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card timer-card shadow text-center squircle">
-        <div class="card-body">
-          <h3 class="card-title mb-3">
-            <i class="bi bi-hourglass-split"></i> Pomodoro Timer
-          </h3>
-          <div class="mb-3">
-            <svg id="pomodoroCircle" width="140" height="140">
-              <circle
-                cx="70"
-                cy="70"
-                r="60"
-                stroke="#e9ecef"
-                stroke-width="10"
-                fill="none"
-              />
-              <circle
-                id="pomodoroProgress"
-                cx="70"
-                cy="70"
-                r="60"
-                stroke="#2196f3"
-                stroke-width="10"
-                fill="none"
-                stroke-linecap="round"
-                stroke-dasharray="377"
-                stroke-dashoffset="0"
-              />
-              <text
-                id="pomodoroTimeText"
-                x="70"
-                y="83"
-                text-anchor="middle"
-                font-size="2.1em"
-                fill="currentColor"
-                style="font-weight: 600"
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-5 text-center position-relative overflow-hidden">
+        <!-- Abstract Decoration -->
+        <div
+          class="position-absolute top-0 start-0 w-100 h-100 bg-neo-gradient opacity-10"
+          style="filter: blur(80px); z-index: 0"
+        ></div>
+
+        <div class="position-relative" style="z-index: 1">
+          <div class="mb-4 d-flex justify-content-center">
+            <div class="position-relative" style="width: 220px; height: 220px">
+              <svg
+                id="pomodoroCircle"
+                width="220"
+                height="220"
+                class="drop-shadow"
               >
-                25:00
-              </text>
-            </svg>
+                <circle
+                  cx="110"
+                  cy="110"
+                  r="100"
+                  stroke="rgba(0,0,0,0.05)"
+                  stroke-width="12"
+                  fill="none"
+                />
+                <circle
+                  id="pomodoroProgress"
+                  cx="110"
+                  cy="110"
+                  r="100"
+                  stroke="url(#gradient)"
+                  stroke-width="12"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-dasharray="628"
+                  stroke-dashoffset="0"
+                  style="transition: stroke-dashoffset 1s linear"
+                  transform="rotate(-90 110 110)"
+                />
+                <defs>
+                  <linearGradient
+                    id="gradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stop-color="#4f46e5" />
+                    <stop offset="100%" stop-color="#3b82f6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div
+                class="position-absolute top-50 start-50 translate-middle text-center"
+              >
+                <div
+                  id="pomodoroTimeText"
+                  class="display-3 fw-bold text-gradient"
+                  style="font-feature-settings: &quot;tnum&quot;"
+                >
+                  25:00
+                </div>
+                <div
+                  id="pomodoroStatus"
+                  class="small text-muted fw-bold text-uppercase mt-1"
+                >
+                  Focus
+                </div>
+              </div>
+            </div>
           </div>
+
           <div
-            class="mb-3 d-flex justify-content-center align-items-center gap-2"
+            class="mb-4 d-flex justify-content-center align-items-center gap-3"
           >
             <button
-              class="btn btn-outline-secondary btn-sm"
+              class="btn btn-light rounded-circle shadow-sm"
               id="pomodoroMinusBtn"
               type="button"
+              style="width: 48px; height: 48px"
             >
-              <i class="bi bi-dash"></i> 5 min
+              <i class="bi bi-dash-lg"></i>
             </button>
-            <span id="pomodoroLength" class="fw-bold">25</span> min
+            <div
+              class="bg-white bg-opacity-75 px-4 py-2 rounded-pill shadow-sm border font-monospace fs-5"
+            >
+              <span id="pomodoroLength">25</span> min
+            </div>
             <button
-              class="btn btn-outline-secondary btn-sm"
+              class="btn btn-light rounded-circle shadow-sm"
               id="pomodoroPlusBtn"
               type="button"
+              style="width: 48px; height: 48px"
             >
-              <i class="bi bi-plus"></i> 5 min
+              <i class="bi bi-plus-lg"></i>
             </button>
           </div>
-          <div class="mb-3 d-flex justify-content-center gap-2">
+
+          <div class="d-flex justify-content-center gap-3">
             <button
-              class="btn btn-primary btn-lg"
+              class="btn btn-neo btn-lg px-5 rounded-pill shadow-sm"
               id="pomodoroStartBtn"
               type="button"
             >
-              <i class="bi bi-play-fill"></i>
-              <span id="pomodoroStartLabel">Start</span>
+              <i class="bi bi-play-fill me-2" id="playIcon"></i
+              ><span id="pomodoroStartLabel">Start Focus</span>
             </button>
             <button
-              class="btn btn-secondary btn-lg"
+              class="btn btn-light btn-lg px-4 rounded-pill shadow-sm text-danger"
               id="pomodoroResetBtn"
               type="button"
             >
-              <i class="bi bi-arrow-counterclockwise"></i> Reset
+              <i class="bi bi-arrow-counterclockwise"></i>
             </button>
           </div>
-          <div id="pomodoroStatus" class="mt-2 small text-muted"></div>
+
+          <div class="mt-4 text-muted small">
+            <span
+              class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2"
+              >Session: <span id="sessionCount">0</span></span
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -99,6 +152,8 @@ block main %}
     breakIndex = 0,
     sessionCount = 0;
 
+  const CIRCLE_CIRCUMFERENCE = 628; // 2 * pi * 100
+
   function updatePomodoroUI() {
     // Update time text
     let min = Math.floor(timeLeft / 60),
@@ -106,18 +161,22 @@ block main %}
     document.getElementById("pomodoroTimeText").textContent = `${min
       .toString()
       .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+
     // Progress ring
     let total = onBreak
       ? breakTimes[(breakIndex - 1 + breakTimes.length) % breakTimes.length] *
         60
       : pomodoroLength * 60;
     let percent = timeLeft / total;
-    let offset = 377 * (1 - percent);
+    let offset = CIRCLE_CIRCUMFERENCE * (1 - percent);
     document
       .getElementById("pomodoroProgress")
       .setAttribute("stroke-dashoffset", offset);
+
     // Update length display
     document.getElementById("pomodoroLength").textContent = pomodoroLength;
+    document.getElementById("sessionCount").textContent = sessionCount;
+
     // Button state
     document.getElementById("pomodoroMinusBtn").disabled =
       running || onBreak || pomodoroLength <= POMODORO_MIN;
@@ -126,29 +185,43 @@ block main %}
     document.getElementById("pomodoroStartBtn").disabled = running;
     document.getElementById("pomodoroResetBtn").disabled =
       !running && !onBreak && timeLeft === pomodoroLength * 60;
+
     document.getElementById("pomodoroStartLabel").textContent = running
-      ? "Running"
-      : "Start";
+      ? "Running..."
+      : onBreak
+        ? "On Break"
+        : "Start Focus";
+    if (running) {
+      document.getElementById("playIcon").className = "bi bi-pause-fill me-2";
+    } else {
+      document.getElementById("playIcon").className = "bi bi-play-fill me-2";
+    }
   }
+
   function adjustPomodoro(mins) {
     if (running || onBreak) return;
     pomodoroLength = Math.max(
       POMODORO_MIN,
-      Math.min(POMODORO_MAX, pomodoroLength + mins)
+      Math.min(POMODORO_MAX, pomodoroLength + mins),
     );
     pomodoroTime = pomodoroLength * 60;
     timeLeft = pomodoroTime;
     updatePomodoroUI();
   }
+
   function startPomodoro() {
     if (running) return;
     running = true;
-    document.getElementById("pomodoroStartBtn").disabled = true;
+    // document.getElementById("pomodoroStartBtn").disabled = true; // Wait, original logic disabled it. Kept for now
+
     document.getElementById("pomodoroStatus").textContent = onBreak
-      ? `Break time! (${
-          breakTimes[(breakIndex - 1 + breakTimes.length) % breakTimes.length]
-        } min)`
-      : "";
+      ? `Break (${breakTimes[(breakIndex - 1 + breakTimes.length) % breakTimes.length]}m)`
+      : "Focusing...";
+
+    document.getElementById("pomodoroStatus").className = onBreak
+      ? "small text-success fw-bold text-uppercase mt-1"
+      : "small text-primary fw-bold text-uppercase mt-1";
+
     interval = setInterval(() => {
       if (timeLeft > 0) {
         timeLeft--;
@@ -156,38 +229,38 @@ block main %}
       } else {
         clearInterval(interval);
         running = false;
-        document.getElementById("pomodoroStartBtn").disabled = false;
         if (!onBreak) {
-          sessionCount++;
+          sessionCount++; // Increment only after work session
           onBreak = true;
           breakIndex = breakIndex % breakTimes.length;
           timeLeft = breakTimes[breakIndex] * 60;
-          document.getElementById(
-            "pomodoroStatus"
-          ).textContent = `Break time! (${breakTimes[breakIndex]} min)`;
+          document.getElementById("pomodoroStatus").textContent = "Break Time!";
           breakIndex++;
           updatePomodoroUI();
-          setTimeout(startPomodoro, 800); // auto-start break
+          setTimeout(startPomodoro, 1000); // auto-start break
         } else {
           onBreak = false;
           timeLeft = pomodoroLength * 60;
-          document.getElementById("pomodoroStatus").textContent =
-            "Pomodoro complete! Start again?";
+          document.getElementById("pomodoroStatus").textContent = "Completed!";
           updatePomodoroUI();
         }
       }
     }, 1000);
+    updatePomodoroUI();
   }
+
   function resetPomodoro() {
     clearInterval(interval);
     running = false;
     onBreak = false;
     breakIndex = 0;
     timeLeft = pomodoroLength * 60;
-    document.getElementById("pomodoroStatus").textContent = "";
+    document.getElementById("pomodoroStatus").textContent = "Ready";
+    document.getElementById("pomodoroStatus").className =
+      "small text-muted fw-bold text-uppercase mt-1";
     updatePomodoroUI();
   }
-  // Button event listeners
+
   window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("pomodoroMinusBtn").onclick = () =>
       adjustPomodoro(-5);
@@ -197,6 +270,5 @@ block main %}
     document.getElementById("pomodoroResetBtn").onclick = resetPomodoro;
     updatePomodoroUI();
   });
-  // --- End Pomodoro Timer Logic ---
 </script>
 {% endblock %}

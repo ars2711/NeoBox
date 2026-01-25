@@ -1,103 +1,243 @@
-{% extends "/layout.html" %} {% block title %}Calculator{% endblock %} {% block
-main %}
-<div class="container py-4" style="max-width: 400px">
-  <h2 class="mb-4 text-center">Calculator</h2>
-  <div class="card border-0 shadow rounded-4">
-    <div class="card-body p-4">
-      <div
-        class="calculator-screen mb-3 fs-2 text-end p-3 rounded-3 bg-body-tertiary"
-        id="calc-display"
-      >
-        0
-      </div>
+{% extends "layout.html" %} 
+{% block title %}Calculator{% endblock %} 
+{% block main %}
+<style>
+    .calc-btn {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        border: none;
+        font-size: 1.5rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .calc-btn:active {
+        transform: scale(0.9);
+    }
+    
+    .calc-btn::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+        transform: scale(0);
+        transition: transform 0.3s;
+        border-radius: 50%;
+    }
+    
+    .calc-btn:active::after {
+        transform: scale(2);
+        opacity: 0;
+        transition: 0s;
+    }
 
-      <div
-        class="d-grid gap-2"
-        style="grid-template-columns: repeat(5, 1fr); display: grid"
-      >
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('7')"
-        >
-          7
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('8')"
-        >
-          8
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('9')"
-        >
-          9
-        </button>
-        <button class="btn btn-warning py-3 fs-5" onclick="press('/')">
-          ÷
-        </button>
-        <button class="btn btn-danger py-3 fs-5" onclick="clearDisplay()">
-          C
-        </button>
+    .btn-glass-num {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        color: var(--text-color);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .btn-glass-num:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+    }
 
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('4')"
-        >
-          4
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('5')"
-        >
-          5
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('6')"
-        >
-          6
-        </button>
-        <button class="btn btn-warning py-3 fs-5" onclick="press('*')">
-          ×
-        </button>
-        <button class="btn btn-secondary py-3 fs-5" onclick="backspace()">
-          ←
-        </button>
+    .btn-glass-op {
+        background: rgba(var(--neo-accent-rgb), 0.2);
+        color: var(--neo-accent);
+        backdrop-filter: blur(5px);
+    }
+    
+    .btn-glass-op:hover {
+        background: rgba(var(--neo-accent-rgb), 0.3);
+    }
 
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('1')"
-        >
-          1
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('2')"
-        >
-          2
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('3')"
-        >
-          3
-        </button>
-        <button class="btn btn-warning py-3 fs-5" onclick="press('-')">
-          −
-        </button>
-        <button class="btn btn-secondary py-3 fs-5" onclick="toggleSign()">
-          ±
-        </button>
+    .btn-glass-equal {
+        background: var(--neo-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(var(--neo-accent-rgb), 0.4);
+    }
+    
+    .btn-glass-equal:hover {
+        opacity: 0.9;
+    }
 
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
-          onclick="press('0')"
-        >
-          0
-        </button>
-        <button
-          class="btn btn-outline-secondary py-3 fs-5"
+    .btn-glass-func {
+        background: rgba(100, 100, 100, 0.1);
+        color: var(--text-muted);
+    }
+    
+    .btn-glass-func:hover {
+        background: rgba(100, 100, 100, 0.2);
+    }
+
+    .display-container {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+</style>
+
+<div class="container py-5" style="max-width: 420px;">
+    <div class="glass-card p-4 fade-in-up">
+        <h2 class="text-center mb-4 tool-header">Calculator</h2>
+        
+        <!-- Calculator Display -->
+        <div class="display-container p-4 mb-4 text-end position-relative">
+            <div class="text-muted small mb-1" id="history-display" style="min-height: 20px;"></div>
+            <div class="fs-1 fw-bold text-break" id="calc-display" style="min-height: 60px;">0</div>
+        </div>
+
+        <!-- Calculator Grid -->
+        <div class="d-grid gap-3" style="grid-template-columns: repeat(4, 1fr);">
+            <button class="calc-btn btn-glass-func" onclick="clearDisplay()">AC</button>
+            <button class="calc-btn btn-glass-func" onclick="toggleSign()">±</button>
+            <button class="calc-btn btn-glass-func" onclick="press('%')">%</button>
+            <button class="calc-btn btn-glass-op" onclick="press('/')"><i class="bi bi-slash-lg"></i></button>
+
+            <button class="calc-btn btn-glass-num" onclick="press('7')">7</button>
+            <button class="calc-btn btn-glass-num" onclick="press('8')">8</button>
+            <button class="calc-btn btn-glass-num" onclick="press('9')">9</button>
+            <button class="calc-btn btn-glass-op" onclick="press('*')"><i class="bi bi-x-lg"></i></button>
+
+            <button class="calc-btn btn-glass-num" onclick="press('4')">4</button>
+            <button class="calc-btn btn-glass-num" onclick="press('5')">5</button>
+            <button class="calc-btn btn-glass-num" onclick="press('6')">6</button>
+            <button class="calc-btn btn-glass-op" onclick="press('-')"><i class="bi bi-dash-lg"></i></button>
+
+            <button class="calc-btn btn-glass-num" onclick="press('1')">1</button>
+            <button class="calc-btn btn-glass-num" onclick="press('2')">2</button>
+            <button class="calc-btn btn-glass-num" onclick="press('3')">3</button>
+            <button class="calc-btn btn-glass-op" onclick="press('+')"><i class="bi bi-plus-lg"></i></button>
+
+            <button class="calc-btn btn-glass-num" style="width: 100%; border-radius: 40px; grid-column: span 2;" onclick="press('0')">0</button>
+            <button class="calc-btn btn-glass-num" onclick="press('.')">.</button>
+            <button class="calc-btn btn-glass-equal" onclick="calculate()"><i class="bi bi-pause-fill" style="transform: rotate(90deg)"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let display = document.getElementById('calc-display');
+    let historyDisplay = document.getElementById('history-display');
+    let currentInput = "0";
+    let previousResult = null;
+
+    // Keyboard support
+    document.addEventListener('keydown', (event) => {
+        const key = event.key;
+        if (/[0-9.]/.test(key)) press(key);
+        if (['+', '-', '*', '/', '%'].includes(key)) press(key);
+        if (key === 'Enter') calculate();
+        if (key === 'Backspace') backspace();
+        if (key === 'Escape') clearDisplay();
+    });
+
+    function updateDisplay() {
+        // Format number if possible, else show string
+        let content = currentInput;
+        if (content.length > 12) {
+            content = content.substring(0, 12) + '...';
+        }
+        display.innerText = content;
+        
+        // Add subtle animation
+        display.animate([
+            { transform: 'scale(0.98)', opacity: 0.8 },
+            { transform: 'scale(1)', opacity: 1 }
+        ], { duration: 100 });
+    }
+
+    function press(val) {
+        if (previousResult) {
+            if (/[0-9.]/.test(val)) {
+                currentInput = "0"; // Start new number
+            }
+            previousResult = false;
+        }
+
+        if (currentInput === "0" && val !== ".") {
+            currentInput = val;
+        } else {
+            currentInput += val;
+        }
+        updateDisplay();
+    }
+
+    function clearDisplay() {
+        currentInput = "0";
+        historyDisplay.innerText = "";
+        updateDisplay();
+    }
+
+    function backspace() {
+        currentInput = currentInput.slice(0, -1);
+        if (currentInput === "") currentInput = "0";
+        updateDisplay();
+    }
+
+    function toggleSign() {
+        if (currentInput !== "0") {
+             if (currentInput.startsWith("-")) {
+                 currentInput = currentInput.substring(1);
+             } else {
+                 currentInput = "-" + currentInput;
+             }
+             updateDisplay();
+        }
+    }
+
+    function calculate() {
+        try {
+            historyDisplay.innerText = currentInput + " =";
+            // Safer eval equivalent
+            let expression = currentInput.replace('×', '*').replace('÷', '/').replace('−', '-');
+            let result = eval(expression);
+            
+            // Handle precision
+            if (!Number.isInteger(result)) {
+                result = parseFloat(result.toFixed(6));
+            }
+            
+            currentInput = result.toString();
+            previousResult = true;
+        } catch {
+            currentInput = "Error";
+            previousResult = true;
+        }
+        updateDisplay();
+    }
+</script>
+{% endblock %}
+    }
+    
+    // Add keyboard support
+    document.addEventListener('keydown', function(event) {
+        const key = event.key;
+        if (/[0-9]/.test(key)) press(key);
+        if (['+', '-', '*', '/'].includes(key)) press(key);
+        if (key === 'Enter') calculate();
+        if (key === 'Backspace') backspace();
+        if (key === 'Escape') clearDisplay();
+        if (key === '.') press('.');
+    });
+    
+    function animateButton() {
+        // Simple vibration or visual cue could be added here
+        if (navigator.vibrate) navigator.vibrate(20);
+    }
+</script>
+{% endblock %}
           onclick="press('.')"
         >
           .

@@ -1,30 +1,60 @@
 {% extends "layout.html" %} {% block title %}{{ _('Random Generator') }}{%
 endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Random Generator') }}</h2>
-  <div class="card shadow-sm p-4 mx-auto" style="max-width: 600px">
-    <div class="mb-3">
-      <label class="form-label">{{ _('Type') }}</label>
-      <select id="randType" class="form-select">
-        <option value="number">{{ _('Random Number') }}</option>
-        <option value="string">{{ _('Random String') }}</option>
-        <option value="color">{{ _('Random Color') }}</option>
-        <option value="coin">{{ _('Coin Toss') }}</option>
-        <option value="dice">{{ _('Dice Roll') }}</option>
-        <option value="password">{{ _('Password') }}</option>
-      </select>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-shuffle me-2"></i>{{ _('Random Generator') }}
+      </h2>
+      <p class="text-muted">
+        Generate numbers, strings, and choices instantly.
+      </p>
     </div>
-    <div id="randOptions"></div>
-    <button class="btn btn-primary w-100" onclick="generateRandom()">
-      {{ _('Generate') }}
-    </button>
-    <div class="alert alert-info mt-4 text-center d-none" id="randResult"></div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <div class="mb-4">
+          <label class="form-label small text-muted text-uppercase fw-bold"
+            >{{ _('Type') }}</label
+          >
+          <select
+            id="randType"
+            class="form-select bg-light-subtle border-0 rounded-3 py-3 shadow-sm"
+          >
+            <option value="number">{{ _('Random Number') }}</option>
+            <option value="string">{{ _('Random String') }}</option>
+            <option value="color">{{ _('Random Color') }}</option>
+            <option value="coin">{{ _('Coin Toss') }}</option>
+            <option value="dice">{{ _('Dice Roll') }}</option>
+            <option value="password">{{ _('Password') }}</option>
+          </select>
+        </div>
+
+        <div id="randOptions" class="mb-4"></div>
+
+        <button
+          class="btn btn-neo w-100 rounded-pill mb-4"
+          onclick="generateRandom()"
+        >
+          <i class="bi bi-magic me-2"></i>{{ _('Generate') }}
+        </button>
+
+        <div
+          id="randResult"
+          class="d-none text-center p-4 bg-white bg-opacity-50 rounded-4 shadow-inner fs-4 font-monospace text-wrap text-break fw-bold text-primary"
+        ></div>
+      </div>
+    </div>
   </div>
 </div>
 <script>
   function generateRandom() {
     let type = document.getElementById("randType").value;
     let result = "";
+    document.getElementById("randResult").innerHTML = ""; // Clear previous
+
     if (type === "number") {
       let min = parseInt(document.getElementById("min").value) || 0;
       let max = parseInt(document.getElementById("max").value) || 100;
@@ -35,7 +65,7 @@ endblock %} {% block main %}
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       result = Array.from(
         { length: len },
-        () => chars[Math.floor(Math.random() * chars.length)]
+        () => chars[Math.floor(Math.random() * chars.length)],
       ).join("");
     } else if (type === "color") {
       result =
@@ -43,38 +73,54 @@ endblock %} {% block main %}
         Math.floor(Math.random() * 16777215)
           .toString(16)
           .padStart(6, "0");
+      // Show color preview
+      result = `<div class="d-flex align-items-center justify-content-center gap-3">
+                    <div style="width: 50px; height: 50px; background-color: ${result}; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+                    <span>${result}</span>
+                </div>`;
     } else if (type === "coin") {
-      result = Math.random() < 0.5 ? '{{ _("Heads") }}' : '{{ _("Tails") }}';
+      result =
+        Math.random() < 0.5
+          ? '<i class="bi bi-circle text-warning display-4"></i><br>{{ _("Heads") }}'
+          : '<i class="bi bi-circle-fill text-warning display-4"></i><br>{{ _("Tails") }}';
     } else if (type === "dice") {
-      result = Math.floor(Math.random() * 6) + 1;
+      const val = Math.floor(Math.random() * 6) + 1;
+      result = `<i class="bi bi-dice-${val} display-1 text-primary"></i>`;
     } else if (type === "password") {
       let len = parseInt(document.getElementById("pwlen").value) || 12;
       let chars =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
       result = Array.from(
         { length: len },
-        () => chars[Math.floor(Math.random() * chars.length)]
+        () => chars[Math.floor(Math.random() * chars.length)],
       ).join("");
     }
+
     let resDiv = document.getElementById("randResult");
-    resDiv.textContent = result;
+    resDiv.innerHTML = result; // innerHTML for icons
     resDiv.classList.remove("d-none");
+    resDiv.classList.add("animate__animated", "animate__fadeInUp"); // Visual flair
   }
+
   document.getElementById("randType").onchange = function () {
     let type = this.value;
     let html = "";
     if (type === "number") {
-      html = `<div class="row g-2 mb-3">
-      <div class="col"><input type="number" id="min" class="form-control" placeholder="{{ _('Min') }}" value="0"></div>
-      <div class="col"><input type="number" id="max" class="form-control" placeholder="{{ _('Max') }}" value="100"></div>
+      html = `<div class="row g-3">
+      <div class="col"><label class="small text-muted fw-bold">Min</label><input type="number" id="min" class="form-control bg-light-subtle border-0 rounded-3" placeholder="{{ _('Min') }}" value="0"></div>
+      <div class="col"><label class="small text-muted fw-bold">Max</label><input type="number" id="max" class="form-control bg-light-subtle border-0 rounded-3" placeholder="{{ _('Max') }}" value="100"></div>
     </div>`;
     } else if (type === "string") {
-      html = `<input type="number" id="strlen" class="form-control mb-3" placeholder="{{ _('Length') }}" value="8">`;
+      html = `<label class="small text-muted fw-bold">Length</label><input type="number" id="strlen" class="form-control bg-light-subtle border-0 rounded-3 mb-3" placeholder="{{ _('Length') }}" value="8">`;
     } else if (type === "password") {
-      html = `<input type="number" id="pwlen" class="form-control mb-3" placeholder="{{ _('Length') }}" value="12">`;
+      html = `<label class="small text-muted fw-bold">Length</label><input type="number" id="pwlen" class="form-control bg-light-subtle border-0 rounded-3 mb-3" placeholder="{{ _('Length') }}" value="12">`;
     }
     document.getElementById("randOptions").innerHTML = html;
   };
   document.getElementById("randType").dispatchEvent(new Event("change"));
 </script>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
 {% endblock %}

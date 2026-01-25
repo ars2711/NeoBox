@@ -1,32 +1,98 @@
 {% extends "layout.html" %} {% block title %}Maps & Location{% endblock %} {%
 block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">Interactive Map</h2>
-  <div class="card shadow-sm p-3">
-    <div class="mb-3 d-flex flex-wrap gap-2 justify-content-between">
-      <input
-        id="searchBox"
-        class="form-control"
-        style="max-width: 250px"
-        placeholder="Search location..."
-      />
-      <select id="mapType" class="form-select" style="max-width: 180px">
-        <option value="osm">Street</option>
-        <option value="satellite">Satellite</option>
-        <option value="terrain">Terrain</option>
-      </select>
-      <button class="btn btn-outline-primary" id="saveSpot">Save Spot</button>
-      <button class="btn btn-outline-secondary" id="showRoutes">
-        Show Routes
-      </button>
+<div class="container py-5">
+  <div class="row mb-4 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-map-fill me-2"></i>Interactive Map
+      </h2>
+      <p class="text-muted">
+        Explore locations, find routes, and save your favorite spots.
+      </p>
     </div>
-    <div id="map" style="height: 500px; border-radius: 8px"></div>
-    <div class="mt-3">
-      <h5>Saved Spots</h5>
-      <ul id="savedSpots" class="list-group"></ul>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 fade-in-up" style="animation-delay: 0.1s">
+      <div
+        class="glass-card p-0 overflow-hidden shadow-lg"
+        style="height: 600px; position: relative; border-radius: 1rem"
+      >
+        <!-- Controls Overlay -->
+        <div
+          class="position-absolute top-0 start-0 w-100 p-3"
+          style="z-index: 1000; pointer-events: none"
+        >
+          <div
+            class="d-flex flex-wrap gap-2 justify-content-center"
+            style="pointer-events: auto"
+          >
+            <div
+              class="input-group shadow-sm border-0"
+              style="max-width: 300px"
+            >
+              <span class="input-group-text bg-white border-0"
+                ><i class="bi bi-search"></i
+              ></span>
+              <input
+                id="searchBox"
+                class="form-control border-0"
+                placeholder="Search location..."
+              />
+            </div>
+
+            <select
+              id="mapType"
+              class="form-select border-0 shadow-sm"
+              style="max-width: 150px; cursor: pointer"
+            >
+              <option value="osm">Street</option>
+              <option value="satellite">Satellite</option>
+              <option value="terrain">Terrain</option>
+            </select>
+
+            <button class="btn btn-light shadow-sm border-0" id="saveSpot">
+              <i class="bi bi-bookmark-plus text-primary me-2"></i>Save Spot
+            </button>
+            <button class="btn btn-light shadow-sm border-0" id="showRoutes">
+              <i class="bi bi-signpost-split text-secondary me-2"></i>Show
+              Routes
+            </button>
+          </div>
+        </div>
+
+        <!-- The Map -->
+        <div id="map" class="w-100 h-100 z-0"></div>
+
+        <!-- Saved Spots Drawer -->
+        <div
+          class="position-absolute bottom-0 start-0 m-3 p-3 bg-white bg-opacity-90 rounded-4 shadow-sm"
+          style="
+            z-index: 1000;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+          "
+        >
+          <h6 class="fw-bold mb-2 text-primary">
+            <i class="bi bi-bookmarks-fill me-2"></i>Saved Spots
+          </h6>
+          <ul
+            id="savedSpots"
+            class="list-group list-group-flush fs-7 bg-transparent"
+          >
+            <li
+              class="list-group-item bg-transparent text-muted small text-center fst-italic"
+            >
+              No spots saved yet.
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
@@ -34,19 +100,46 @@ block main %}
   rel="stylesheet"
   href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
 />
+<style>
+  /* Clean up leaflet controls */
+  .leaflet-control-geocoder {
+    display: none !important; /* using custom search */
+  }
+  .leaflet-bar {
+    border: none !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+  }
+  .leaflet-bar a {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-bottom: 1px solid #eee !important;
+    font-weight: bold;
+    color: #555 !important;
+  }
+</style>
+
 <script>
   let map,
     marker,
     savedSpots = [];
   document.addEventListener("DOMContentLoaded", function () {
-    map = L.map("map").setView([30, 70], 3);
+    map = L.map("map", { zoomControl: false }).setView([30, 70], 3);
+
+    // Custom zoom control position
+    L.control
+      .zoom({
+        position: "bottomright",
+      })
+      .addTo(map);
+
     let layers = {
       osm: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap",
       }),
       satellite: L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        { attribution: "© Esri" }
+        { attribution: "© Esri" },
       ),
       terrain: L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenTopoMap",
@@ -57,16 +150,36 @@ block main %}
       map.eachLayer((l) => map.removeLayer(l));
       layers[this.value].addTo(map);
     };
-    L.Control.geocoder().addTo(map);
+
+    // Standard Geocoder (hidden but functional if needed, or we implement search box logic manually)
+    // For this simple implementation, the search box above is 'dummy' unless connected.
+    // Let's connect the search box to the geocoder
+    const geocoder = L.Control.Geocoder.nominatim();
+    const searchBox = document.getElementById("searchBox");
+
+    searchBox.addEventListener("change", function () {
+      geocoder.geocode(this.value, function (results) {
+        if (results && results.length > 0) {
+          const center = results[0].center;
+          map.setView(center, 13);
+          if (marker) map.removeLayer(marker);
+          marker = L.marker(center)
+            .addTo(map)
+            .bindPopup(results[0].name)
+            .openPopup();
+        }
+      });
+    });
+
     map.on("click", function (e) {
       if (marker) map.removeLayer(marker);
       marker = L.marker(e.latlng)
         .addTo(map)
         .bindPopup(
-          "Selected: " +
+          "Coordinates: " +
             e.latlng.lat.toFixed(4) +
             ", " +
-            e.latlng.lng.toFixed(4)
+            e.latlng.lng.toFixed(4),
         )
         .openPopup();
     });
@@ -74,15 +187,24 @@ block main %}
       if (marker) {
         savedSpots.push(marker.getLatLng());
         updateSpots();
+      } else {
+        alert("Click on the map to place a marker first!");
       }
     };
     function updateSpots() {
       let ul = document.getElementById("savedSpots");
       ul.innerHTML = "";
+      if (savedSpots.length === 0) {
+        ul.innerHTML =
+          '<li class="list-group-item bg-transparent text-muted small text-center fst-italic">No spots saved yet.</li>';
+        return;
+      }
       savedSpots.forEach((s, i) => {
         let li = document.createElement("li");
-        li.className = "list-group-item";
-        li.textContent = s.lat.toFixed(4) + ", " + s.lng.toFixed(4);
+        li.className =
+          "list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-1";
+        li.innerHTML = `<span><i class="bi bi-geo-alt me-1 text-danger"></i>${s.lat.toFixed(3)}, ${s.lng.toFixed(3)}</span> 
+                        <button class="btn btn-xs btn-outline-secondary rounded-circle" onclick="map.setView([${s.lat},${s.lng}], 15)"><i class="bi bi-crosshair"></i></button>`;
         ul.appendChild(li);
       });
     }

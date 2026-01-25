@@ -1,0 +1,133 @@
+{% extends "layout.html" %} {% block title %}Barcode Generator{% endblock %} {%
+block content %}
+<div class="container py-4">
+  <div class="tool-header d-flex align-items-center mb-4">
+    <div
+      class="feature-icon-small d-inline-flex align-items-center justify-content-center bg-gradient text-white fs-4 rounded-3 me-3"
+      style="width: 48px; height: 48px"
+    >
+      <i class="bi bi-upc-scan"></i>
+    </div>
+    <div>
+      <h1 class="h3 mb-0">Barcode Generator</h1>
+      <p class="text-muted mb-0">
+        Create standard barcodes (EAN, UPC, Code128)
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-5">
+      <div class="card glass-card">
+        <div class="card-body">
+          <form
+            id="barcodeForm"
+            onsubmit="
+              event.preventDefault();
+              generateBarcode();
+            "
+          >
+            <div class="mb-3">
+              <label class="form-label">Content</label>
+              <input
+                type="text"
+                id="bcData"
+                class="form-control"
+                value="1234567890"
+                required
+              />
+              <div class="form-text">Data to encode.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Format</label>
+              <select id="bcFormat" class="form-select">
+                <option value="CODE128">CODE128 (Auto)</option>
+                <option value="EAN13">EAN-13</option>
+                <option value="UPC">UPC</option>
+                <option value="CODE39">CODE39</option>
+                <option value="ITF14">ITF-14</option>
+                <option value="MSI">MSI</option>
+                <option value="pharmacode">Pharmacode</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Color</label>
+              <input
+                type="color"
+                id="bcColor"
+                class="form-control form-control-color"
+                value="#000000"
+              />
+            </div>
+            <div class="mb-3 form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="bcShowText"
+                checked
+              />
+              <label class="form-check-label" for="bcShowText">Show Text</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Generate
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div
+        class="card glass-card h-100 d-flex justify-content-center align-items-center p-5"
+      >
+        <canvas id="barcodeCanvas"></canvas>
+        <button
+          class="btn btn-outline-secondary mt-4"
+          onclick="downloadBarcode()"
+        >
+          Download PNG
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", generateBarcode);
+
+  function generateBarcode() {
+    const text = document.getElementById("bcData").value;
+    const format = document.getElementById("bcFormat").value;
+    const color = document.getElementById("bcColor").value;
+    const displayValue = document.getElementById("bcShowText").checked;
+
+    try {
+      JsBarcode("#barcodeCanvas", text, {
+        format: format,
+        lineColor: color,
+        width: 2,
+        height: 100,
+        displayValue: displayValue,
+      });
+    } catch (e) {
+      alert("Invalid data for this barcode format.");
+    }
+  }
+
+  function downloadBarcode() {
+    const canvas = document.getElementById("barcodeCanvas");
+    const link = document.createElement("a");
+    link.download = "barcode.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
+  // Auto-update on inputs
+  document
+    .querySelectorAll("#barcodeForm input, #barcodeForm select")
+    .forEach((el) => {
+      el.addEventListener("input", generateBarcode);
+    });
+</script>
+{% endblock %}

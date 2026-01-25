@@ -1,0 +1,301 @@
+{% extends "layout.html" %} {% block title %}Word Cloud Generator{% endblock %}
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-cloud-plus text-primary me-2"></i>Word Cloud Generator
+      </h2>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <label class="form-label">Input Text</label>
+          <textarea
+            id="inputText"
+            class="form-control"
+            rows="15"
+            placeholder="Paste your text here to visualize word frequency..."
+          ></textarea>
+
+          <div class="d-grid gap-2 mt-3">
+            <button class="btn btn-primary" onclick="generateCloud()">
+              <i class="bi bi-play-fill"></i> Generate Cloud
+            </button>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label text-muted small">Options</label>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="removeStopWords"
+                checked
+              />
+              <label class="form-check-label" for="removeStopWords"
+                >Remove Stop Words</label
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-8 text-center">
+          <div class="card bg-white text-dark mb-3" style="overflow: hidden">
+            <canvas
+              id="cloudCanvas"
+              width="800"
+              height="500"
+              style="width: 100%; height: auto"
+            ></canvas>
+          </div>
+          <button
+            class="btn btn-outline-light btn-sm"
+            onclick="downloadCloud()"
+          >
+            <i class="bi bi-download me-2"></i>Download Image
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const stopWords = [
+    "a",
+    "about",
+    "above",
+    "after",
+    "again",
+    "against",
+    "all",
+    "am",
+    "an",
+    "and",
+    "any",
+    "are",
+    "aren't",
+    "as",
+    "at",
+    "be",
+    "because",
+    "been",
+    "before",
+    "being",
+    "below",
+    "between",
+    "both",
+    "but",
+    "by",
+    "can't",
+    "cannot",
+    "could",
+    "couldn't",
+    "did",
+    "didn't",
+    "do",
+    "does",
+    "doesn't",
+    "doing",
+    "don't",
+    "down",
+    "during",
+    "each",
+    "few",
+    "for",
+    "from",
+    "further",
+    "had",
+    "hadn't",
+    "has",
+    "hasn't",
+    "have",
+    "haven't",
+    "having",
+    "he",
+    "he'd",
+    "he'll",
+    "he's",
+    "her",
+    "here",
+    "here's",
+    "hers",
+    "herself",
+    "him",
+    "himself",
+    "his",
+    "how",
+    "how's",
+    "i",
+    "i'd",
+    "i'll",
+    "i'm",
+    "i've",
+    "if",
+    "in",
+    "into",
+    "is",
+    "isn't",
+    "it",
+    "it's",
+    "its",
+    "itself",
+    "let's",
+    "me",
+    "more",
+    "most",
+    "mustn't",
+    "my",
+    "myself",
+    "no",
+    "nor",
+    "not",
+    "of",
+    "off",
+    "on",
+    "once",
+    "only",
+    "or",
+    "other",
+    "ought",
+    "our",
+    "ours",
+    "ourselves",
+    "out",
+    "over",
+    "own",
+    "same",
+    "shan't",
+    "she",
+    "she'd",
+    "she'll",
+    "she's",
+    "should",
+    "shouldn't",
+    "so",
+    "some",
+    "such",
+    "than",
+    "that",
+    "that's",
+    "the",
+    "their",
+    "theirs",
+    "them",
+    "themselves",
+    "then",
+    "there",
+    "there's",
+    "these",
+    "they",
+    "they'd",
+    "they'll",
+    "they're",
+    "they've",
+    "this",
+    "those",
+    "through",
+    "to",
+    "too",
+    "under",
+    "until",
+    "up",
+    "very",
+    "was",
+    "wasn't",
+    "we",
+    "we'd",
+    "we'll",
+    "we're",
+    "we've",
+    "were",
+    "weren't",
+    "what",
+    "what's",
+    "when",
+    "when's",
+    "where",
+    "where's",
+    "which",
+    "while",
+    "who",
+    "who's",
+    "whom",
+    "why",
+    "why's",
+    "with",
+    "won't",
+    "would",
+    "wouldn't",
+    "you",
+    "you'd",
+    "you'll",
+    "you're",
+    "you've",
+    "your",
+    "yours",
+    "yourself",
+    "yourselves",
+  ];
+
+  function generateCloud() {
+    const text = document.getElementById("inputText").value;
+    if (!text.trim()) return;
+
+    let words = text.toLowerCase().match(/\b\w+\b/g);
+    const shouldRemove = document.getElementById("removeStopWords").checked;
+
+    if (shouldRemove) {
+      words = words.filter((w) => !stopWords.includes(w) && w.length > 2);
+    }
+
+    // Count frequency
+    const counts = {};
+    words.forEach(function (x) {
+      counts[x] = (counts[x] || 0) + 1;
+    });
+
+    // Convert to array [ [word, size], ... ]
+    // Scale size slightly
+    let list = Object.keys(counts).map(function (key) {
+      return [key, counts[key] * 10 + 10]; // Base size boost
+    });
+
+    // Top 100 words only
+    list.sort((a, b) => b[1] - a[1]);
+    list = list.slice(0, 100);
+
+    const canvas = document.getElementById("cloudCanvas");
+    // Reset canvas context/size if needed? WordCloud lib handles it mostly.
+    // But ensures high DPI
+
+    WordCloud(canvas, {
+      list: list,
+      gridSize: 8,
+      weightFactor: function (size) {
+        return Math.pow(size, 0.8) * 2; // Log-ish scale
+      },
+      fontFamily: "Segoe UI, sans-serif",
+      color: "random-dark",
+      backgroundColor: "#ffffff",
+      rotateRatio: 0.5,
+    });
+  }
+
+  function downloadCloud() {
+    const canvas = document.getElementById("cloudCanvas");
+    const link = document.createElement("a");
+    link.download = "word-cloud.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
+  // Initial demo text
+  window.onload = function () {
+    document.getElementById("inputText").value =
+      "NeoBox is an incredible collection of tools. Tools, tools, and more tools. Productivity, Math, Science, and Developer utilities. Create beautiful code, solve math problems, and manage your time effectively.";
+  };
+</script>
+{% endblock %}

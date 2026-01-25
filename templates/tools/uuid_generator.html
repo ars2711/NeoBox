@@ -1,0 +1,91 @@
+{% extends "layout.html" %} {% block title %}UUID Generator{% endblock %} {%
+block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-fingerprint text-success me-2"></i>UUID Generator
+      </h2>
+      <p class="text-center text-muted mb-4">
+        Generate Version 4 (Random) UUIDs instantly.
+      </p>
+
+      <div class="row align-items-center mb-3">
+        <div class="col-md-6 offset-md-3">
+          <label class="form-label">Quantity</label>
+          <div class="input-group">
+            <input
+              type="number"
+              id="quantity"
+              class="form-control"
+              value="1"
+              min="1"
+              max="100"
+            />
+            <button class="btn btn-primary" onclick="generateUUIDs()">
+              <i class="bi bi-gear-fill me-2"></i>Generate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Generated UUIDs</label>
+        <textarea
+          id="resultOutput"
+          class="form-control font-monospace"
+          rows="10"
+          readonly
+        ></textarea>
+      </div>
+
+      <div class="text-center">
+        <button class="btn btn-outline-light" onclick="copyResult()">
+          <i class="bi bi-clipboard me-2"></i>Copy All
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function generateUUID() {
+    // Native crypto support for v4
+    return crypto.randomUUID();
+  }
+
+  function generateUUIDs() {
+    const qty = parseInt(document.getElementById("quantity").value);
+    const resultArea = document.getElementById("resultOutput");
+
+    let uuids = [];
+    for (let i = 0; i < qty; i++) {
+      uuids.push(generateUUID());
+    }
+
+    resultArea.value = uuids.join("\n");
+  }
+
+  function copyResult() {
+    const copyText = document.getElementById("resultOutput");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+
+    // Simple visual feedback
+    const btn = event.currentTarget;
+    const icon = btn.querySelector("i");
+    const originalClass = icon.className;
+
+    icon.className = "bi bi-check-lg me-2";
+    setTimeout(() => {
+      icon.className = originalClass;
+    }, 2000);
+  }
+
+  // Initial run
+  window.onload = function () {
+    generateUUIDs();
+  };
+</script>
+{% endblock %}

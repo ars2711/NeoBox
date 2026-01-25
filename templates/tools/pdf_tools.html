@@ -1,91 +1,229 @@
 {% extends "layout.html" %} {% block title %}PDF Tools{% endblock %} {% block
 main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">
-    PDF Tools: Merge, Split, Compress, Convert, Protect, More
-  </h2>
-  <form
-    method="post"
-    enctype="multipart/form-data"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 700px"
-  >
-    <div class="mb-3">
-      <label class="form-label">Upload PDF(s)</label>
-      <input
-        type="file"
-        name="file"
-        accept="application/pdf"
-        class="form-control"
-        required
-        multiple
-      />
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Toolkit
+      </h2>
+      <p class="text-muted">
+        Merge, split, compress, and secure your PDF documents.
+      </p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Action</label>
-      <select name="action" class="form-select" id="pdfAction">
-        <option value="merge">Merge PDFs</option>
-        <option value="split">Split PDF</option>
-        <option value="compress">Compress PDF</option>
-        <option value="extract_images">Extract Images</option>
-        <option value="to_word">Convert to Word</option>
-        <option value="to_excel">Convert to Excel</option>
-        <option value="add_password">Add Password</option>
-        <option value="remove_password">Remove Password</option>
-        <option value="rotate">Rotate Pages</option>
-        <option value="reorder">Reorder Pages</option>
-        <option value="watermark">Add Watermark</option>
-      </select>
-    </div>
-    <div class="mb-3" id="passwordField" style="display: none">
-      <label class="form-label">Password</label>
-      <input type="text" name="password" class="form-control" />
-    </div>
-    <div class="mb-3" id="watermarkField" style="display: none">
-      <label class="form-label">Watermark Text</label>
-      <input type="text" name="watermark_text" class="form-control" />
-    </div>
-    <div class="mb-3" id="rotateField" style="display: none">
-      <label class="form-label">Rotate Angle (degrees)</label>
-      <input
-        type="number"
-        name="rotate_angle"
-        class="form-control"
-        value="90"
-      />
-    </div>
-    <button class="btn btn-primary w-100" type="submit">Process PDF</button>
-  </form>
-  {% if error %}
-  <div class="alert alert-danger mt-4 text-center">{{ error }}</div>
-  {% endif %} {% if result %} {% if result is string %}
-  <div class="alert alert-success mt-4 text-center">
-    <a href="{{ result }}" class="btn btn-success" download>Download Result</a>
   </div>
-  {% elif result is sequence %}
-  <div class="alert alert-success mt-4 text-center">
-    {% for link in result %}
-    <a href="{{ link }}" class="btn btn-success m-1" download
-      >Download {{ loop.index }}</a
-    >
-    {% endfor %}
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <form method="post" enctype="multipart/form-data">
+        <div class="glass-card p-4 p-md-5 mb-4">
+          <div class="mb-5 text-center">
+            <label
+              for="pdf-upload"
+              class="form-label d-block p-5 border-2 border-dashed rounded-4 bg-light bg-opacity-50 cursor-pointer transition-hover"
+            >
+              <div class="mb-3">
+                <span class="display-4 text-danger opacity-50"
+                  ><i class="bi bi-file-earmark-pdf"></i
+                ></span>
+              </div>
+              <h5 class="fw-bold text-muted">Select PDF Files</h5>
+              <p class="text-muted small mb-0">
+                Drag & drop or click to upload
+              </p>
+            </label>
+            <input
+              type="file"
+              id="pdf-upload"
+              name="file"
+              accept="application/pdf, image/*"
+              class="d-none"
+              required
+              multiple
+              onchange="
+                document
+                  .querySelector('.display-4')
+                  .classList.replace('text-danger', 'text-success');
+                document.querySelector('h5').innerText =
+                  this.files.length + ' file(s) selected';
+              "
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Select Action</label
+            >
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-light-subtle border-0 ps-3"
+                ><i class="bi bi-wrench-adjustable"></i
+              ></span>
+              <select
+                name="action"
+                class="form-select bg-light-subtle border-0 shadow-sm"
+                id="pdfAction"
+              >
+                <option value="merge">Merge PDFs</option>
+                <option value="img_to_pdf">Images to PDF</option>
+                <option value="split">Split PDF</option>
+                <option value="compress">Compress PDF</option>
+                <option value="extract_images">Extract Images</option>
+                <option value="to_word">Convert to Word</option>
+                <option value="to_excel">Convert to Excel</option>
+                <option value="add_password">Add Password</option>
+                <option value="remove_password">Remove Password</option>
+                <option value="rotate">Rotate Pages</option>
+                <option value="reorder">Reorder Pages</option>
+                <option value="watermark">Add Watermark</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dynamic Fields -->
+          <div
+            class="mb-4 p-4 bg-light bg-opacity-50 rounded-4 border dynamic-field"
+            id="passwordField"
+            style="display: none"
+          >
+            <label class="form-label">Password</label>
+            <input
+              type="text"
+              name="password"
+              class="form-control"
+              placeholder="Enter password protection"
+            />
+          </div>
+
+          <div
+            class="mb-4 p-4 bg-light bg-opacity-50 rounded-4 border dynamic-field"
+            id="watermarkField"
+            style="display: none"
+          >
+            <label class="form-label">Watermark Text</label>
+            <input
+              type="text"
+              name="watermark_text"
+              class="form-control"
+              placeholder="CONFIDENTIAL"
+            />
+          </div>
+
+          <div
+            class="mb-4 p-4 bg-light bg-opacity-50 rounded-4 border dynamic-field"
+            id="rotateField"
+            style="display: none"
+          >
+            <label class="form-label">Rotate Angle (degrees)</label>
+            <div class="d-flex gap-2">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rotate_angle"
+                  id="r90"
+                  value="90"
+                  checked
+                />
+                <label class="form-check-label" for="r90">90° CW</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rotate_angle"
+                  id="r180"
+                  value="180"
+                />
+                <label class="form-check-label" for="r180">180°</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rotate_angle"
+                  id="r270"
+                  value="270"
+                />
+                <label class="form-check-label" for="r270">90° CCW</label>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-neo w-100 btn-lg rounded-pill shadow-sm"
+            type="submit"
+          >
+            <i class="bi bi-play-circle-fill me-2"></i>Process PDF
+          </button>
+        </div>
+      </form>
+
+      {% if error %}
+      <div class="alert alert-danger fade-in-up shadow-sm border-0 rounded-4">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>{{ error }}
+      </div>
+      {% endif %} {% if result %}
+      <div class="glass-card p-4 text-center fade-in-up">
+        <h5 class="text-success fw-bold mb-3">
+          <i class="bi bi-check-circle-fill me-2"></i>Success!
+        </h5>
+        {% if result is string %}
+        <a
+          href="{{ result }}"
+          class="btn btn-success rounded-pill px-5 shadow-sm"
+          download
+        >
+          <i class="bi bi-download me-2"></i>Download Result
+        </a>
+        {% elif result is sequence %}
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+          {% for link in result %}
+          <a
+            href="{{ link }}"
+            class="btn btn-outline-success rounded-pill"
+            download
+          >
+            <i class="bi bi-file-earmark-check me-1"></i>Part {{ loop.index }}
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">{{ result }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
   </div>
-  {% else %}
-  <div class="alert alert-info mt-4 text-center">{{ result }}</div>
-  {% endif %} {% endif %}
 </div>
+
 <script>
   document.getElementById("pdfAction").addEventListener("change", function () {
-    document.getElementById("passwordField").style.display = [
-      "add_password",
-      "remove_password",
-    ].includes(this.value)
-      ? ""
-      : "none";
-    document.getElementById("watermarkField").style.display =
-      this.value === "watermark" ? "" : "none";
-    document.getElementById("rotateField").style.display =
-      this.value === "rotate" ? "" : "none";
+    const val = this.value;
+    document
+      .querySelectorAll(".dynamic-field")
+      .forEach((el) => (el.style.display = "none"));
+
+    if (["add_password", "remove_password"].includes(val)) {
+      document.getElementById("passwordField").style.display = "block";
+    } else if (val === "watermark") {
+      document.getElementById("watermarkField").style.display = "block";
+    } else if (val === "rotate") {
+      document.getElementById("rotateField").style.display = "block";
+    }
   });
 </script>
+<style>
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .border-dashed {
+    border-style: dashed !important;
+  }
+  .transition-hover {
+    transition: all 0.3s ease;
+  }
+  .transition-hover:hover {
+    background-color: rgba(var(--neo-primary-rgb), 0.05) !important;
+    border-color: var(--neo-primary) !important;
+  }
+</style>
 {% endblock %}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="{{ session.get('lang', 'en') }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
@@ -17,9 +17,13 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.min.js"></script>
 
-    <link href="/static/favicon.ico" rel="icon" />
+    <link id="app-favicon" href="/static/icons/neobox-light.svg" rel="icon" type="image/svg+xml" />
+    <link rel="icon" href="/static/favicon.ico" sizes="any" />
+    <link href="/static/icons/icon-192x192.png" rel="apple-touch-icon" />
     <link href="/static/styles.css" rel="stylesheet" />
+    <link href="/static/themes.css" rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
@@ -36,21 +40,39 @@
     <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/static/service-worker.js");
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Fira+Code:wght@400;600&family=Poppins:wght@400;600&family=Nunito:wght@400;600&family=Montserrat:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
       }
     </script>
 
     <meta name="theme-color" content="#0d6efd" />
-    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Open Graph / Viral Tags -->
+    <meta property="og:title" content="NeoBox - The All-in-One Toolkit" />
+    <meta property="og:description" content="Over 50+ free tools: AI, PDF, Converters, Math, and Productivity. No login required for most tools." />
+    <meta property="og:image" content="/static/icons/icon-512x512.png" />
+    <meta property="og:url" content="https://neobox.app" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
     <title>NeoBox | {% block title %}{% endblock %}</title>
 
     <script>
       try {
-        const storedTheme = localStorage.getItem("theme") || "light";
-        document.documentElement.setAttribute("data-bs-theme", storedTheme);
+        const serverTheme = "{{ session.get('theme', 'default') }}";
+        const serverScheme = "{{ session.get('color_scheme', 'auto') }}";
+        const storedScheme = localStorage.getItem("colorScheme") || serverScheme || "auto";
+        const storedUiTheme = localStorage.getItem("uiTheme") || serverTheme || "default";
+        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolvedScheme = storedScheme === "auto" ? (prefersDark ? "dark" : "light") : storedScheme;
+        document.documentElement.setAttribute("data-bs-theme", resolvedScheme);
+        document.documentElement.setAttribute("data-theme", storedUiTheme);
       } catch (e) {
         document.documentElement.setAttribute("data-bs-theme", "light");
+        document.documentElement.setAttribute("data-theme", "default");
       }
     </script>
   </head>
@@ -92,44 +114,82 @@
             <li class="nav-item">
               <a class="nav-link" href="/credit">Credits</a>
             </li>
-            <li class="nav-item">
-              <a
-                id="theme-toggle"
-                class="nav-link"
-                href="javascript:void(0);"
-                role="button"
-                tabindex="0"
-              >
-                <span id="theme-icon" class="bi bi-moon"></span>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="schemeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-circle-half"></i>
               </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="schemeDropdown">
+                <li><button class="dropdown-item scheme-option" data-scheme="auto"><i class="bi bi-circle-half"></i> Auto</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="light"><i class="bi bi-sun"></i> Light</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="dark"><i class="bi bi-moon"></i> Dark</button></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="themeDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i id="theme-icon-display" class="bi bi-palette-fill"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+                <li><button class="dropdown-item theme-option" data-theme="default"><i class="bi bi-palette"></i> Default</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="classic"><i class="bi bi-book-half"></i> Classic</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="coding"><i class="bi bi-code-slash"></i> Coding</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="goofy"><i class="bi bi-emoji-smile-fill"></i> Goofy</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="ocean"><i class="bi bi-droplet"></i> Ocean</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="sunset"><i class="bi bi-sunset"></i> Sunset</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="forest"><i class="bi bi-tree"></i> Forest</button></li>
+              </ul>
             </li>
           </ul>
           {% else %}
           <ul class="navbar-nav ms-auto mt-2">
-            <!--
             <li class="nav-item">
-              <a class="nav-link" href="/register">Register</a>
+              <a class="nav-link" href="/register"><i class="bi bi-person-plus"></i> Register</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/login">Log In</a>
+              <a class="nav-link" href="/login"><i class="bi bi-box-arrow-in-right"></i> Log In</a>
             </li>
-            -->
             <li class="nav-item">
               <a class="nav-link" href="/tools">Tools</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/credit">Credits</a>
             </li>
-            <li class="nav-item">
-              <a
-                id="theme-toggle"
-                class="nav-link"
-                href="javascript:void(0);"
-                role="button"
-                tabindex="0"
-              >
-                <span id="theme-icon" class="bi bi-moon"></span>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="schemeDropdown2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-circle-half"></i>
               </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="schemeDropdown2">
+                <li><button class="dropdown-item scheme-option" data-scheme="auto"><i class="bi bi-circle-half"></i> Auto</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="light"><i class="bi bi-sun"></i> Light</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="dark"><i class="bi bi-moon"></i> Dark</button></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="themeDropdown2"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i id="theme-icon-display-2" class="bi bi-palette-fill"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown2">
+                <li><button class="dropdown-item theme-option" data-theme="default"><i class="bi bi-palette"></i> Default</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="classic"><i class="bi bi-book-half"></i> Classic</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="coding"><i class="bi bi-code-slash"></i> Coding</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="goofy"><i class="bi bi-emoji-smile-fill"></i> Goofy</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="ocean"><i class="bi bi-droplet"></i> Ocean</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="sunset"><i class="bi bi-sunset"></i> Sunset</button></li>
+                <li><button class="dropdown-item theme-option" data-theme="forest"><i class="bi bi-tree"></i> Forest</button></li>
+              </ul>
             </li>
           </ul>
           {% endif %}
@@ -199,18 +259,15 @@
           <!-- Column 4: Language -->
           <div class="col-md-3 mb-3">
             <h5>Language</h5>
-            <!--
-        <form method="get" action="" onChange="if(this.language.value) window.location='/set_language/' + this.language.value;">
-          <select name="language" class="form-select form-select-sm" style="max-width: 150px;">
-            {% for lang in available_languages %}
-              <option value="{{ lang.code }}" {% if session.lang == lang.code %}selected{% endif %}>
-                {{ lang.name }}
-              </option>
-            {% endfor %}
-          </select>
-        </form>
-        -->
-            A language selector will be added soon.
+            <form method="get" action="" onChange="if(this.language.value) window.location='/set_language/' + this.language.value;">
+              <select name="language" class="form-select form-select-sm" style="max-width: 170px;">
+                {% for lang in available_languages %}
+                  <option value="{{ lang.code }}" {% if session.get('lang') == lang.code %}selected{% endif %}>
+                    {{ lang.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </form>
           </div>
         </div>
         <!-- Bottom part: Copyright -->

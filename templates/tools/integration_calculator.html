@@ -1,164 +1,256 @@
 {% extends "layout.html" %} {% block title %}Integration Calculator{% endblock
 %} {% block main %}
-<div class="container py-4">
-  <h1 class="mb-3">Integration Calculator</h1>
-  <!-- Symbol Picker -->
-  <!--
-  <div class="mb-2">
-    <label class="form-label">Quick Symbols:</label>
-    <div>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="∞"
-      >
-        &infin;
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="π"
-      >
-        &pi;
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="e"
-      >
-        e
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="^"
-      >
-        ^
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="√"
-      >
-        &radic;
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="∫"
-      >
-        &int;
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="θ"
-      >
-        &theta;
-      </button>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">Integration Calculator</h2>
+      <p class="text-muted">
+        Calculate definite and indefinite integrals with steps.
+      </p>
     </div>
   </div>
-  -->
-  <form method="post" class="mb-3" id="calcForm">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-5">
-        <label class="form-label">Expression</label>
-        <input
-          name="expr"
-          id="expr"
-          value="{{ expr }}"
-          class="form-control"
-          autocomplete="off"
-          required
-          placeholder="e.g. x^2 + sin(x)"
-        />
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post" id="calcForm">
+          <!-- Symbol Toolbar -->
+          <div
+            class="mb-3 d-flex gap-2 overflow-auto pb-2"
+            style="white-space: nowrap"
+          >
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('x^2')"
+            >
+              x²
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('sqrt(')"
+            >
+              √
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('sin(')"
+            >
+              sin
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('cos(')"
+            >
+              cos
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('e^x')"
+            >
+              eˣ
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('ln(')"
+            >
+              ln
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('pi')"
+            >
+              π
+            </button>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-9">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >Expression to Integrate</label
+              >
+              <div class="input-group">
+                <span
+                  class="input-group-text bg-transparent border-end-0 text-muted fst-italic"
+                  >∫</span
+                >
+                <input
+                  name="expr"
+                  id="expr"
+                  value="{{ expr }}"
+                  class="form-control form-control-lg bg-light-subtle border-start-0"
+                  autocomplete="off"
+                  required
+                  placeholder="e.g. x^2 + sin(x)"
+                  oninput="renderMath()"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >Variable</label
+              >
+              <div class="input-group">
+                <span
+                  class="input-group-text bg-transparent border-end-0 text-muted"
+                  >d</span
+                >
+                <input
+                  name="var"
+                  id="var"
+                  value="{{ var or 'x' }}"
+                  class="form-control form-control-lg bg-light-subtle border-start-0"
+                  autocomplete="off"
+                  required
+                  oninput="renderMath()"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >Lower Limit (Optional)</label
+              >
+              <input
+                name="lower"
+                id="lower"
+                value="{{ lower }}"
+                class="form-control bg-light-subtle"
+                placeholder="-infinity"
+                autocomplete="off"
+                oninput="renderMath()"
+              />
+            </div>
+            <div class="col-md-6">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >Upper Limit (Optional)</label
+              >
+              <input
+                name="upper"
+                id="upper"
+                value="{{ upper }}"
+                class="form-control bg-light-subtle"
+                placeholder="+infinity"
+                autocomplete="off"
+                oninput="renderMath()"
+              />
+            </div>
+          </div>
+
+          <div
+            class="mt-4 p-3 bg-light rounded-3 border d-flex align-items-center justify-content-center"
+            style="min-height: 80px"
+          >
+            <div id="math-preview" class="text-muted opacity-75 fs-5">
+              $$ \int (x^2 + \sin(x)) \, dx $$
+            </div>
+          </div>
+
+          <button
+            class="btn btn-neo w-100 mt-4 py-3 rounded-pill shadow-sm"
+            type="submit"
+          >
+            <i class="bi bi-calculator me-2"></i>Calculate Integral
+          </button>
+        </form>
       </div>
-      <div class="col-md-2">
-        <label class="form-label">Variable</label>
-        <input
-          name="var"
-          id="var"
-          value="{{ var }}"
-          class="form-control"
-          autocomplete="off"
-          required
-        />
+
+      {% if result is not none %}
+      <div class="glass-card mt-4 p-4 fade-in-up" style="animation-delay: 0.2s">
+        <h5 class="fw-bold mb-4 text-gradient">
+          <i class="bi bi-check-circle-fill me-2 text-success"></i>Result
+        </h5>
+
+        <div
+          class="bg-white p-4 rounded-3 shadow-sm border mb-3 text-center overflow-auto"
+        >
+          <span id="math-result" class="fs-4">$$ {{ result }} $$</span>
+        </div>
+
+        {% if explanation %}
+        <div class="accordion" id="stepsAccordion">
+          <div class="accordion-item border-0 bg-transparent">
+            <h2 class="accordion-header">
+              <button
+                class="accordion-button collapsed bg-light rounded-3 shadow-sm"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseSteps"
+              >
+                <i class="bi bi-list-ol me-2"></i>View Steps / Explanation
+              </button>
+            </h2>
+            <div
+              id="collapseSteps"
+              class="accordion-collapse collapse"
+              data-bs-parent="#stepsAccordion"
+            >
+              <div
+                class="accordion-body bg-light mt-2 rounded-3 border text-muted small"
+              >
+                {{ explanation }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div>
-      <div class="col-md-2">
-        <label class="form-label">Lower Limit</label>
-        <input
-          name="lower"
-          id="lower"
-          value="{{ lower }}"
-          class="form-control"
-          autocomplete="off"
-        />
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Upper Limit</label>
-        <input
-          name="upper"
-          id="upper"
-          value="{{ upper }}"
-          class="form-control"
-          autocomplete="off"
-        />
-      </div>
-      <div class="col-md-1">
-        <button class="btn btn-primary w-100">Integrate</button>
-      </div>
+      {% endif %}
     </div>
-  </form>
-  <div class="mb-2">
-    <strong>Live Preview:</strong>
-    <div id="math-preview" class="border rounded p-2"></div>
   </div>
-  {% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b>
-    <span id="math-result">{% if result %}$$ {{ result }} $$ {% endif %}</span>
-    {% if explanation %}
-    <div class="mt-2 small text-muted">{{ explanation }}</div>
-    {% endif %}
-  </div>
-  {% endif %}
 </div>
+
 <script>
+  function insertSymbol(sym) {
+    const input = document.getElementById("expr");
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    input.value = text.substring(0, start) + sym + text.substring(end);
+    input.focus();
+    input.selectionStart = input.selectionEnd = start + sym.length;
+    renderMath();
+  }
+
   function renderMath() {
     let expr = document.getElementById("expr").value || "";
     let variable = document.getElementById("var").value || "x";
     let lower = document.getElementById("lower").value;
     let upper = document.getElementById("upper").value;
     let latex = "";
+
+    // Cleanup simple replacements for preview visualization only
+    // Real parsing happens on backend usually, but for MathJax:
+
     if (lower && upper) {
       latex = `\\int_{${lower}}^{${upper}} \\left(${expr}\\right)\\, d${variable}`;
     } else {
       latex = `\\int \\left(${expr}\\right)\\, d${variable}`;
     }
-    document.getElementById("math-preview").innerHTML = "$$" + latex + "$$";
-    if (window.MathJax) MathJax.typesetPromise();
+
+    const preview = document.getElementById("math-preview");
+    preview.innerHTML = "$$" + latex + "$$";
+
+    if (window.MathJax) {
+      // queue typest
+      MathJax.typesetPromise([
+        preview,
+        document.getElementById("math-result"),
+      ]).catch((err) => console.log(err));
+    }
   }
-  ["expr", "var", "lower", "upper"].forEach((id) => {
-    document.getElementById(id).addEventListener("input", renderMath);
-  });
-  window.addEventListener("DOMContentLoaded", renderMath);
-</script>
-<script>
-  document.querySelectorAll(".symbol-btn").forEach((btn) => {
-    btn.onclick = function () {
-      const active = document.activeElement;
-      if (active && active.tagName === "INPUT") {
-        const start = active.selectionStart,
-          end = active.selectionEnd;
-        const val = active.value;
-        active.value =
-          val.slice(0, start) + btn.dataset.symbol + val.slice(end);
-        active.focus();
-        active.selectionStart = active.selectionEnd =
-          start + btn.dataset.symbol.length;
-        if (typeof renderMath === "function") renderMath();
-      }
-    };
-  });
+
+  window.addEventListener("load", renderMath);
 </script>
 {% endblock %}

@@ -1,0 +1,104 @@
+{% extends "layout.html" %} {% block title %}SQL Formatter{% endblock %} {%
+block content %}
+<!-- SQL Formatter Lib -->
+<script src="https://unpkg.com/sql-formatter@latest/dist/sql-formatter.min.js"></script>
+
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-database text-info me-2"></i>SQL Formatter
+      </h2>
+      <p class="text-center text-muted mb-4">
+        Beautify your SQL queries for better readability.
+      </p>
+
+      <div class="row g-3">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="form-label">Input SQL</label>
+            <div class="d-flex justify-content-end mb-2">
+              <select id="dialect" class="form-select form-select-sm w-auto">
+                <option value="sql">Standard SQL</option>
+                <option value="postgresql">PostgreSQL</option>
+                <option value="mysql">MySQL</option>
+                <option value="mariadb">MariaDB</option>
+                <option value="tsql">T-SQL (SQL Server)</option>
+              </select>
+            </div>
+            <textarea
+              id="sqlInput"
+              class="form-control font-monospace"
+              rows="8"
+              placeholder="SELECT * FROM users WHERE id = 1..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="col-12 text-center mb-3">
+          <button class="btn btn-primary btn-lg" onclick="formatSQL()">
+            <i class="bi bi-magic me-2"></i>Format SQL
+          </button>
+          <button class="btn btn-outline-secondary btn-lg" onclick="clearAll()">
+            <i class="bi bi-trash me-2"></i>Clear
+          </button>
+        </div>
+
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="form-label">Formatted Output</label>
+            <textarea
+              id="sqlOutput"
+              class="form-control font-monospace"
+              rows="12"
+              readonly
+            ></textarea>
+          </div>
+          <div class="text-center">
+            <button class="btn btn-outline-light" onclick="copySQL()">
+              <i class="bi bi-clipboard me-2"></i>Copy Result
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function formatSQL() {
+    const raw = document.getElementById("sqlInput").value;
+    if (!raw.trim()) return;
+
+    const dialect = document.getElementById("dialect").value;
+
+    try {
+      // Check global object from CDN
+      const formatted = sqlFormatter.format(raw, {
+        language: dialect,
+        tabWidth: 4,
+        keywordCase: "upper",
+      });
+      document.getElementById("sqlOutput").value = formatted;
+    } catch (e) {
+      alert("Error formatting SQL: " + e.message);
+    }
+  }
+
+  function clearAll() {
+    document.getElementById("sqlInput").value = "";
+    document.getElementById("sqlOutput").value = "";
+  }
+
+  function copySQL() {
+    const copyText = document.getElementById("sqlOutput");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+    // Feedback
+    const btn = event.currentTarget;
+    const icon = btn.querySelector("i");
+    icon.className = "bi bi-check-lg me-2";
+    setTimeout(() => (icon.className = "bi bi-clipboard me-2"), 2000);
+  }
+</script>
+{% endblock %}

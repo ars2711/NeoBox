@@ -1,0 +1,99 @@
+{% extends "layout.html" %} {% block title %}Slug Generator{% endblock %} {%
+block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-link text-primary me-2"></i>Slug Generator
+      </h2>
+      <p class="text-center text-muted mb-4">
+        Turn titles into SEO-friendly URL slugs.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label">Input Text</label>
+        <input
+          type="text"
+          id="inputString"
+          class="form-control form-control-lg"
+          placeholder="e.g. 10 Best Tools for 2026!"
+          oninput="generateSlug()"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Generated Slug</label>
+        <div class="input-group">
+          <input
+            type="text"
+            id="outputSlug"
+            class="form-control form-control-lg bg-light"
+            readonly
+          />
+          <button class="btn btn-outline-primary" onclick="copySlug()">
+            <i class="bi bi-clipboard"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-light bg-opacity-50 p-3 rounded-3 mb-3">
+        <h6>Options</h6>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="separator"
+            id="sepDash"
+            value="-"
+            checked
+            onchange="generateSlug()"
+          />
+          <label class="form-check-label" for="sepDash">Dash (-)</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="separator"
+            id="sepUnder"
+            value="_"
+            onchange="generateSlug()"
+          />
+          <label class="form-check-label" for="sepUnder">Underscore (_)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function generateSlug() {
+    const input = document.getElementById("inputString").value;
+    const separator = document.querySelector(
+      'input[name="separator"]:checked',
+    ).value;
+
+    // Slugify logic
+    let slug = input
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, separator) // Replace spaces with separator
+      .replace(/[^\w\-]+/g, "") // Remove all non-word chars
+      .replace(/\-\-+/g, separator) // Replace multiple separators with single separator
+      .replace(/__+/g, separator); // Replace multiple underscores
+
+    // Handle edge case where regex leaves separator at end/start
+    if (slug.startsWith(separator)) slug = slug.substring(1);
+    if (slug.endsWith(separator)) slug = slug.substring(0, slug.length - 1);
+
+    document.getElementById("outputSlug").value = slug;
+  }
+
+  function copySlug() {
+    const copyText = document.getElementById("outputSlug");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+  }
+</script>
+{% endblock %}

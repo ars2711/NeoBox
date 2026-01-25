@@ -1,0 +1,224 @@
+{% extends "layout.html" %} {% block title %}Image Compressor{% endblock %} {%
+block content %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-file-earmark-zip-fill me-2"></i>Image Compressor
+      </h2>
+      <p class="text-muted">
+        High-quality image compression directly in your browser. Secure and
+        fast.
+      </p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div
+        class="glass-card p-4 p-md-5 mb-4 fade-in-up"
+        style="animation-delay: 0.1s"
+      >
+        <div class="text-center mb-4">
+          <div
+            class="upload-icon-wrapper mb-3 text-primary bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center"
+            style="width: 80px; height: 80px"
+          >
+            <i class="bi bi-cloud-arrow-down-fill display-5"></i>
+          </div>
+          <label
+            for="imageInput"
+            class="h5 d-block mb-3 fw-bold cursor-pointer hover-text-primary transition-all"
+            >Select Image file to Compress</label
+          >
+          <input
+            class="form-control form-control-lg bg-light-subtle"
+            type="file"
+            id="imageInput"
+            accept="image/*"
+          />
+        </div>
+
+        <div class="mt-4 p-4 rounded-4 bg-light bg-opacity-50 border">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label
+              class="form-label fw-bold mb-0 text-uppercase small text-muted"
+              >Compression Quality</label
+            >
+            <span class="badge bg-primary rounded-pill" id="qualityVal"
+              >0.7</span
+            >
+          </div>
+          <input
+            type="range"
+            class="form-range custom-range"
+            min="0.1"
+            max="1.0"
+            step="0.1"
+            id="qualityRange"
+            value="0.7"
+          />
+          <div class="d-flex justify-content-between text-muted small mt-1">
+            <span>Min Size</span>
+            <span>Max Quality</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4" id="resultsArea" style="display: none">
+        <div class="col-md-6 fade-in-up" style="animation-delay: 0.2s">
+          <div class="glass-card h-100 p-3">
+            <div class="text-center p-2 border-bottom mb-3">
+              <span
+                class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3"
+                >Original</span
+              >
+            </div>
+            <div
+              class="text-center d-flex flex-column align-items-center justify-content-center"
+              style="min-height: 200px"
+            >
+              <img
+                id="originalPreview"
+                class="img-fluid rounded-3 shadow-sm mb-3"
+                style="max-height: 200px; object-fit: contain"
+              />
+              <p class="mb-0 fw-bold font-monospace" id="originalSize">0 KB</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 fade-in-up" style="animation-delay: 0.3s">
+          <div
+            class="glass-card h-100 p-3 border-success border-2 border-opacity-25"
+          >
+            <div class="text-center p-2 border-bottom mb-3">
+              <span
+                class="badge bg-success bg-opacity-10 text-success rounded-pill px-3"
+                >Compressed</span
+              >
+            </div>
+            <div
+              class="text-center d-flex flex-column align-items-center justify-content-center"
+              style="min-height: 200px"
+            >
+              <img
+                id="compressedPreview"
+                class="img-fluid rounded-3 shadow-sm mb-3"
+                style="max-height: 200px; object-fit: contain"
+              />
+              <p
+                class="mb-1 fw-bold font-monospace text-success"
+                id="compressedSize"
+              >
+                0 KB
+              </p>
+              <span class="badge bg-success text-white mb-3" id="savingsInfo"
+                >-0%</span
+              >
+              <a
+                id="downloadBtn"
+                class="btn btn-neo w-100 rounded-pill"
+                download="compressed-image.jpg"
+              >
+                <i class="bi bi-download me-2"></i>Download
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-range::-webkit-slider-thumb {
+    background: var(--neo-primary);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const imageInput = document.getElementById("imageInput");
+    const qualityRange = document.getElementById("qualityRange");
+    const qualityVal = document.getElementById("qualityVal");
+    const resultsArea = document.getElementById("resultsArea");
+    const originalPreview = document.getElementById("originalPreview");
+    const compressedPreview = document.getElementById("compressedPreview");
+    const originalSize = document.getElementById("originalSize");
+    const compressedSize = document.getElementById("compressedSize");
+    const savingsInfo = document.getElementById("savingsInfo");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    let originalFile = null;
+
+    imageInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        originalFile = e.target.files[0];
+        processImage();
+      }
+    });
+
+    qualityRange.addEventListener("input", (e) => {
+      qualityVal.textContent = e.target.value;
+      if (originalFile) processImage();
+    });
+
+    function processImage() {
+      if (!originalFile) return;
+
+      // Display Original
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        originalPreview.src = e.target.result;
+      };
+      reader.readAsDataURL(originalFile);
+      originalSize.textContent = formatBytes(originalFile.size);
+
+      // Compress
+      const quality = parseFloat(qualityRange.value);
+      compressImage(originalFile, quality);
+      resultsArea.style.display = "flex";
+    }
+
+    function compressImage(file, quality) {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        // Export as JPEG with quality
+        canvas.toBlob(
+          (blob) => {
+            const url = URL.createObjectURL(blob);
+            compressedPreview.src = url;
+            compressedSize.textContent = formatBytes(blob.size);
+            downloadBtn.href = url;
+
+            // Calc savings
+            if (file.size > 0) {
+              const savings = ((file.size - blob.size) / file.size) * 100;
+              savingsInfo.textContent = `${savings.toFixed(1)}% smaller`;
+            }
+          },
+          "image/jpeg",
+          quality,
+        );
+      };
+    }
+
+    function formatBytes(bytes, decimals = 2) {
+      if (bytes === 0) return "0 Bytes";
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ["Bytes", "KB", "MB", "GB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+    }
+  });
+</script>
+{% endblock %}

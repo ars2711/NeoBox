@@ -1,35 +1,107 @@
 {% extends "layout.html" %}
 {% block title %}Base Converter{% endblock %}
 {% block main %}
-<h1>Base Converter</h1>
-<form method="post">
-  <div class="mb-2">
-    <label>Number: <input name="number" value="{{ number }}" class="form-control"></label>
-  </div>
-  <div class="mb-2">
-    <label>From Base:
-      <select name="from_base" class="form-select" style="width:100px;display:inline-block">
-        <option value="2" {% if from_base=="2" %}selected{% endif %}>2</option>
-        <option value="8" {% if from_base=="8" %}selected{% endif %}>8</option>
-        <option value="10" {% if from_base=="10" %}selected{% endif %}>10</option>
-        <option value="16" {% if from_base=="16" %}selected{% endif %}>16</option>
-      </select>
-    </label>
-    <label>To Base:
-      <select name="to_base" class="form-select" style="width:100px;display:inline-block">
-        <option value="2" {% if to_base=="2" %}selected{% endif %}>2</option>
-        <option value="8" {% if to_base=="8" %}selected{% endif %}>8</option>
-        <option value="10" {% if to_base=="10" %}selected{% endif %}>10</option>
-        <option value="16" {% if to_base=="16" %}selected{% endif %}>16</option>
-      </select>
-    </label>
-  </div>
-  <button class="btn btn-primary">Convert</button>
-</form>
-{% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b> <span id="calc-result">{{ result }}</span>
-    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
-  </div>
-{% endif %}
+<div class="container py-5">
+    <div class="text-center mb-5 fade-in-up">
+        <h1 class="display-4 fw-bold mb-3 tool-header">
+            <i class="bi bi-cpu-fill me-2"></i>Base Master
+        </h1>
+        <p class="lead text-muted">Convert numbers seamlessly between binary, octal, decimal, and hexadecimal.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card p-4 fade-in-up" style="animation-delay: 0.1s;">
+                <form method="post" id="converterForm">
+                    <div class="row g-3 align-items-center mb-4">
+                        <!-- Input Section -->
+                        <div class="col-md-5">
+                             <label class="form-label fw-bold text-muted small text-uppercase">From</label>
+                             <select name="from_base" id="fromBase" class="form-select form-select-lg border-0 bg-light shadow-sm">
+                                <option value="2" {% if from_base=="2" %}selected{% endif %}>Binary (2)</option>
+                                <option value="8" {% if from_base=="8" %}selected{% endif %}>Octal (8)</option>
+                                <option value="10" {% if from_base=="10" %}selected{% endif %}>Decimal (10)</option>
+                                <option value="16" {% if from_base=="16" %}selected{% endif %}>Hexadecimal (16)</option>
+                              </select>
+                        </div>
+
+                        <!-- Swap Button -->
+                        <div class="col-md-2 text-center pt-4">
+                            <button type="button" class="btn btn-outline-primary rounded-circle shadow-sm" onclick="swapBases()">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Output Section -->
+                        <div class="col-md-5">
+                             <label class="form-label fw-bold text-muted small text-uppercase">To</label>
+                             <select name="to_base" id="toBase" class="form-select form-select-lg border-0 bg-light shadow-sm">
+                                <option value="2" {% if to_base=="2" %}selected{% endif %}>Binary (2)</option>
+                                <option value="8" {% if to_base=="8" %}selected{% endif %}>Octal (8)</option>
+                                <option value="10" {% if to_base=="10" %}selected{% endif %}>Decimal (10)</option>
+                                <option value="16" {% if to_base=="16" %}selected{% endif %}>Hexadecimal (16)</option>
+                              </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Number Input</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                            <span class="input-group-text border-0 bg-white text-muted">#</span>
+                            <input name="number" value="{{ number }}" class="form-control border-0 font-monospace" placeholder="Enter value..." required>
+                        </div>
+                        <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> Make sure the number is valid for the selected base.</div>
+                    </div>
+
+                    <button class="btn btn-primary w-100 btn-lg rounded-pill fw-bold" type="submit">
+                         <i class="bi bi-arrow-repeat me-2"></i> Convert Number
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if result is not none %}
+    <div class="row justify-content-center mt-5 fade-in-up" style="animation-delay: 0.2s;">
+        <div class="col-lg-8">
+            <div class="glass-card p-4 border-start border-5 border-success position-relative overflow-hidden">
+                <!-- Background Decoration -->
+                <div class="position-absolute top-0 end-0 opacity-10 p-3">
+                    <i class="bi bi-calculator display-1"></i>
+                </div>
+
+                <h3 class="h5 fw-bold text-success mb-3">Conversion Result</h3>
+                
+                <div class="bg-dark rounded-3 p-4 mb-3 position-relative">
+                    <span class="badge bg-success position-absolute top-0 end-0 m-3">Base {{ to_base }}</span>
+                    <div class="font-monospace text-white fs-2 text-break" id="calc-result">{{ result }}</div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-sm btn-outline-success" onclick="navigator.clipboard.writeText(document.getElementById('calc-result').innerText)">
+                        <i class="bi bi-clipboard me-1"></i> Copy to Clipboard
+                    </button>
+                </div>
+
+                {% if explanation %}
+                <div class="mt-4 p-3 bg-light rounded-3 border">
+                     <h6 class="fw-bold text-muted mb-2"><i class="bi bi-lightbulb me-2"></i>How it works</h6>
+                     <div class="small text-muted">{{ explanation }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function swapBases() {
+        const from = document.getElementById('fromBase');
+        const to = document.getElementById('toBase');
+        const temp = from.value;
+        from.value = to.value;
+        to.value = temp;
+    }
+</script>
 {% endblock %}

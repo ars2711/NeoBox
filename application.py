@@ -99,6 +99,15 @@ app.config['BABEL_DEFAULT_LOCALE'] = 'en'
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 babel = Babel(app)
 
+def get_locale():
+    if 'lang' in session:
+        return session['lang']
+    return request.accept_languages.best_match([
+        'en', 'es', 'fr', 'de', 'it', 'pt', 'hi', 'ur', 'ar'
+    ])
+
+babel.init_app(app, locale_selector=get_locale)
+
 # --- Google OAuth ---
 google_bp = make_google_blueprint(
     client_id=os.environ.get("GOOGLE_CLIENT_ID"),
@@ -122,7 +131,8 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME") or "no-reply
 mail = Mail(app)
 
 # --- FIDO2 Passkey ---
-rp = PublicKeyCredentialRpEntity(id="localhost", name="CS50 FP Demo")
+# Note: rp.id must match the domain (e.g. 'localhost' or 'neobox.app')
+rp = PublicKeyCredentialRpEntity(id="localhost", name="NeoBox")
 fido2_server = Fido2Server(rp)
 
 # --- Models ---
@@ -144,7 +154,7 @@ class User(db.Model):
     google_id = db.Column(db.String(128), unique=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     language = db.Column(db.String(10), default='en')
-    theme = db.Column(db.String(10), default='auto')
+    theme = db.Column(db.String(20), default='default')
     reset_token = db.Column(db.String(100), nullable=True)
     verified = db.Column(db.Boolean, default=False)
     verify_token = db.Column(db.String(100), nullable=True)
@@ -273,11 +283,18 @@ def page_not_found(e):
 AVAILABLE_LANGUAGES = [
     {"code": "en", "name": "English"},
     {"code": "es", "name": "Español"},
+    {"code": "fr", "name": "Français"},
+    {"code": "de", "name": "Deutsch"},
+    {"code": "it", "name": "Italiano"},
+    {"code": "pt", "name": "Português"},
+    {"code": "hi", "name": "हिन्दी"},
     {"code": "ur", "name": "اردو"},
     {"code": "ar", "name": "العربية"},
 ]
 TOOLS = [
+    {"name": "Typing Speed Test", "icon": "bi-keyboard", "url": "typing-test", "category": "productivity", "login_required": False, "description": "Test your WPM in various modes (MonkeyType style)."},
     # Math & Calculators
+    {"name": "Typing Speed Test", "icon": "bi-keyboard", "url": "typing-test", "category": "productivity", "login_required": False, "description": "Test your WPM in various modes (MonkeyType style)."},
     {"name": "Calculator", "icon": "bi-calculator", "url": "calculator", "category": "math", "login_required": False, "description": "Simple arithmetic calculator."},
     {"name": "Scientific Calculator", "icon": "bi-calculator", "url": "scientific-calculator", "category": "math", "login_required": False, "description": "Advanced calculator for scientific functions."},
     {"name": "Integration Calculator", "icon": "bi-calculator", "url": "integration-calculator", "category": "math", "login_required": False, "description": "Symbolic and definite integration."},
@@ -327,8 +344,8 @@ TOOLS = [
     {"name": "URL Shortener", "icon": "bi-link-45deg", "url": "url-shortener", "category": "other", "login_required": False, "description": "Shorten long URLs for easy sharing."},
     {"name": "Custom URL Redirects", "icon": "bi-arrow-right-circle", "url": "url-redirects", "category": "other", "login_required": False, "description": "Create custom redirects for your URLs."},
     {"name": "Random Generator", "icon": "bi-shuffle", "url": "random-generator", "category": "other", "login_required": False, "description": "Generate random numbers, strings, colors, and more."},
-]
-WIP_TOOLS = [
+    
+    # Former WIP Tools - Now Live
     {"name": "File Converter", "icon": "bi-file-earmark-arrow-down", "url": "file-converter", "category": "files", "login_required": False, "description": "Convert files between different formats."},
     {"name": "World Clocks", "icon": "bi-clock", "url": "world-clock", "category": "time", "login_required": False, "description": "View current times in cities worldwide."},
     {"name": "AI Prompt", "icon": "bi-chat-right-dots", "url": "ai-prompt", "category": "ai", "login_required": False, "description": "Get instant responses from a demo AI."},
@@ -344,10 +361,24 @@ WIP_TOOLS = [
     {"name": "Daily Routines/Reminders", "icon": "bi-calendar-check", "url": "daily-routines", "category": "productivity", "login_required": True, "description": "Set daily routines and reminders with notifications."},
     {"name": "Password Manager", "icon": "bi-key", "url": "password-manager", "category": "security", "login_required": True, "description": "Securely store and manage your passwords."},
     {"name": "QR Code Tools", "icon": "bi-qr-code-scan", "url": "qr-code-tools", "category": "files", "login_required": False, "description": "Generate, customize, and read QR codes with advanced options."},
-    {"name": "PDF Tools", "icon": "bi-file-earmark-pdf", "url": "pdf-tools", "category": "files", "login_required": False, "description": "Merge, split, compress, convert, and secure PDFs."},
+    
+    # PDF Tools (Split)
+    {"name": "Merge PDF", "icon": "bi-file-earmark-plus", "url": "pdf-merge", "category": "pdf", "login_required": False, "description": "Combine multiple PDFs into one."},
+    {"name": "Split PDF", "icon": "bi-file-earmark-break", "url": "pdf-split", "category": "pdf", "login_required": False, "description": "Separate PDF pages into files."},
+    {"name": "Compress PDF", "icon": "bi-file-earmark-zip", "url": "pdf-compress", "category": "pdf", "login_required": False, "description": "Reduce PDF file size."},
+    {"name": "Images to PDF", "icon": "bi-images", "url": "pdf-from-images", "category": "pdf", "login_required": False, "description": "Convert PNG/JPG images to PDF."},
+    {"name": "PDF to Word", "icon": "bi-file-word", "url": "pdf-to-word", "category": "pdf", "login_required": False, "description": "Convert PDF to DOCX document."},
+    {"name": "PDF to Excel", "icon": "bi-file-excel", "url": "pdf-to-excel", "category": "pdf", "login_required": False, "description": "Extract tables from PDF to Excel."},
+    {"name": "Unlock PDF", "icon": "bi-unlock", "url": "pdf-unlock", "category": "pdf", "login_required": False, "description": "Remove password protection from PDF."},
+    {"name": "Protect PDF", "icon": "bi-lock", "url": "pdf-protect", "category": "pdf", "login_required": False, "description": "Add password protection to PDF."},
+    {"name": "Rotate PDF", "icon": "bi-arrow-clockwise", "url": "pdf-rotate", "category": "pdf", "login_required": False, "description": "Rotate PDF pages."},
+    {"name": "Watermark PDF", "icon": "bi-droplet-half", "url": "pdf-watermark", "category": "pdf", "login_required": False, "description": "Add text watermark to PDF."},
+    {"name": "Reorder PDF", "icon": "bi-sort-numeric-down", "url": "pdf-reorder", "category": "pdf", "login_required": False, "description": "Rearrange PDF page order."},
+    {"name": "Extract Images", "icon": "bi-card-image", "url": "pdf-extract-images", "category": "pdf", "login_required": False, "description": "Extract all images from a PDF."},
+
     {"name": "Text-to-Speech", "icon": "bi-volume-up", "url": "text-to-speech", "category": "ai", "login_required": False, "description": "Convert text to speech in multiple languages and accents."},
     {"name": "Mind-maps/Flowcharts", "icon": "bi-diagram-3", "url": "mind-maps", "category": "productivity", "login_required": False, "description": "Create interactive mind maps and flowcharts."},
-    {"name": "Code Formatter", "icon": "bi-code-slash", "url": "code-formatter", "category": "productivity", "login_required": False, "description": "Format and beautify code in multiple languages."},
+    {"name": "Code Formatter", "icon": "bi-code-slash", "url": "code-formatter", "category": "developer", "login_required": False, "description": "Format and beautify code in multiple languages."},
     {"name": "Expense Tracker", "icon": "bi-cash-stack", "url": "expense-tracker", "category": "productivity", "login_required": True, "description": "Track your expenses and spending habits."},
     {"name": "Budget Tracker", "icon": "bi-wallet2", "url": "budget-tracker", "category": "productivity", "login_required": True, "description": "Plan and monitor your monthly budgets."},
     {"name": "Habit Tracker", "icon": "bi-check2-circle", "url": "habit-tracker", "category": "productivity", "login_required": True, "description": "Build and track habits with reminders."},
@@ -369,39 +400,65 @@ WIP_TOOLS = [
     {"name": "Dice Roller", "icon": "bi-dice-5", "url": "dice", "category": "other", "login_required": False, "description": "Roll up to 5 dice with custom sides and animation."},
     {"name": "Coin Toss", "icon": "bi-coin", "url": "coin-toss", "category": "other", "login_required": False, "description": "Flip a virtual coin with animation."},
     {"name": "Music/Audio Player", "icon": "bi-music-note-beamed", "url": "music-audio-player", "category": "files", "login_required": False, "description": "Upload, queue, and play audio files. Demo YouTube/Spotify support."},
+    {"name": "JSON Formatter", "icon": "bi-code-square", "url": "json-formatter", "category": "developer", "login_required": False, "description": "Validate and format JSON data."},
+    {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "url": "text-analyzer", "category": "productivity", "login_required": False, "description": "Analyze text statistics like word count and reading time."},
+    {"name": "ASCII Art Generator", "icon": "bi-type", "url": "ascii-art", "category": "other", "login_required": False, "description": "Convert text into ASCII art banners."},
+    {"name": "Age Calculator", "icon": "bi-person-badge", "url": "age-calculator", "category": "time", "login_required": False, "description": "Calculate your exact age in years, months, and days."},
+    {"name": "Weather", "icon": "bi-cloud-sun", "url": "weather", "category": "productivity", "login_required": False, "description": "Check global weather forecasts with Open-Meteo."},
+    {"name": "Typing Speed Test", "icon": "bi-keyboard", "url": "typing-test", "category": "productivity", "login_required": False, "description": "Test your typing speed (WPM) and accuracy."},
+    {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "url": "ocr", "category": "files", "login_required": False, "description": "Extract text from images using OCR."},
+    {"name": "Game Zone", "icon": "bi-controller", "url": "game-zone", "category": "other", "login_required": False, "description": "Play classic games like Snake, Tic-Tac-Toe, and Memory."},
+    {"name": "Mood Tracker", "icon": "bi-emoji-smile", "url": "mood-tracker", "category": "productivity", "login_required": False, "description": "Track your daily mood and visualize patterns over time."},
+    {"name": "Screen Color Tool", "icon": "bi-lightbulb", "url": "screen-color", "category": "other", "login_required": False, "description": "Turn your screen into a solid color light source."},
+    
+    # New Implementations - Batch 3
+    {"name": "Custom Calendar", "icon": "bi-calendar-range", "url": "custom-calendar", "category": "productivity", "login_required": False, "description": "View dates, holidays and plan your month."},
+    {"name": "Meeting Planner", "icon": "bi-globe", "url": "meeting-planner", "category": "time", "login_required": False, "description": "Coordinate meeting times across multiple timezones."},
+    {"name": "Image Compressor", "icon": "bi-file-earmark-zip", "url": "image-compressor", "category": "files", "login_required": False, "description": "Compress images locally to save space."},
+    {"name": "Image Editor", "icon": "bi-image-alt", "url": "image-editor", "category": "files", "login_required": False, "description": "Edit, rotate, and specific filters to images."},
+    {"name": "Markdown Editor", "icon": "bi-filetype-md", "url": "markdown-editor", "category": "developer", "login_required": False, "description": "Write and preview Markdown with live rendering."},
+    {"name": "Regex Tester", "icon": "bi-slash-square", "url": "regex-tester", "category": "developer", "login_required": False, "description": "Test regular expressions against real text."},
+    {"name": "Image Cropper", "icon": "bi-crop", "url": "image-cropper", "category": "files", "login_required": False, "description": "Crop images with custom aspect ratios."},
+    {"name": "BPM Calculator", "icon": "bi-music-note-list", "url": "bpm-calculator", "category": "other", "login_required": False, "description": "Calculate beats per minute by tapping."},
+    {"name": "HTML Table Generator", "icon": "bi-table", "url": "table-generator", "category": "developer", "login_required": False, "description": "Generate HTML table code visually."},
+    {"name": "Focus Mode", "icon": "bi-bullseye", "url": "focus-mode", "category": "productivity", "login_required": False, "description": "Distraction-free timer with ambient sounds."},
+    {"name": "Image Splitter", "icon": "bi-layout-split", "url": "image-splitter", "category": "files", "login_required": False, "description": "Split images into grids."},
+    
+    # New Implementations - Batch 4
+    {"name": "Kanban Board", "icon": "bi-kanban", "url": "kanban", "category": "productivity", "login_required": False, "description": "Drag-and-drop task management board."},
+    {"name": "Snippet Manager", "icon": "bi-code-square", "url": "snippet-manager", "category": "developer", "login_required": False, "description": "Save and organize code snippets."},
+    {"name": "Lorem Ipsum Generator", "icon": "bi-paragraph", "url": "lorem-ipsum", "category": "developer", "login_required": False, "description": "Generate placeholder text."},
+    {"name": "Base64 Tools", "icon": "bi-braces", "url": "base64-tools", "category": "developer", "login_required": False, "description": "Encode and decode Base64 text and files."},
+    {"name": "Barcode Generator", "icon": "bi-upc-scan", "url": "barcode-generator", "category": "other", "login_required": False, "description": "Create various types of barcodes."},
+    {"name": "Cron Generator", "icon": "bi-clock-history", "url": "cron-generator", "category": "developer", "login_required": False, "description": "Build cron schedule expressions visually."},
+
+    # Moved from Upcoming
+    {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "url": "journal-prompts", "category": "productivity", "login_required": False, "description": "Get inspired with daily writing prompts."},
+    {"name": "Daily Challenges", "icon": "bi-lightning-charge", "url": "daily-challenges", "category": "productivity", "login_required": False, "description": "Accept a new random challenge every day."},
+    {"name": "Study Laps", "icon": "bi-journal-check", "url": "study-laps", "category": "productivity", "login_required": False, "description": "Track study time by subject laps."},
+    
+    # New Implementations - Batch 5
+    {"name": "UUID Generator", "icon": "bi-fingerprint", "url": "uuid-generator", "category": "developer", "login_required": False, "description": "Generate unique identifiers (UUIDs) versions 1, 4, etc."},
+    {"name": "SQL Formatter", "icon": "bi-database", "url": "sql-formatter", "category": "developer", "login_required": False, "description": "Format and beautify SQL queries."},
+    {"name": "Prime Factorization", "icon": "bi-hash", "url": "prime-factorization", "category": "math", "login_required": False, "description": "Find prime factors of any number."},
+    {"name": "Reaction Time Test", "icon": "bi-lightning", "url": "reaction-time", "category": "other", "login_required": False, "description": "Test your reflexes with a simple visual game."},
+    {"name": "Word Cloud Generator", "icon": "bi-cloud-plus", "url": "word-cloud", "category": "productivity", "login_required": False, "description": "Visualize word frequency in text."},
+    {"name": "Aspect Ratio Calculator", "icon": "bi-aspect-ratio", "url": "aspect-ratio", "category": "files", "login_required": False, "description": "Calculate dimensions and aspect ratios."},
+    
+    # New Implementations - Batch 6
+    {"name": "Sentiment Analysis", "icon": "bi-emoji-smile-upside-down", "url": "sentiment-analysis", "category": "ai", "login_required": False, "description": "Analyze the emotional tone of text."},
+    {"name": "Slug Generator", "icon": "bi-link", "url": "slug-generator", "category": "developer", "login_required": False, "description": "Convert text into URL-friendly slugs."},
+    {"name": "Text Cleaner", "icon": "bi-eraser", "url": "text-cleaner", "category": "productivity", "login_required": False, "description": "Remove duplicates, extra spaces, and line breaks."},
+    {"name": "Pixel Art Maker", "icon": "bi-grid-3x3", "url": "pixel-art", "category": "other", "login_required": False, "description": "Draw pixel art on a grid and export."},
+    {"name": "Meme Generator", "icon": "bi-card-image", "url": "meme-generator", "category": "other", "login_required": False, "description": "Create memes with custom text."},
+    {"name": "Meta Tag Generator", "icon": "bi-code-square", "url": "meta-tag-generator", "category": "developer", "login_required": False, "description": "Generate SEO meta tags for websites."},
 ]
+WIP_TOOLS = []
 UPCOMING_TOOLS = [
-    {"name": "Custom Calendar", "icon": "bi-calendar-range", "soon": "Planning soon"},
-    {"name": "Weather", "icon": "bi-cloud-sun", "soon": "Forecasting soon"},
-    {"name": "World Clock & Meeting Planner", "icon": "bi-globe", "soon": "Planning soon"},
-    {"name": "Video/Image Compressor", "icon": "bi-file-earmark-zip", "soon": "Compressing soon"},
-    {"name": "Image Editor", "icon": "bi-image-alt", "soon": "Editing soon"},
-    {"name": "Markdown Editor", "icon": "bi-filetype-md", "soon": "Markdowning soon"},
-    {"name": "JSON Formatter/Validator", "icon": "bi-code-square", "soon": "Validating soon"},
-    {"name": "Text Formatter", "icon": "bi-textarea", "soon": "Formatting soon"},
-    {"name": "Text Analyzer", "icon": "bi-bar-chart-line", "soon": "Analyzing soon"},
-    {"name": "Text Expander", "icon": "bi-textarea-t", "soon": "Expanding soon"},
-    {"name": "Image to Text (OCR)", "icon": "bi-filetype-txt", "soon": "Extracting soon"},
-    {"name": "Focus Session", "icon": "bi-bullseye", "soon": "Focusing soon"},
-    {"name": "Study Laps", "icon": "bi-journal-check", "soon": "Tracking soon"},
-    {"name": "Mood Tracker", "icon": "bi-emoji-smile", "soon": "Mood tracking soon"},
-    {"name": "Screen Color Tool", "icon": "bi-lightbulb", "soon": "Lighting soon"},
-    {"name": "Collaborative Documents", "icon": "bi-file-earmark-text", "soon": "Collaborating soon"},
-    {"name": "Event Planner", "icon": "bi-calendar-event", "soon": "Planning soon"},
-    {"name": "Game Zone", "icon": "bi-controller", "soon": "Gaming soon"},
-    {"name": "Regex Tester", "icon": "bi-slash-square", "soon": "Testing soon"},
-    {"name": "Image Cropper", "icon": "bi-crop", "soon": "Cropping soon"},
-    {"name": "ASCII Art Generator", "icon": "bi-type", "soon": "ASCII soon"},
-    {"name": "BPM Calculator", "icon": "bi-music-note-list", "soon": "Tapping soon"},
-    {"name": "Age Calculator", "icon": "bi-person-badge", "soon": "Aging soon"},
-    {"name": "Typing Speed Test", "icon": "bi-keyboard", "soon": "Typing soon"},
-    {"name": "Audio Trimmer", "icon": "bi-scissors", "soon": "Trimming soon"},
-    {"name": "HTML Table Generator", "icon": "bi-table", "soon": "Tabling soon"},
-    {"name": "Daily Journal Prompts", "icon": "bi-journal-richtext", "soon": "Prompting soon"},
-    {"name": "Daily Challenges", "icon": "bi-lightning-charge", "soon": "Challenging soon"},
-    {"name": "Image Splitter", "icon": "bi-layout-split", "soon": "Splitting soon"},
-    # TODO: Add more upcoming tools
+    {"name": "Text Formatter", "icon": "bi-textarea", "url": "text-formatter", "category": "productivity", "login_required": False, "description": "Format HTML, CSS, SQL, and XML."},
 ]
+WIP_TOOLS = []
+UPCOMING_TOOLS = []
 TOOL_CATEGORIES = [
     {"key": "all", "name": "All"},
     {"key": "math", "name": "Math"},
@@ -409,8 +466,11 @@ TOOL_CATEGORIES = [
     {"key": "productivity", "name": "Productivity"},
     {"key": "conversion", "name": "Conversion"},
     {"key": "ai", "name": "AI"},
+    {"key": "pdf", "name": "PDF"},
     {"key": "files", "name": "Files"},
     {"key": "time", "name": "Time"},
+    {"key": "developer", "name": "Developer"},
+    {"key": "security", "name": "Security"},
     {"key": "other", "name": "Other"},
 ]
 ALLOWED_EXTENSIONS = {
@@ -440,9 +500,15 @@ REVERSE_IMAGE_ENGINES = [
     },
     {
         "name": "TinEye",
-        "url": "https://tineye.com/search/?url=",
+        "url": "https://www.tineye.com/search?url=",
         "upload": False,
-        "icon": "bi-search"
+        "icon": "bi-eye"
+    },
+    {
+        "name": "Sogou",
+        "url": "https://pic.sogou.com/ris?query=",
+        "upload": False,
+        "icon": "bi-globe2"
     },
     {
         "name": "IQDB",
@@ -491,7 +557,9 @@ REVERSE_IMAGE_ENGINES = [
         "url": "https://www.social-searcher.com/reverse-image-search/",
         "upload": True,
         "icon": "bi-globe"
-    }
+    },
+    # Productivity
+    # Typing Speed Test removed (duplicate)
     #TODO: Add more reverse image search engines
 ]
 WHITE_NOISE_SOUNDS = [
@@ -755,7 +823,7 @@ def login():
         if not user.verified:
             session["pending_user_id"] = user.id
             flash("Account not verified. Please check your email for the OTP.", "warning")
-            return render_template("verify_otp")
+            return render_template("verify_otp.html")
         session["user_id"] = user.id
         flash("Logged in successfully!", "success")
         return redirect("/")
@@ -1116,6 +1184,7 @@ def settings():
     if request.method == "POST":
         language = request.form.get("language")
         theme = request.form.get("theme")
+        color_scheme = request.form.get("color_scheme")
         db.session.execute(
             text("UPDATE users SET language = :language, theme = :theme WHERE id = :id"),
             {"language": language, "theme": theme, "id": session["user_id"]}
@@ -1123,6 +1192,8 @@ def settings():
         db.session.commit()
         session["lang"] = language
         session["theme"] = theme
+        if color_scheme:
+            session["color_scheme"] = color_scheme
         flash("Settings updated!", "success")
         return redirect("/settings")
     user = db.session.execute(
@@ -1509,6 +1580,10 @@ def currency_converter():
     )
 
 # --- Basic Calculator (tool) Route ---
+@app.route("/tools/typing-test")
+def typing_test():
+    return render_template("tools/typing_test.html")
+
 @app.route("/tools/calculator", methods=["GET", "POST"])
 def calculator():
     result = None
@@ -2008,12 +2083,42 @@ def ai_gemini_prompt():
         prompt = request.form.get("prompt", "").strip()
         if prompt:
             try:
-                model = genai.GenerativeModel('gemini-pro')
-                response = model.generate_content(prompt)
-                result = response.text
+                # Check for API key
+                if not os.environ.get("GEMINI_API_KEY"):
+                    result = "Error: GEMINI_API_KEY not found in environment variables. Please check your .env file."
+                else:
+                    model = genai.GenerativeModel('gemini-pro')
+                    response = model.generate_content(prompt)
+                    result = response.text
             except Exception as e:
                 result = f"Error: {e}"
-    return redirect(url_for("ai_gemini_prompt", prompt=prompt, result=result))
+    # Use render_template, not redirect, to show results without clearing form immediately or requiring complex args passing
+    return render_template("tools/ai_gemini_prompt.html", prompt=prompt, result=result, _=_)
+
+# --- AI Prompt (tool) Route ---
+@app.route("/tools/ai-prompt", methods=["GET", "POST"])
+def ai_prompt():
+    result = None
+    prompt = ""
+    if request.method == "POST":
+        prompt = request.form.get("prompt", "").strip()
+        if prompt:
+            try:
+                if not os.environ.get("OPENAI_API_KEY"):
+                   result = "Error: OPENAI_API_KEY not found. Please set it in your .env file."
+                else:
+                    response = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                             {"role": "user", "content": prompt}
+                        ],
+                        max_tokens=150,
+                        temperature=0.7,
+                    )
+                    result = response.choices[0].message.content
+            except Exception as e:
+                result = f"Error: {e}"
+    return render_template("tools/ai_prompt.html", prompt=prompt, result=result, _=_)
 
 # --- AI Text Paraphraser (tool) Routes ---
 @app.route("/tools/ai-paraphraser", methods=["GET", "POST"])
@@ -2024,19 +2129,22 @@ def ai_paraphraser():
         text = request.form.get("text", "")
         if text:
             try:
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "Paraphrase the following text."},
-                        {"role": "user", "content": text}
-                    ],
-                    max_tokens=256,
-                    temperature=0.7,
-                )
-                paraphrased = response.choices[0].message.content
+                if not os.environ.get("OPENAI_API_KEY"):
+                     paraphrased = "Error: OPENAI_API_KEY not found or configured."
+                else:
+                    response = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                            {"role": "system", "content": "Paraphrase the following text."},
+                            {"role": "user", "content": text}
+                        ],
+                        max_tokens=256,
+                        temperature=0.7,
+                    )
+                    paraphrased = response.choices[0].message.content
             except Exception as e:
                 paraphrased = f"Error: {e}"
-    return redirect(url_for("ai_paraphraser", paraphrased=paraphrased, text=text))
+    return render_template("tools/ai_paraphraser.html", paraphrased=paraphrased, text=text, _=_)
 
 # --- Gradient Generator (tool) Routes ---
 @app.route("/tools/gradient-generator", methods=["GET", "POST"])
@@ -2769,11 +2877,13 @@ def pdf_tools():
             # Save all uploaded files
             pdf_paths = []
             for file in files:
-                if file and file.filename.endswith(".pdf"):
-                    filename = secure_filename(file.filename)
-                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(path)
-                    pdf_paths.append(path)
+                if file:
+                    lower_name = file.filename.lower()
+                    if lower_name.endswith(".pdf") or (action == "img_to_pdf" and lower_name.endswith(('.png', '.jpg', '.jpeg', '.bmp'))):
+                        filename = secure_filename(file.filename)
+                        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        file.save(path)
+                        pdf_paths.append(path)
             # Merge
             if action == "merge":
                 writer = PyPDF2.PdfWriter()
@@ -2823,6 +2933,20 @@ def pdf_tools():
                                 cropped.save(buf, format="PNG")
                                 images.append(base64.b64encode(buf.getvalue()).decode())
                 result = images
+            # Image to PDF
+            elif action == "img_to_pdf":
+                image_files = [p for p in pdf_paths if p.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+                if image_files:
+                    img_list = []
+                    for img_path in image_files:
+                        img = Image.open(img_path).convert('RGB')
+                        img_list.append(img)
+                    out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"images_to_pdf_{uuid.uuid4().hex}.pdf")
+                    if img_list:
+                        img_list[0].save(out_path, save_all=True, append_images=img_list[1:])
+                        result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+                else:
+                    error = "No valid images uploaded."
             # Convert to Word
             elif action == "to_word":
                 from pdf2docx import Converter
@@ -2836,8 +2960,28 @@ def pdf_tools():
                 result = links
             # Convert to Excel
             elif action == "to_excel":
-                # Placeholder: Use tabula-py or camelot for real extraction
-                result = "Excel conversion coming soon!"
+                try:
+                    import tabula
+                    import pandas as pd
+                    links = []
+                    for path in pdf_paths:
+                        excel_path = path.replace(".pdf", ".xlsx")
+                        # extracting tables from pdf
+                        dfs = tabula.read_pdf(path, pages='all')
+                        if dfs:
+                            with pd.ExcelWriter(excel_path) as writer:
+                                for i, df in enumerate(dfs):
+                                    df.to_excel(writer, sheet_name=f'Sheet{i+1}')
+                            links.append(url_for('static', filename=f"uploads/{os.path.basename(excel_path)}"))
+                    if links:
+                        result = links
+                    else:
+                        error = "No tables found in PDF to convert."
+                except ImportError:
+                     error = "Table extraction library not installed on server."
+                except Exception as e:
+                    error = f"Error converting to Excel: {str(e)}"
+
             # Add Password
             elif action == "add_password":
                 for path in pdf_paths:
@@ -2875,17 +3019,96 @@ def pdf_tools():
                     result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
             # Watermark
             elif action == "watermark":
-                # Placeholder: Add watermark logic here
-                result = "Watermarking coming soon!"
+                try:
+                    from reportlab.pdfgen import canvas
+                    from reportlab.lib.pagesizes import letter
+                    
+                    for path in pdf_paths:
+                        # Create watermark PDF
+                        wm_filename = f"watermark_{uuid.uuid4().hex}.pdf"
+                        wm_path = os.path.join(app.config['UPLOAD_FOLDER'], wm_filename)
+                        c = canvas.Canvas(wm_path, pagesize=letter)
+                        c.setFont("Helvetica", 50)
+                        c.setFillColorRGB(0.5, 0.5, 0.5, 0.3) # Grey, transparent
+                        c.saveState()
+                        c.translate(300, 400)
+                        c.rotate(45)
+                        c.drawCentredString(0, 0, watermark_text)
+                        c.restoreState()
+                        c.save()
+
+                        # Merge watermark
+                        reader = PyPDF2.PdfReader(path)
+                        wm_reader = PyPDF2.PdfReader(wm_path)
+                        wm_page = wm_reader.pages[0]
+                        writer = PyPDF2.PdfWriter()
+
+                        for page in reader.pages:
+                            page.merge_page(wm_page)
+                            writer.add_page(page)
+                        
+                        out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"watermarked_{uuid.uuid4().hex}.pdf")
+                        with open(out_path, "wb") as f:
+                            writer.write(f)
+                        result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+                        # Cleanup watermark file
+                        try: os.remove(wm_path) 
+                        except: pass
+                except ImportError:
+                    error = "Watermarking library not available."
+                except Exception as e:
+                    error = f"Watermark error: {str(e)}"
+
             # Reorder
             elif action == "reorder":
-                # Placeholder: Add reorder logic here
-                result = "Reordering coming soon!"
+                try:
+                    # Parse reorder string "1,3,2" (1-based)
+                    try:
+                        order = [int(x.strip()) - 1 for x in reorder.split(",") if x.strip().isdigit()]
+                    except:
+                        order = []
+                    
+                    if not order:
+                        error = "Invalid page order format. Use comma separated numbers (e.g., 1, 3, 2)."
+                    else:
+                        for path in pdf_paths:
+                            reader = PyPDF2.PdfReader(path)
+                            writer = PyPDF2.PdfWriter()
+                            num_pages = len(reader.pages)
+                            for page_idx in order:
+                                if 0 <= page_idx < num_pages:
+                                    writer.add_page(reader.pages[page_idx])
+                            
+                            out_path = os.path.join(app.config['UPLOAD_FOLDER'], f"reordered_{uuid.uuid4().hex}.pdf")
+                            with open(out_path, "wb") as f:
+                                writer.write(f)
+                            result = url_for('static', filename=f"uploads/{os.path.basename(out_path)}")
+                except Exception as e:
+                    error = f"Reorder error: {str(e)}"
             else:
                 error = "Invalid action."
         except Exception as e:
             error = f"Error: {e}"
-    return render_template("tools/pdf_tools.html", result=result, error=error)
+            
+    # Determine which template to render based on action
+    template_map = {
+        "merge": "tools/pdf/merge.html",
+        "split": "tools/pdf/split.html",
+        "compress": "tools/pdf/compress.html",
+        "img_to_pdf": "tools/pdf/img_to_pdf.html",
+        "to_word": "tools/pdf/to_word.html",
+        "to_excel": "tools/pdf/to_excel.html",
+        "add_password": "tools/pdf/protect.html",
+        "remove_password": "tools/pdf/unlock.html",
+        "rotate": "tools/pdf/rotate.html",
+        "watermark": "tools/pdf/watermark.html",
+        "reorder": "tools/pdf/reorder.html",
+        "extract_images": "tools/pdf/extract_images.html"
+    }
+    
+    template_name = template_map.get(action, "tools/pdf_tools.html")
+    
+    return render_template(template_name, result=result, error=error)
 
 # --- Voice-to-Text (tool) Route ---
 @app.route("/tools/voice-to-text", methods=["GET", "POST"])
@@ -3395,6 +3618,276 @@ def coin_toss():
         import random
         result = random.choice(["Heads", "Tails"])
     return render_template("tools/coin_toss.html", result=result)
+
+# --- JSON Formatter (tool) Route ---
+@app.route("/tools/json-formatter", methods=["GET", "POST"])
+def json_formatter():
+    data = result = ""
+    error = None
+    if request.method == "POST":
+        data = request.form.get("data", "")
+        import json
+        try:
+            parsed = json.loads(data)
+            result = json.dumps(parsed, indent=4)
+        except Exception as e:
+            error = str(e)
+    return render_template("tools/json_formatter.html", data=data, result=result, error=error)
+
+# --- Text Analyzer (tool) Route ---
+@app.route("/tools/text-analyzer", methods=["GET", "POST"])
+def text_analyzer():
+    text = ""
+    stats = {}
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        words = text.split()
+        stats = {
+            "characters": len(text),
+            "words": len(words),
+            "sentences": text.count('.') + text.count('!') + text.count('?'),
+            "paragraphs": text.count('\n') + 1 if text else 0,
+            "avg_word_len": round(sum(len(w) for w in words) / len(words), 2) if words else 0
+        }
+    return render_template("tools/text_analyzer.html", text=text, stats=stats)
+
+# --- ASCII Art (tool) Route ---
+@app.route("/tools/ascii-art", methods=["GET", "POST"])
+def ascii_art():
+    text = result = ""
+    font = "standard"
+    if request.method == "POST":
+        text = request.form.get("text", "")
+        font = request.form.get("font", "standard")
+        try:
+            from art import text2art
+            result = text2art(text, font=font)
+        except ImportError:
+            result = "Art library not installed."
+        except Exception as e:
+            result = str(e)
+    return render_template("tools/ascii_art.html", text=text, result=result, font=font)
+
+# --- Age Calculator (tool) Route ---
+@app.route("/tools/age-calculator", methods=["GET", "POST"])
+def age_calculator():
+    result = {}
+    dob = None
+    dob_str = ""
+    if request.method == "POST":
+        dob_str = request.form.get("dob")
+        if dob_str:
+            try:
+                dob = datetime.strptime(dob_str, "%Y-%m-%d")
+                now = datetime.now()
+                delta = now - dob
+                years = delta.days // 365
+                months = (delta.days % 365) // 30
+                days = (delta.days % 365) % 30
+                result = {"years": years, "months": months, "days": days}
+            except: pass
+    return render_template("tools/age_calculator.html", result=result, dob=dob_str)
+
+# --- Weather (tool) Route ---
+@app.route("/tools/weather")
+def weather():
+    return render_template("tools/weather.html")
+
+
+# --- OCR (tool) Route ---
+@app.route("/tools/ocr", methods=["GET", "POST"])
+def ocr():
+    # Client-side OCR via Tesseract.js (no backend processing needed)
+    return render_template("tools/ocr.html")
+
+# --- Game Zone (tool) Route ---
+@app.route("/tools/game-zone")
+def game_zone():
+    return render_template("tools/game_zone.html")
+
+# --- Mood Tracker (tool) Route ---
+@app.route("/tools/mood-tracker")
+def mood_tracker():
+    return render_template("tools/mood_tracker.html")
+
+# --- Screen Color Tool (tool) Route ---
+@app.route("/tools/screen-color")
+def screen_color():
+    return render_template("tools/screen_color.html")
+
+# --- Custom Calendar (tool) Route ---
+@app.route("/tools/custom-calendar")
+def custom_calendar():
+    return render_template("tools/calendar.html")
+
+# --- Meeting Planner (tool) Route ---
+@app.route("/tools/meeting-planner")
+def meeting_planner():
+    return render_template("tools/meeting_planner.html")
+
+# --- Image Compressor (tool) Route ---
+@app.route("/tools/image-compressor")
+def image_compressor():
+    return render_template("tools/image_compressor.html")
+
+# --- Image Editor (tool) Route ---
+@app.route("/tools/image-editor")
+def image_editor():
+    return render_template("tools/image_editor.html")
+
+# --- Markdown Editor (tool) Route ---
+@app.route("/tools/markdown-editor")
+def markdown_editor():
+    return render_template("tools/markdown_editor.html")
+
+# --- Regex Tester (tool) Route ---
+@app.route("/tools/regex-tester")
+def regex_tester():
+    return render_template("tools/regex_tester.html")
+
+# --- Image Cropper (tool) Route ---
+@app.route("/tools/image-cropper")
+def image_cropper():
+    return render_template("tools/image_cropper.html")
+
+# --- BPM Calculator (tool) Route ---
+@app.route("/tools/bpm-calculator")
+def bpm_calculator():
+    return render_template("tools/bpm_calculator.html")
+
+# --- HTML Table Generator (tool) Route ---
+@app.route("/tools/table-generator")
+def table_generator():
+    return render_template("tools/table_generator.html")
+
+# --- Focus Mode (tool) Route ---
+@app.route("/tools/focus-mode")
+def focus_mode():
+    return render_template("tools/focus_mode.html")
+
+# --- Image Splitter (tool) Route ---
+@app.route("/tools/image-splitter")
+def image_splitter():
+    return render_template("tools/image_splitter.html")
+
+# --- Text Formatter (tool) Route ---
+@app.route("/tools/text-formatter")
+def text_formatter():
+    return render_template("tools/text_formatter.html")
+
+# --- Study Laps (tool) Route ---
+@app.route("/tools/study-laps")
+def study_laps():
+    return render_template("tools/study_laps.html")
+
+# --- Journal Prompts (tool) Route ---
+@app.route("/tools/journal-prompts")
+def journal_prompts():
+    return render_template("tools/journal_prompts.html")
+
+# --- Daily Challenges (tool) Route ---
+@app.route("/tools/daily-challenges")
+def daily_challenges():
+    return render_template("tools/daily_challenges.html")
+
+# --- Batch 5 Routes ---
+@app.route("/tools/uuid-generator")
+def uuid_generator():
+    return render_template("tools/uuid_generator.html")
+
+@app.route("/tools/sql-formatter")
+def sql_formatter():
+    return render_template("tools/sql_formatter.html")
+
+@app.route("/tools/prime-factorization")
+def prime_factorization():
+    return render_template("tools/prime_factorization.html")
+
+@app.route("/tools/reaction-time")
+def reaction_time():
+    return render_template("tools/reaction_time.html")
+
+@app.route("/tools/word-cloud")
+def word_cloud():
+    return render_template("tools/word_cloud.html")
+
+@app.route("/tools/aspect-ratio")
+def aspect_ratio():
+    return render_template("tools/aspect_ratio.html")
+
+# --- Batch 6 Routes ---
+@app.route("/tools/sentiment-analysis")
+def sentiment_analysis():
+    return render_template("tools/sentiment_analysis.html")
+
+@app.route("/tools/slug-generator")
+def slug_generator():
+    return render_template("tools/slug_generator.html")
+
+@app.route("/tools/text-cleaner")
+def text_cleaner():
+    return render_template("tools/text_cleaner.html")
+
+@app.route("/tools/pixel-art")
+def pixel_art():
+    return render_template("tools/pixel_art.html")
+
+@app.route("/tools/meme-generator")
+def meme_generator():
+    return render_template("tools/meme_generator.html")
+
+@app.route("/tools/meta-tag-generator")
+def meta_tag_generator():
+    return render_template("tools/meta_tag_generator.html")
+
+# --- PDF Tools Routes (Split) ---
+@app.route("/tools/pdf-merge")
+def pdf_merge():
+    return render_template("tools/pdf/merge.html")
+
+@app.route("/tools/pdf-split")
+def pdf_split():
+    return render_template("tools/pdf/split.html")
+
+@app.route("/tools/pdf-compress")
+def pdf_compress():
+    return render_template("tools/pdf/compress.html")
+
+@app.route("/tools/pdf-from-images")
+def pdf_from_images():
+    return render_template("tools/pdf/img_to_pdf.html")
+
+@app.route("/tools/pdf-to-word")
+def pdf_to_word():
+    return render_template("tools/pdf/to_word.html")
+
+@app.route("/tools/pdf-to-excel")
+def pdf_to_excel():
+    return render_template("tools/pdf/to_excel.html")
+
+@app.route("/tools/pdf-unlock")
+def pdf_unlock():
+    return render_template("tools/pdf/unlock.html")
+
+@app.route("/tools/pdf-protect")
+def pdf_protect():
+    return render_template("tools/pdf/protect.html")
+
+@app.route("/tools/pdf-rotate")
+def pdf_rotate():
+    return render_template("tools/pdf/rotate.html")
+
+@app.route("/tools/pdf-watermark")
+def pdf_watermark():
+    return render_template("tools/pdf/watermark.html")
+
+@app.route("/tools/pdf-reorder")
+def pdf_reorder():
+    return render_template("tools/pdf/reorder.html")
+
+@app.route("/tools/pdf-extract-images")
+def pdf_extract_images():
+    return render_template("tools/pdf/extract_images.html")
 
 # --- Main Application Setup ---
 if __name__ == "__main__":

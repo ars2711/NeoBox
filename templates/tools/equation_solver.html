@@ -1,119 +1,197 @@
 {% extends "layout.html" %} {% block title %}Equation Solver{% endblock %} {%
 block main %}
-<div class="container py-4">
-  <h1 class="mb-3">Equation Solver</h1>
-  <!-- Symbol Picker -->
-  <!--
-  <div class="mb-2">
-    <label class="form-label">Quick Symbols:</label>
-    <div>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="="
-      >
-        =
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="π"
-      >
-        &pi;
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="∞"
-      >
-        &infin;
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="^"
-      >
-        ^
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm symbol-btn"
-        data-symbol="√"
-      >
-        &radic;
-      </button>
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">Equation Solver</h2>
+      <p class="text-muted">
+        Find roots for algebraic, logarithmic, and trigonometric equations.
+      </p>
     </div>
   </div>
-  -->
-  <form method="post" class="mb-3" id="calcForm">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-7">
-        <label class="form-label">Equation (e.g. x^2-4):</label>
-        <input
-          name="eqn"
-          id="eqn"
-          value="{{ eqn }}"
-          class="form-control"
-          autocomplete="off"
-          required
-        />
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Variable</label>
-        <input
-          name="var"
-          id="var"
-          value="{{ var }}"
-          class="form-control"
-          autocomplete="off"
-          required
-        />
-      </div>
-      <div class="col-md-2">
-        <button class="btn btn-primary w-100">Solve</button>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-7 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post" id="calcForm">
+          <!-- Symbol Toolbar -->
+          <div
+            class="mb-3 d-flex gap-2 overflow-auto pb-2"
+            style="white-space: nowrap"
+          >
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('x^2')"
+            >
+              x²
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('sqrt(')"
+            >
+              √
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('sin(')"
+            >
+              sin
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('cos(')"
+            >
+              cos
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('tan(')"
+            >
+              tan
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('ln(')"
+            >
+              ln
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-light border shadow-sm symbol-btn"
+              onclick="insertSymbol('=')"
+            >
+              =
+            </button>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-9">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >Equation</label
+              >
+              <div class="input-group">
+                <input
+                  name="eqn"
+                  id="eqn"
+                  value="{{ eqn }}"
+                  class="form-control form-control-lg bg-light-subtle"
+                  autocomplete="off"
+                  required
+                  placeholder="e.g. x^2 - 4"
+                  oninput="renderMath()"
+                />
+                <span
+                  class="input-group-text bg-transparent border-start-0 text-muted"
+                  >= 0</span
+                >
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >Variable</label
+              >
+              <input
+                name="var"
+                id="var"
+                value="{{ var or 'x' }}"
+                class="form-control form-control-lg bg-light-subtle text-center"
+                autocomplete="off"
+                required
+                oninput="renderMath()"
+              />
+            </div>
+          </div>
+
+          <div
+            class="mt-4 p-3 bg-light rounded-3 border d-flex align-items-center justify-content-center"
+            style="min-height: 80px"
+          >
+            <div id="math-preview" class="text-muted opacity-75">
+              $$ x^2 - 4 = 0 $$
+            </div>
+          </div>
+
+          <button
+            class="btn btn-neo w-100 mt-4 py-3 rounded-pill"
+            type="submit"
+          >
+            <i class="bi bi-search me-2"></i>Find Solution
+          </button>
+        </form>
       </div>
     </div>
-  </form>
-  <div class="mb-2">
-    <strong>Live Preview:</strong>
-    <div id="math-preview" class="border rounded p-2"></div>
-  </div>
-  {% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b> <span id="calc-result">{{ result }}</span> {% if explanation
-    %}
-    <div class="mt-2 small text-muted">{{ explanation }}</div>
+
+    {% if result is not none %}
+    <div class="col-lg-5 fade-in-up mt-4 mt-lg-0" style="animation-delay: 0.2s">
+      <div class="glass-card p-4 h-100 d-flex flex-column">
+        <h5 class="fw-bold mb-4 text-gradient">
+          <i class="bi bi-check-circle-fill me-2 text-success"></i>Result
+        </h5>
+
+        <div
+          class="bg-white p-4 rounded-3 shadow-sm border mb-3 text-center overflow-auto"
+        >
+          <span id="math-result" class="fs-4">{{ result }}</span>
+        </div>
+
+        {% if explanation %}
+        <div class="alert alert-light border small text-muted">
+          <i class="bi bi-info-circle me-1"></i> {{ explanation }}
+        </div>
+        {% endif %}
+
+        <div
+          class="mt-auto pt-3 border-top border-secondary border-opacity-10 text-center text-muted small"
+        >
+          Solutions are approximated for complex equations.
+        </div>
+      </div>
+    </div>
     {% endif %}
   </div>
-  {% endif %}
 </div>
+
 <script>
+  function insertSymbol(sym) {
+    const input = document.getElementById("eqn");
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    input.value = text.substring(0, start) + sym + text.substring(end);
+    input.focus();
+    input.selectionStart = input.selectionEnd = start + sym.length;
+    renderMath();
+  }
+
   function renderMath() {
     let eqn = document.getElementById("eqn").value || "";
-    document.getElementById("math-preview").innerHTML = "$$" + eqn + "=0$$";
-    if (window.MathJax) MathJax.typesetPromise();
+    // If user enters = in the equation, use it. Otherwise assume = 0
+    let previewEqn = eqn;
+    if (!eqn.includes("=")) {
+      previewEqn += " = 0";
+    }
+
+    // Very basic replacement for preview
+    previewEqn = previewEqn.replace(/\*/g, "");
+
+    const preview = document.getElementById("math-preview");
+    preview.innerHTML = "$$" + previewEqn + "$$";
+
+    if (window.MathJax) {
+      MathJax.typesetPromise([preview]).catch((err) => console.log(err));
+    }
   }
-  ["eqn"].forEach((id) => {
-    document.getElementById(id).addEventListener("input", renderMath);
-  });
-  window.addEventListener("DOMContentLoaded", renderMath);
-</script>
-<script>
-  document.querySelectorAll(".symbol-btn").forEach((btn) => {
-    btn.onclick = function () {
-      const active = document.activeElement;
-      if (active && active.tagName === "INPUT") {
-        const start = active.selectionStart,
-          end = active.selectionEnd;
-        const val = active.value;
-        active.value =
-          val.slice(0, start) + btn.dataset.symbol + val.slice(end);
-        active.focus();
-        active.selectionStart = active.selectionEnd =
-          start + btn.dataset.symbol.length;
-        if (typeof renderMath === "function") renderMath();
-      }
-    };
+
+  window.addEventListener("load", () => {
+    if (document.getElementById("eqn").value) renderMath();
   });
 </script>
 {% endblock %}

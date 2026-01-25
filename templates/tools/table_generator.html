@@ -1,0 +1,123 @@
+{% extends "layout.html" %} {% block title %}HTML Table Generator{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-table me-2"></i>HTML Table Generator</h2>
+             <p class="text-muted">Visually create and export HTML tables.</p>
+        </div>
+    </div>
+
+  <div class="row g-4 justify-content-center">
+    <!-- Settings -->
+    <div class="col-lg-4 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4 h-100">
+          <h5 class="fw-bold mb-3">Settings</h5>
+          
+          <div class="row g-3 mb-3">
+              <div class="col-6">
+                  <label class="form-label small text-uppercase fw-bold text-muted">Rows</label>
+                  <input type="number" id="rows" class="form-control" value="4" min="1" onchange="generateTable()">
+              </div>
+              <div class="col-6">
+                  <label class="form-label small text-uppercase fw-bold text-muted">Columns</label>
+                  <input type="number" id="cols" class="form-control" value="3" min="1" onchange="generateTable()">
+              </div>
+          </div>
+          
+          <div class="mb-3">
+              <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" id="headerRow" checked onchange="generateTable()">
+                  <label class="form-check-label">Header Row</label>
+              </div>
+              <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" id="bordered" checked onchange="generateTable()">
+                  <label class="form-check-label">Bordered</label>
+              </div>
+              <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" id="striped" checked onchange="generateTable()">
+                  <label class="form-check-label">Striped</label>
+              </div>
+               <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" id="hoverable" checked onchange="generateTable()">
+                  <label class="form-check-label">Hoverable</label>
+              </div>
+          </div>
+          
+          <button class="btn btn-neo w-100" onclick="copyCode()">
+              <i class="bi bi-clipboard me-2"></i> Copy HTML
+          </button>
+      </div>
+    </div>
+
+    <!-- Preview & Code -->
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.2s;">
+        <div class="glass-card p-4 mb-4">
+             <h5 class="fw-bold mb-3">Live Preview</h5>
+             <div class="table-responsive bg-white rounded-3 p-3 shadow-inner" id="tablePreview">
+                 <!-- Generated Table -->
+             </div>
+        </div>
+        
+        <div class="glass-card p-0 overflow-hidden">
+            <div class="bg-light p-2 border-bottom d-flex justify-content-between align-items-center">
+                <span class="small fw-bold text-muted ms-2">HTML Source</span>
+                <span class="badge bg-primary rounded-pill">Read Only</span>
+            </div>
+            <textarea id="outputCode" class="form-control border-0 font-monospace p-3 bg-white" rows="6" readonly></textarea>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function generateTable() {
+        const rows = document.getElementById('rows').value;
+        const cols = document.getElementById('cols').value;
+        const hasHeader = document.getElementById('headerRow').checked;
+        const isBordered = document.getElementById('bordered').checked;
+        const isStriped = document.getElementById('striped').checked;
+        const isHover = document.getElementById('hoverable').checked;
+
+        let classes = 'table';
+        if (isBordered) classes += ' table-bordered';
+        if (isStriped) classes += ' table-striped';
+        if (isHover) classes += ' table-hover';
+
+        let html = `<table class="${classes}">\n`;
+        
+        // Header
+        if (hasHeader) {
+            html += '  <thead>\n    <tr>\n';
+            for (let j = 0; j < cols; j++) {
+                html += `      <th scope="col">Header ${j+1}</th>\n`;
+            }
+            html += '    </tr>\n  </thead>\n';
+        }
+
+        // Body
+        html += '  <tbody>\n';
+        for (let i = 0; i < (hasHeader ? rows - 1 : rows); i++) {
+            html += '    <tr>\n';
+            for (let j = 0; j < cols; j++) {
+                html += `      <td>Cell ${i+1}-${j+1}</td>\n`;
+            }
+            html += '    </tr>\n';
+        }
+        html += '  </tbody>\n</table>';
+
+        document.getElementById('tablePreview').innerHTML = html;
+        document.getElementById('outputCode').value = html;
+    }
+    
+    function copyCode() {
+        const code = document.getElementById('outputCode');
+        code.select();
+        document.execCommand('copy');
+        alert('Code copied to clipboard!');
+    }
+
+    // Init
+    generateTable();
+</script>
+{% endblock %}

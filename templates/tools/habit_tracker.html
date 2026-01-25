@@ -1,50 +1,107 @@
 {% extends "layout.html" %} {% block title %}{{ _('Habit Tracker') }}{% endblock
 %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Habit Tracker') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Habit') }}</label>
-      <input type="text" name="habit" class="form-control" required />
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-check2-circle me-2"></i>Habit Tracker
+      </h2>
+      <p class="text-muted">Build consistent habits and track your progress.</p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Frequency') }}</label>
-      <select name="frequency" class="form-select">
-        <option value="daily">{{ _('Daily') }}</option>
-        <option value="weekly">{{ _('Weekly') }}</option>
-        <option value="monthly">{{ _('Monthly') }}</option>
-      </select>
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <!-- Form -->
+    <div class="col-md-5 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 h-100">
+        <h5 class="fw-bold mb-4 text-gradient">Start a New Habit</h5>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >{{ _('Habit Name') }}</label
+            >
+            <input
+              type="text"
+              name="habit"
+              class="form-control bg-light-subtle"
+              placeholder="e.g. Read 30 mins"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >{{ _('Frequency') }}</label
+            >
+            <select name="frequency" class="form-select bg-light-subtle">
+              <option value="daily">{{ _('Daily') }}</option>
+              <option value="weekly">{{ _('Weekly') }}</option>
+              <option value="monthly">{{ _('Monthly') }}</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >{{ _('Start Date') }}</label
+            >
+            <input
+              type="date"
+              name="start_date"
+              class="form-control bg-light-subtle"
+              required
+            />
+          </div>
+          <button class="btn btn-neo w-100 rounded-pill py-2" type="submit">
+            {{ _('Track Habit') }}
+          </button>
+        </form>
+      </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Start Date') }}</label>
-      <input type="date" name="start_date" class="form-control" required />
+
+    <!-- List -->
+    <div class="col-md-7 fade-in-up" style="animation-delay: 0.2s">
+      <div class="glass-card p-0 h-100 d-flex flex-column overflow-hidden">
+        <div class="p-4 border-bottom bg-light bg-opacity-25">
+          <h5 class="fw-bold m-0 text-gradient">Your Habits</h5>
+        </div>
+
+        <ul class="list-group list-group-flush flex-grow-1">
+          {% for h in habits %}
+          <li class="list-group-item bg-transparent p-3 border-light-subtle">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1 fw-bold">{{ h.habit }}</h6>
+                <div class="d-flex align-items-center gap-2">
+                  <span
+                    class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill"
+                    >{{ h.frequency|capitalize }}</span
+                  >
+                  <span className="text-muted small"
+                    ><i class="bi bi-calendar-event me-1"></i>Since {{
+                    h.start_date }}</span
+                  >
+                </div>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input text-success fs-4 border-2"
+                  type="checkbox"
+                  title="Mark done for today"
+                />
+              </div>
+            </div>
+          </li>
+          {% else %}
+          <li
+            class="list-group-item bg-transparent text-center py-5 text-muted"
+          >
+            <i
+              class="bi bi-calendar-check display-4 opacity-50 mb-3 d-block"
+            ></i>
+            {{ _('No habits tracked yet.') }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Habit') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Habits') }}</div>
-    <ul class="list-group list-group-flush">
-      {% for h in habits %}
-      <li
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <span>
-          <strong>{{ h.habit }}</strong>
-          <span class="text-muted">({{ h.frequency|capitalize }})</span>
-          <br />
-          <small class="text-muted">{{ h.start_date }}</small>
-        </span>
-      </li>
-      {% else %}
-      <li class="list-group-item text-muted">{{ _('No habits yet.') }}</li>
-      {% endfor %}
-    </ul>
   </div>
 </div>
 {% endblock %}

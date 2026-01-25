@@ -1,13 +1,65 @@
-{% extends "layout.html" %} {% block title %}{{ _('Daily Quotes') }}{% endblock
-%} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Daily Quotes') }}</h2>
-  <div class="card shadow-sm p-4 mx-auto" style="max-width: 600px">
-    <ul class="list-group list-group-flush">
+{% extends "layout.html" %} 
+{% block title %}{{ _('Daily Quotes') }}{% endblock %} 
+{% block main %}
+<div class="container py-5">
+  <div class="row text-center mb-5 fade-in-up">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="tool-header mb-3"><i class="bi bi-chat-quote-fill me-2"></i>{{ _('Daily Inspiration') }}</h2>
+        <p class="text-muted">Handpicked wisdom to start your day.</p>
+      </div>
+  </div>
+
+  <div class="row g-4 justify-content-center">
       {% for quote in quotes %}
-      <li class="list-group-item">{{ quote }}</li>
+      {% set parts = quote.split(' - ') %}
+      {% set text = parts[0] %}
+      {% set author = parts[1] if parts|length > 1 else 'Unknown' %}
+      
+      <div class="col-md-6 col-lg-4 fade-in-up" style="animation-delay: {{ loop.index0 * 0.15 }}s;">
+          <div class="glass-card h-100 p-5 d-flex flex-column justify-content-center text-center position-relative quote-card">
+              <i class="bi bi-quote fs-1 text-primary opacity-25 position-absolute top-0 start-0 m-3"></i>
+              
+              <figure class="mb-0 z-1">
+                  <blockquote class="blockquote mb-4">
+                      <p class="fs-5 fst-italic">"{{ text | replace('"', '') }}"</p>
+                  </blockquote>
+                  <figcaption class="blockquote-footer mb-0 text-gradient fw-bold">
+                      <cite title="Source Title">{{ author }}</cite>
+                  </figcaption>
+              </figure>
+              
+              <div class="quote-actions mt-4 opacity-0 transition-opacity">
+                  <button class="btn btn-sm btn-light rounded-circle shadow-sm" onclick="copyQuote('{{ quote|replace("'", "\\'") }}')">
+                      <i class="bi bi-files"></i>
+                  </button>
+              </div>
+          </div>
+      </div>
       {% endfor %}
-    </ul>
   </div>
 </div>
+
+<style>
+    .quote-card {
+        transition: all 0.3s ease;
+    }
+    .quote-card:hover {
+        transform: scale(1.02);
+        border-color: rgba(var(--neo-accent-rgb), 0.3);
+    }
+    .quote-card:hover .quote-actions {
+        opacity: 1;
+    }
+    .transition-opacity {
+        transition: opacity 0.3s ease;
+    }
+</style>
+
+<script>
+    function copyQuote(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            // Toast or visual feedback could go here
+        });
+    }
+</script>
 {% endblock %}

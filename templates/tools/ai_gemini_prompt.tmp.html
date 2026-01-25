@@ -1,0 +1,87 @@
+{% extends "layout.html" %} {% block title %}Ask Gemini{% endblock %} {% block
+main %}
+<div class="container py-5">
+  <div class="text-center mb-5 fade-in-up">
+    <h1 class="display-4 fw-bold mb-3 tool-header">Gemini AI</h1>
+    <p class="lead text-muted">
+      Harness Google's multimodal AI for creative reasoning.
+    </p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Chat Interface -->
+      <div class="glass-card mb-4 fade-in-up" style="animation-delay: 0.1s">
+        <div class="card-body p-4">
+          {% if result %}
+          <div class="d-flex flex-column gap-3 mb-4">
+            <!-- User Bubble -->
+            <div class="d-flex justify-content-end">
+              <div
+                class="bg-light rounded-4 px-4 py-2 border text-break"
+                style="max-width: 80%"
+              >
+                {{ prompt }}
+              </div>
+            </div>
+
+            <!-- AI Bubble -->
+            <div class="d-flex justify-content-start">
+              <div class="d-flex gap-2" style="max-width: 90%">
+                <div class="flex-shrink-0">
+                  <div
+                    class="rounded-circle d-flex align-items-center justify-content-center"
+                    style="
+                      width: 35px;
+                      height: 35px;
+                      background: linear-gradient(135deg, #4285f4, #d96570);
+                    "
+                  >
+                    <i class="bi bi-stars text-white small"></i>
+                  </div>
+                </div>
+                <div
+                  class="rounded-4 px-4 py-3 shadow-sm border"
+                  style="background: rgba(255, 255, 255, 0.8)"
+                >
+                  <div class="markdown-body">{{ result | safe }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr class="my-4" />
+          {% endif %}
+
+          <!-- Input Area -->
+          <form method="post">
+            <div class="input-group">
+              <textarea
+                name="prompt"
+                class="form-control border-0 bg-light rounded-3 p-3"
+                rows="3"
+                placeholder="Message Gemini..."
+                style="resize: none"
+                required
+              >
+{% if not result %}{{ prompt }}{% endif %}</textarea
+              >
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+              <button class="btn btn-primary rounded-pill px-4" type="submit">
+                <i class="bi bi-send-fill me-2"></i> Send
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div
+        class="text-center text-muted small fade-in-up"
+        style="animation-delay: 0.2s"
+      >
+        Powered by Google Gemini Pro.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

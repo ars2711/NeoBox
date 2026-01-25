@@ -1,0 +1,194 @@
+{% extends "layout.html" %} {% block title %}Snippet Manager{% endblock %} {%
+block content %}
+<div class="container py-4">
+  <div class="tool-header d-flex align-items-center mb-4">
+    <div
+      class="feature-icon-small d-inline-flex align-items-center justify-content-center bg-gradient text-white fs-4 rounded-3 me-3"
+      style="width: 48px; height: 48px"
+    >
+      <i class="bi bi-code-square"></i>
+    </div>
+    <div>
+      <h1 class="h3 mb-0">Snippet Manager</h1>
+      <p class="text-muted mb-0">Save and organize your code snippets</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="card glass-card h-100">
+        <div class="card-header bg-transparent fw-bold">Add Snippet</div>
+        <div class="card-body">
+          <form
+            id="snippetForm"
+            onsubmit="
+              event.preventDefault();
+              addSnippet();
+            "
+          >
+            <div class="mb-3">
+              <label class="form-label">Title</label>
+              <input type="text" id="sTitle" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Language</label>
+              <select id="sLang" class="form-select">
+                <option value="text">Plain Text</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="sql">SQL</option>
+                <option value="json">JSON</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Code</label>
+              <textarea
+                id="sCode"
+                class="form-control font-monospace"
+                rows="6"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Save Snippet
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <input
+          type="text"
+          id="search"
+          class="form-control w-50"
+          placeholder="Search snippets..."
+          onkeyup="filterSnippets()"
+        />
+        <button class="btn btn-outline-danger btn-sm" onclick="clearAll()">
+          Clear All
+        </button>
+      </div>
+      <div id="snippetList" class="row g-3">
+        <!-- Snippets -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", loadSnippets);
+
+  function addSnippet() {
+    const title = document.getElementById("sTitle").value;
+    const lang = document.getElementById("sLang").value;
+    const code = document.getElementById("sCode").value;
+
+    const snippet = {
+      id: Date.now(),
+      title,
+      lang,
+      code,
+      date: new Date().toLocaleDateString(),
+    };
+
+    const snippets = getStoredSnippets();
+    snippets.unshift(snippet);
+    localStorage.setItem("neobox_snippets", JSON.stringify(snippets));
+
+    document.getElementById("snippetForm").reset();
+    renderSnippets(snippets);
+  }
+
+  function getStoredSnippets() {
+    return JSON.parse(localStorage.getItem("neobox_snippets") || "[]");
+  }
+
+  function renderSnippets(snippets) {
+    const container = document.getElementById("snippetList");
+    container.innerHTML = "";
+
+    if (snippets.length === 0) {
+      container.innerHTML =
+        '<div class="col-12 text-center text-muted py-5">No snippets found.</div>';
+      return;
+    }
+
+    snippets.forEach((s) => {
+      const div = document.createElement("div");
+      div.className = "col-12";
+      div.innerHTML = `
+                <div class="card glass-card">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-truncate">${s.title}</span>
+                        <div>
+                            <span class="badge bg-secondary me-2">${s.lang}</span>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="copySnippet(${s.id})"><i class="bi bi-clipboard"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSnippet(${s.id})"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body bg-light p-0 position-relative">
+                        <pre class="m-0 p-3" style="max-height: 200px; overflow-y: auto;"><code>${escapeHtml(s.code)}</code></pre>
+                    </div>
+                    <div class="card-footer bg-transparent text-muted small">
+                        Added: ${s.date}
+                    </div>
+                </div>
+            `;
+      container.appendChild(div);
+    });
+  }
+
+  function deleteSnippet(id) {
+    if (confirm("Delete this snippet?")) {
+      let snippets = getStoredSnippets();
+      snippets = snippets.filter((s) => s.id !== id);
+      localStorage.setItem("neobox_snippets", JSON.stringify(snippets));
+      renderSnippets(snippets);
+    }
+  }
+
+  function copySnippet(id) {
+    const snippets = getStoredSnippets();
+    const s = snippets.find((item) => item.id === id);
+    if (s) {
+      navigator.clipboard.writeText(s.code);
+    }
+  }
+
+  function clearAll() {
+    if (confirm("Delete ALL snippets?")) {
+      localStorage.removeItem("neobox_snippets");
+      renderSnippets([]);
+    }
+  }
+
+  function filterSnippets() {
+    const term = document.getElementById("search").value.toLowerCase();
+    const snippets = getStoredSnippets();
+    const filtered = snippets.filter(
+      (s) =>
+        s.title.toLowerCase().includes(term) ||
+        s.code.toLowerCase().includes(term) ||
+        s.lang.toLowerCase().includes(term),
+    );
+    renderSnippets(filtered);
+  }
+
+  function loadSnippets() {
+    renderSnippets(getStoredSnippets());
+  }
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+</script>
+{% endblock %}

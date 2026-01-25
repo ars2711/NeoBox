@@ -1,53 +1,132 @@
-{% extends "layout.html" %} {% block title %}{{ _('Daily Routines & Reminders')
-}}{% endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Daily Routines & Reminders') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Routine Title') }}</label>
-      <input type="text" name="title" class="form-control" required />
-    </div>
-    <div class="mb-3 row g-2">
-      <div class="col-md-6">
-        <label class="form-label">{{ _('Time') }}</label>
-        <input type="time" name="time" class="form-control" required />
+{% extends "layout.html" %} {% block title %}{{ _('Daily Routines') }}{%
+endblock %} {% block main %}
+<div class="container py-5">
+  <div class="row align-items-start g-5">
+    <!-- Left: Form -->
+    <div class="col-lg-5 fade-in-up">
+      <div class="glass-card p-4 p-md-5">
+        <h3 class="fw-bold mb-4 tool-header">{{ _('Add New Routine') }}</h3>
+        <form method="post">
+          <div class="mb-4">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >{{ _('Routine Title') }}</label
+            >
+            <input
+              type="text"
+              name="title"
+              class="form-control bg-light-subtle"
+              placeholder="e.g. Morning Meditation"
+              required
+            />
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >{{ _('Time') }}</label
+              >
+              <input
+                type="time"
+                name="time"
+                class="form-control bg-light-subtle"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label
+                class="form-label text-muted small fw-bold text-uppercase ps-1"
+                >{{ _('Frequency') }}</label
+              >
+              <select name="frequency" class="form-select bg-light-subtle">
+                <option value="daily">{{ _('Daily') }}</option>
+                <option value="weekly">{{ _('Weekly') }}</option>
+                <option value="monthly">{{ _('Monthly') }}</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn btn-neo w-100 py-3 rounded-3" type="submit">
+            <i class="bi bi-plus-lg me-2"></i>{{ _('Add Routine') }}
+          </button>
+        </form>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">{{ _('Frequency') }}</label>
-        <select name="frequency" class="form-select">
-          <option value="daily">{{ _('Daily') }}</option>
-          <option value="weekly">{{ _('Weekly') }}</option>
-          <option value="monthly">{{ _('Monthly') }}</option>
-        </select>
+    </div>
+
+    <!-- Right: List -->
+    <div class="col-lg-7 fade-in-up" style="animation-delay: 0.1s">
+      <h3 class="fw-bold mb-4 ms-2">{{ _('Your Routines') }}</h3>
+
+      <div class="d-flex flex-column gap-3">
+        {% for routine in routines %}
+        <div
+          class="glass-card p-3 d-flex align-items-center justify-content-between routine-item"
+        >
+          <div class="d-flex align-items-center gap-3">
+            <div
+              class="routine-icon bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 50px; height: 50px"
+            >
+              {% if 'coffee' in routine.title.lower() %}<i
+                class="bi bi-cup-hot-fill"
+              ></i>
+              {% elif 'meditat' in routine.title.lower() %}<i
+                class="bi bi-yin-yang"
+              ></i>
+              {% elif 'sleep' in routine.title.lower() %}<i
+                class="bi bi-moon-stars-fill"
+              ></i>
+              {% elif 'work' in routine.title.lower() %}<i
+                class="bi bi-briefcase-fill"
+              ></i>
+              {% else %}<i class="bi bi-check-circle-fill"></i>{% endif %}
+            </div>
+            <div>
+              <h5 class="mb-1 fw-bold">{{ routine.title }}</h5>
+              <div class="d-flex gap-3 text-muted small">
+                <span><i class="bi bi-clock me-1"></i>{{ routine.time }}</span>
+                <span
+                  ><i class="bi bi-arrow-repeat me-1"></i>{{
+                  routine.frequency|capitalize }}</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-link text-muted" data-bs-toggle="dropdown">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+              <li>
+                <a class="dropdown-item text-danger" href="#"
+                  ><i class="bi bi-trash me-2"></i>Remove</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted opacity-50">
+          <i class="bi bi-list-check display-1 mb-3"></i>
+          <p class="lead">
+            {{ _('No routines set. Start building good habits!') }}
+          </p>
+        </div>
+        {% endfor %}
       </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Routine') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 600px">
-    <div class="card-header">{{ _('Your Routines') }}</div>
-    <ul class="list-group list-group-flush">
-      {% for routine in routines %}
-      <li
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <span>
-          <strong>{{ routine.title }}</strong>
-          <span class="text-muted">({{ routine.frequency|capitalize }})</span>
-          <br />
-          <small class="text-muted">{{ routine.time }}</small>
-        </span>
-        <!-- Add edit/delete buttons as needed -->
-      </li>
-      {% else %}
-      <li class="list-group-item text-muted">{{ _('No routines yet.') }}</li>
-      {% endfor %}
-    </ul>
   </div>
 </div>
+
+<style>
+  .routine-item {
+    transition: transform 0.2s;
+  }
+  .routine-item:hover {
+    transform: scale(1.01);
+    background: rgba(255, 255, 255, 1) !important;
+  }
+</style>
 {% endblock %}

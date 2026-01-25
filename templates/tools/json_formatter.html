@@ -1,0 +1,99 @@
+{% extends "layout.html" %} {% block title %}JSON Formatter{% endblock %} {%
+block main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-braces me-2"></i>JSON Formatter
+      </h2>
+      <p class="text-muted">Validate, beautify, and minify your JSON data.</p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post">
+          <div class="mb-4">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase d-flex justify-content-between"
+            >
+              <span>Input JSON</span>
+              <span class="badge bg-primary bg-opacity-10 text-primary"
+                >Paste your code</span
+              >
+            </label>
+            <textarea
+              name="data"
+              class="form-control form-control-lg font-monospace bg-light-subtle rounded-3 border-0 shadow-inner fs-6"
+              rows="10"
+              placeholder='{"key": "value"}'
+            >
+{{ data }}</textarea
+            >
+          </div>
+          <div class="text-end">
+            <button
+              type="submit"
+              class="btn btn-neo rounded-pill px-5 shadow-sm"
+            >
+              <i class="bi bi-check-lg me-2"></i>Format & Validate
+            </button>
+          </div>
+        </form>
+
+        {% if error %}
+        <div
+          class="alert alert-danger mt-4 rounded-4 border-0 shadow-sm d-flex align-items-center fade-in-up"
+        >
+          <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+          <div>
+            <strong>Invalid JSON</strong>
+            <div class="small mt-1">{{ error }}</div>
+          </div>
+        </div>
+        {% endif %} {% if result %}
+        <div
+          class="mt-5 pt-4 border-top fade-in-up"
+          style="animation-delay: 0.2s"
+        >
+          <label
+            class="form-label text-muted small fw-bold text-uppercase d-flex justify-content-between mb-3"
+          >
+            <span>Formatted Result</span>
+            <span class="badge bg-success bg-opacity-10 text-success"
+              >Valid</span
+            >
+          </label>
+          <div class="position-relative">
+            <textarea
+              class="form-control font-monospace bg-white border-success border rounded-3 p-3 shadow-sm fs-6"
+              rows="15"
+              readonly
+            >
+{{ result }}</textarea
+            >
+            <button
+              class="btn btn-sm btn-light border shadow-sm position-absolute top-0 end-0 m-3"
+              onclick="
+                navigator.clipboard.writeText(
+                  this.previousElementSibling.value,
+                );
+                this.innerHTML = '<i class=\'bi bi-check2\'></i> Copied!';
+                setTimeout(
+                  () =>
+                    (this.innerHTML = '<i class=\'bi bi-clipboard\'></i> Copy'),
+                  2000,
+                );
+              "
+            >
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

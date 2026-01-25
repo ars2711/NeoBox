@@ -1,68 +1,188 @@
 {% extends "layout.html" %} {% block title %}{{ _('Mind Maps & Flowcharts') }}{%
 endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Mind Maps & Flowcharts') }}</h2>
-  <div class="card shadow-sm p-4">
-    <div id="mindmap-toolbar" class="mb-3 d-flex flex-wrap gap-2">
-      <button class="btn btn-primary" onclick="addNode()">
-        {{ _('Add Node') }}
-      </button>
-      <button class="btn btn-secondary" onclick="addEdge()">
-        {{ _('Add Connection') }}
-      </button>
-      <button class="btn btn-outline-info" onclick="undo()">
-        {{ _('Undo') }}
-      </button>
-      <button class="btn btn-outline-warning" onclick="redo()">
-        {{ _('Redo') }}
-      </button>
-      <button class="btn btn-outline-success" onclick="exportMap()">
-        {{ _('Export as PNG') }}
-      </button>
-      <button class="btn btn-outline-dark" onclick="importMap()">
-        {{ _('Import') }}
-      </button>
-      <input type="file" id="importFile" style="display: none" accept=".json" />
-      <button class="btn btn-outline-danger" onclick="clearMap()">
-        {{ _('Clear') }}
-      </button>
+<div class="container py-5">
+  <div class="row mb-4 fade-in-up">
+    <div class="col-lg-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h2 class="tool-header mb-1">
+            <i class="bi bi-diagram-3-fill me-2"></i>Mind Maps
+          </h2>
+          <p class="text-muted mb-0 small">Visualize ideas and workflows.</p>
+        </div>
+        <div>
+          <!-- Actions Toolbar -->
+          <div
+            id="mindmap-toolbar"
+            class="bg-white p-2 rounded-pill shadow-sm d-inline-flex gap-2"
+          >
+            <button
+              class="btn btn-sm btn-light rounded-circle"
+              onclick="addNode()"
+              title="Add Node"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-plus-lg text-primary"></i>
+            </button>
+            <button
+              class="btn btn-sm btn-light rounded-circle"
+              onclick="addEdge()"
+              title="Connect Nodes"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-share text-primary"></i>
+            </button>
+            <div class="vr mx-1"></div>
+            <button
+              class="btn btn-sm btn-light rounded-circle"
+              onclick="undo()"
+              title="Undo"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+            <button
+              class="btn btn-sm btn-light rounded-circle"
+              onclick="redo()"
+              title="Redo"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div class="vr mx-1"></div>
+            <button
+              class="btn btn-sm btn-light rounded-circle"
+              onclick="exportMap()"
+              title="Download Image"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-download"></i>
+            </button>
+            <button
+              class="btn btn-sm btn-light rounded-circle"
+              onclick="importMap()"
+              title="Import JSON"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-upload"></i>
+            </button>
+            <button
+              class="btn btn-sm btn-light rounded-circle text-danger"
+              onclick="clearMap()"
+              title="Clear All"
+              data-bs-toggle="tooltip"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
+            <input
+              type="file"
+              id="importFile"
+              style="display: none"
+              accept=".json"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="glass-card p-0 overflow-hidden shadow-lg fade-in-up"
+        style="animation-delay: 0.1s"
+      >
+        <div
+          id="mindmap"
+          style="height: 700px; background: #ffffff; cursor: grab"
+        ></div>
+        <div
+          class="px-3 py-2 bg-light border-top small text-muted d-flex justify-content-between"
+        >
+          <span
+            ><i class="bi bi-mouse me-1"></i>Scroll to zoom, Drag to pan</span
+          >
+          <span>Double click empty space to add node</span>
+        </div>
+      </div>
     </div>
-    <div
-      id="mindmap"
-      style="
-        height: 600px;
-        border: 2px solid #eee;
-        border-radius: 8px;
-        background: #fafbfc;
-      "
-    ></div>
   </div>
 </div>
+
 <link
   rel="stylesheet"
   href="https://unpkg.com/vis-network/styles/vis-network.min.css"
 />
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <script>
-  let nodes = new vis.DataSet([{ id: 1, label: "{{ _('Central Idea') }}" }]);
+  // Initial Theme Colors
+  const nodeColor = { background: "#ffffff", border: "#4f46e5" };
+  const fontConfig = { color: "#1e293b", size: 16, face: "system-ui" };
+
+  let nodes = new vis.DataSet([
+    {
+      id: 1,
+      label: "{{ _('Central Idea') }}",
+      shape: "box",
+      color: { background: "#4f46e5", border: "#4338ca" },
+      font: { color: "#ffffff", size: 20 },
+    },
+  ]);
   let edges = new vis.DataSet([]);
   let container = document.getElementById("mindmap");
   let data = { nodes: nodes, edges: edges };
   let options = {
     nodes: {
       shape: "box",
-      color: "#e3f2fd",
-      font: { color: "#1565c0", size: 18 },
+      margin: 12,
+      borderWidth: 2,
+      shadow: { enabled: true, color: "rgba(0,0,0,0.1)", size: 10, x: 5, y: 5 },
+      color: nodeColor,
+      font: fontConfig,
     },
-    edges: { arrows: "to", color: "#90caf9" },
-    physics: { enabled: true },
+    edges: {
+      arrows: "to",
+      color: { color: "#cbd5e1", highlight: "#4f46e5" },
+      width: 2,
+      smooth: {
+        type: "cubicBezier",
+        forceDirection: "horizontal",
+        roundness: 0.4,
+      },
+    },
+    physics: {
+      enabled: true,
+      barnesHut: {
+        gravitationalConstant: -3000,
+        centralGravity: 0.3,
+        springLength: 95,
+        springConstant: 0.04,
+        damping: 0.09,
+        avoidOverlap: 1,
+      },
+    },
+    interaction: { hover: true, navigationButtons: true, keyboard: true },
   };
   let network = new vis.Network(container, data, options);
 
+  // Double click to add node
+  network.on("doubleClick", function (params) {
+    if (params.nodes.length === 0 && params.edges.length === 0) {
+      addNodeAt(params.pointer.canvas.x, params.pointer.canvas.y);
+    }
+  });
+
   function addNode() {
     let label = prompt("{{ _('Enter node label:') }}");
-    if (label) nodes.add({ id: nodes.length + 1, label: label });
+    if (label) {
+      nodes.add({ id: nodes.length + 1, label: label });
+      network.focus(nodes.length, { animation: true });
+    }
   }
+
+  function addNodeAt(x, y) {
+    let label = prompt("{{ _('Enter node label:') }}");
+    if (label) {
+      nodes.add({ id: nodes.length + 1, label: label, x: x, y: y });
+    }
+  }
+
   function addEdge() {
     let from = prompt("{{ _('From node ID:') }}");
     let to = prompt("{{ _('To node ID:') }}");
@@ -75,12 +195,14 @@ endblock %} {% block main %}
     /* Implement redo logic if needed */
   }
   function exportMap() {
-    html2canvas(container).then((canvas) => {
-      let link = document.createElement("a");
-      link.download = "mindmap.png";
-      link.href = canvas.toDataURL();
-      link.click();
-    });
+    html2canvas(document.querySelector("#mindmap .vis-network")).then(
+      (canvas) => {
+        let link = document.createElement("a");
+        link.download = "mindmap.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      },
+    );
   }
   function importMap() {
     document.getElementById("importFile").click();
@@ -99,8 +221,10 @@ endblock %} {% block main %}
     reader.readAsText(file);
   };
   function clearMap() {
-    nodes.clear();
-    edges.clear();
+    if (confirm("Are you sure you want to clear the map?")) {
+      nodes.clear();
+      edges.clear();
+    }
   }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

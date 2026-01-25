@@ -1,109 +1,61 @@
-{% extends "layout.html" %}
-{% block title %}Trigonometry Calculator{% endblock %}
+{% extends "layout.html" %} {% block title %}Trigonometry Calculator{% endblock %}
 {% block main %}
-<h1>Trigonometry Calculator</h1>
-<!-- Symbol Picker -->
-<!--
-<div class="mb-2">
-  <label class="form-label">Quick Symbols:</label>
-  <div>
-    <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="π">&pi;</button>
-    <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="°">&deg;</button>
-    <button type="button" class="btn btn-light btn-sm symbol-btn" data-symbol="√">&radic;</button>
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-calculator me-2"></i>Trigonometry Calculator</h2>
+             <p class="text-muted">Calculate Sine, Cosine, Tangent and more.</p>
+        </div>
+    </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-5">
+        <form method="post">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Angle Value</label>
+                    <input type="number" step="any" name="angle" value="{{ angle }}" class="form-control form-control-lg bg-light border-0 shadow-inner" placeholder="e.g. 90" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Unit</label>
+                    <select name="angle_unit" class="form-select form-select-lg bg-white border-0 shadow-sm">
+                        <option value="deg" {% if angle_unit == "deg" %}selected{% endif %}>Degrees (°)</option>
+                        <option value="rad" {% if angle_unit == "rad" %}selected{% endif %}>Radians (rad)</option>
+                        <option value="grad" {% if angle_unit == "grad" %}selected{% endif %}>Gradians (grad)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-5">
+                <label class="form-label fw-bold">Function</label>
+                 <div class="row row-cols-3 row-cols-md-4 g-2">
+                     <!-- Using JS to set hidden input, or just radio buttons styled as buttons -->
+                     {% set funcs = ['sin', 'cos', 'tan', 'sin^-1', 'cos^-1', 'tan^-1', 'sinh', 'cosh', 'tanh'] %}
+                     {% for f in funcs %}
+                     <div class="col">
+                         <input type="radio" class="btn-check" name="func" id="btn-{{f}}" value="{{f}}" {% if func==f or (not func and f=='sin') %}checked{% endif %}>
+                         <label class="btn btn-outline-primary w-100" for="btn-{{f}}">
+                             {{ f|replace('^-1', '<sup>-1</sup>')|safe }}
+                         </label>
+                     </div>
+                     {% endfor %}
+                 </div>
+            </div>
+
+            <div class="text-center">
+                <button class="btn btn-neo px-5 rounded-pill">Calculate</button>
+            </div>
+        </form>
+
+        {% if result %}
+        <div class="mt-5 text-center animate__animated animate__zoomIn">
+            <h3 class="display-4 fw-bold text-primary">{{ result }}</h3>
+            <span class="text-muted small">Result</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
--->
-<form method="post">
-  <div class="mb-2">
-    <label>Angle: <input id="angle" name="angle" value="{{ angle }}" class="form-control"></label>
-    <label class="ms-2">Unit:
-      <select name="angle_unit" id="angle_unit" class="form-select d-inline-block w-auto ms-1">
-        <option value="deg" {% if angle_unit == "deg" %}selected{% endif %}>Degrees (°)</option>
-        <option value="rad" {% if angle_unit == "rad" %}selected{% endif %}>Radians (rad)</option>
-        <option value="grad" {% if angle_unit == "grad" %}selected{% endif %}>Gradians (grad)</option>
-      </select>
-    </label>
-  </div>
-  <div class="mb-2">
-    <select name="func" class="form-select">
-      <option value="sin" {% if func=="sin" %}selected{% endif %}>sin</option>
-      <option value="sin^-1" {% if func=="sin^-1" %}selected{% endif %}>sin<sup>-1</sup></option>
-      <option value="sinh" {% if func=="sinh" %}selected{% endif %}>sinh</option>
-      <option value="sinh^-1" {% if func=="sinh^-1" %}selected{% endif %}>sinh<sup>-1</sup></option>
-      <option value="cos" {% if func=="cos" %}selected{% endif %}>cos</option>
-      <option value="cos^-1" {% if func=="cos^-1" %}selected{% endif %}>cos<sup>-1</sup></option>
-      <option value="cosh" {% if func=="cosh" %}selected{% endif %}>cosh</option>
-      <option value="cosh^-1" {% if func=="cosh^-1" %}selected{% endif %}>cosh<sup>-1</sup></option>
-      <option value="tan" {% if func=="tan" %}selected{% endif %}>tan</option>
-      <option value="tan^-1" {% if func=="tan^-1" %}selected{% endif %}>tan<sup>-1</sup></option>
-      <option value="tanh" {% if func=="tanh" %}selected{% endif %}>tanh</option>
-      <option value="tanh^-1" {% if func=="tanh^-1" %}selected{% endif %}>tanh<sup>-1</sup></option>
-      <option value="cot" {% if func=="cot" %}selected{% endif %}>cot</option>
-      <option value="cot^-1" {% if func=="cot^-1" %}selected{% endif %}>cot<sup>-1</sup></option>
-      <option value="coth" {% if func=="coth" %}selected{% endif %}>coth</option>
-      <option value="coth^-1" {% if func=="coth^-1" %}selected{% endif %}>coth<sup>-1</sup></option>
-      <option value="sec" {% if func=="sec" %}selected{% endif %}>sec</option>
-      <option value="sec^-1" {% if func=="sec^-1" %}selected{% endif %}>sec<sup>-1</sup></option>
-      <option value="sech" {% if func=="sech" %}selected{% endif %}>sech</option>
-      <option value="sech^-1" {% if func=="sech^-1" %}selected{% endif %}>sech<sup>-1</sup></option>
-      <option value="csc" {% if func=="csc" %}selected{% endif %}>csc</option>
-      <option value="csc^-1" {% if func=="csc^-1" %}selected{% endif %}>csc<sup>-1</sup></option>
-      <option value="csch" {% if func=="csch" %}selected{% endif %}>csch</option>
-      <option value="csch^-1" {% if func=="csch^-1" %}selected{% endif %}>csch<sup>-1</sup></option>
-    </select>
-  </div>
-  <div class="mb-2">
-    <strong>Live Preview:</strong>
-    <div id="trig-preview" class="border rounded bg-body text-body p-2"></div>
-  </div>
-  <button class="btn btn-primary">Calculate</button>
-</form>
-{% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b> <span id="trig-result">{{ result }}</span>
-    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
-  </div>
-{% endif %}
-<script>
-function renderTrigPreview() {
-  let angle = document.getElementById('angle').value || '';
-  let func = document.querySelector('select[name="func"]').value;
-  let unit = document.getElementById('angle_unit').value;
-  let unitLatex = unit === 'deg' ? '^{\\circ}' : (unit === 'grad' ? '^{g}' : '');
-  let displayFunc = func
-    .replace('^-1', '^{-1}')
-    .replace('sinh', '\\sinh')
-    .replace('cosh', '\\cosh')
-    .replace('tanh', '\\tanh')
-    .replace('coth', '\\coth')
-    .replace('sech', '\\sech')
-    .replace('csch', '\\csch')
-    .replace('sin', '\\sin')
-    .replace('cos', '\\cos')
-    .replace('tan', '\\tan')
-    .replace('cot', '\\cot')
-    .replace('sec', '\\sec')
-    .replace('csc', '\\csc');
-  let latex = displayFunc + '(' + angle + unitLatex + ')';
-  document.getElementById('trig-preview').innerHTML = "$$" + latex + "$$";
-  if (window.MathJax) MathJax.typesetPromise();
-}
-document.getElementById('angle').addEventListener('input', renderTrigPreview);
-document.querySelector('select[name="func"]').addEventListener('change', renderTrigPreview);
-document.getElementById('angle_unit').addEventListener('change', renderTrigPreview);
-window.addEventListener('DOMContentLoaded', renderTrigPreview);
-document.querySelectorAll('.symbol-btn').forEach(btn => {
-  btn.onclick = function() {
-    const active = document.activeElement;
-    if (active && active.tagName === "INPUT") {
-      const start = active.selectionStart, end = active.selectionEnd;
-      const val = active.value;
-      active.value = val.slice(0, start) + btn.dataset.symbol + val.slice(end);
-      active.focus();
-      active.selectionStart = active.selectionEnd = start + btn.dataset.symbol.length;
-      renderTrigPreview();
-    }
-  }
-});
-</script>
 {% endblock %}

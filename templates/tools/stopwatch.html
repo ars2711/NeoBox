@@ -1,91 +1,144 @@
-{% extends "layout.html" %} {% block title %}Stopwatch{% endblock %} {% block
-main %}
-<div class="container py-4">
-  <form method="post" class="mb-3 d-flex gap-2">
-    <input
-      name="stopwatch_name"
-      class="form-control w-auto"
-      placeholder="Stopwatch Name"
-    />
-    <button class="btn btn-primary">Add Stopwatch</button>
-  </form>
-  <div class="row g-3">
-    {% for sw in stopwatches %}
-    <div class="col-md-6 col-lg-4">
-      <div class="card p-3 position-relative">
-        <h5>{{ sw.name }}</h5>
-        <form
-          method="post"
-          class="delete-stopwatch-form position-absolute top-0 end-0 m-1"
-        >
-          <input type="hidden" name="delete_stopwatch" value="{{ sw.id }}" />
-          <button class="btn btn-sm btn-danger" title="Delete">
-            <i class="bi-trash"></i>
-          </button>
-        </form>
-        <div id="display-{{ sw.id }}" class="fs-3">00:00:00.00</div>
-        <div class="btn-group mt-2">
-          <button
-            class="btn btn-success"
-            onclick="startStopwatch('{{ sw.id }}')"
-          >
-            Start
-          </button>
-          <button
-            class="btn btn-warning"
-            onclick="pauseStopwatch('{{ sw.id }}')"
-          >
-            Pause
-          </button>
-          <button
-            class="btn btn-danger"
-            onclick="resetStopwatch('{{ sw.id }}')"
-          >
-            Reset
-          </button>
+{% extends "layout.html" %} {% block title %}Stopwatch{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-stopwatch me-2"></i>Stopwatch</h2>
+             <p class="text-muted">High precision stopwatch with lap recording.</p>
         </div>
+    </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-5 text-center">
+          
+          <div class="clock-display display-1 fw-bold font-monospace bg-light rounded-4 py-4 mb-4 shadow-inner text-dark">
+              <span id="display">00:00:00.00</span>
+          </div>
+
+          <div class="d-flex justify-content-center gap-3 mb-4">
+              <button id="startBtn" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm" onclick="startTimer()">
+                  <i class="bi bi-play-fill me-1"></i> Start
+              </button>
+              <button id="pauseBtn" class="btn btn-warning btn-lg rounded-pill px-5 shadow-sm text-white d-none" onclick="pauseTimer()">
+                  <i class="bi bi-pause-fill me-1"></i> Pause
+              </button>
+              <button id="resetBtn" class="btn btn-danger btn-lg rounded-pill px-5 shadow-sm" onclick="resetTimer()">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+              </button>
+          </div>
+          
+          <button id="lapBtn" class="btn btn-outline-secondary rounded-pill px-4 mb-3" onclick="recordLap()" disabled>
+              <i class="bi bi-flag me-1"></i> Lap
+          </button>
+
+          <div class="lap-container mt-4 text-start">
+             <div class="bg-white rounded-3 shadow-sm p-3" style="max-height: 250px; overflow-y: auto;">
+                 <table class="table table-borderless table-hover mb-0" id="lapsTable">
+                    <thead class="text-muted small text-uppercase sticky-top bg-white border-bottom">
+                        <tr>
+                            <th># Lap</th>
+                            <th class="text-end">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lapsBody">
+                        <!-- Laps go here -->
+                    </tbody>
+                 </table>
+                 <div id="noLapsMsg" class="text-center text-muted small py-4">
+                     No laps recorded yet.
+                 </div>
+             </div>
+          </div>
       </div>
     </div>
-    {% endfor %}
   </div>
 </div>
+
 <script>
-  let timers = {};
-  function startStopwatch(id) {
-    if (!timers[id])
-      timers[id] = { start: null, elapsed: 0, running: false, interval: null };
-    if (timers[id].running) return;
-    timers[id].running = true;
-    timers[id].start = Date.now() - timers[id].elapsed;
-    timers[id].interval = setInterval(() => updateDisplay(id), 10);
+  let startTime;
+  let updatedTime;
+  let difference;
+  let tInterval;
+  let running = false;
+  let lapCounter = 1;
+
+  const display = document.getElementById("display");
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const lapBtn = document.getElementById("lapBtn");
+  const lapsBody = document.getElementById("lapsBody");
+  const noLapsMsg = document.getElementById("noLapsMsg");
+
+  // Robust Logic from scratch for this view to ensure it works perfect
+  let elapsedTime = 0; 
+  let lastStartTime = 0;
+
+  // Overwriting functions
+  window.startTimer = function() { // Expose to window for onclick
+      if(!running) {
+          lastStartTime = Date.now();
+          tInterval = setInterval(getShowTime, 10);
+          running = true;
+          startBtn.classList.add('d-none');
+          pauseBtn.classList.remove('d-none');
+          lapBtn.disabled = false;
+      }
+  };
+
+  window.pauseTimer = function() {
+      if(running) {
+          clearInterval(tInterval);
+          elapsedTime += Date.now() - lastStartTime;
+          running = false;
+          pauseBtn.classList.add('d-none');
+          startBtn.classList.remove('d-none');
+          startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Resume';
+      }
+  };
+
+  window.resetTimer = function() {
+      clearInterval(tInterval);
+      running = false;
+      elapsedTime = 0;
+      display.innerHTML = "00:00:00.00";
+      lapsBody.innerHTML = "";
+      lapCounter = 1;
+      noLapsMsg.classList.remove('d-none');
+      
+      startBtn.classList.remove('d-none');
+      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Start';
+      pauseBtn.classList.add('d-none');
+      lapBtn.disabled = true;
   }
-  function pauseStopwatch(id) {
-    if (timers[id] && timers[id].running) {
-      timers[id].elapsed = Date.now() - timers[id].start;
-      timers[id].running = false;
-      clearInterval(timers[id].interval);
-    }
+
+  window.recordLap = function() {
+      if(running || elapsedTime > 0) {
+          const currentDisplay = display.innerHTML;
+          noLapsMsg.classList.add('d-none');
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>Lap ${lapCounter++}</td><td class="text-end font-monospace">${currentDisplay}</td>`;
+          // Insert at top
+          lapsBody.insertBefore(row, lapsBody.firstChild);
+      }
   }
-  function resetStopwatch(id) {
-    if (timers[id]) {
-      timers[id].elapsed = 0;
-      timers[id].running = false;
-      clearInterval(timers[id].interval);
-      document.getElementById("display-" + id).textContent = "00:00:00.00";
-    }
-  }
-  function updateDisplay(id) {
-    if (!timers[id]) return;
-    let elapsed = Date.now() - timers[id].start;
-    let ms = Math.floor((elapsed % 1000) / 10);
-    let s = Math.floor(elapsed / 1000) % 60;
-    let m = Math.floor(elapsed / 60000) % 60;
-    let h = Math.floor(elapsed / 3600000);
-    document.getElementById("display-" + id).textContent = `${h
-      .toString()
-      .padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
-      .toString()
-      .padStart(2, "0")}.${ms.toString().padStart(2, "0")}`;
+
+  function getShowTime() {
+    let now = Date.now();
+    let timeDiff = now - lastStartTime + elapsedTime;
+    
+    let hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+    let milis = Math.floor((timeDiff % 1000) / 10); // 2 digits
+
+    hours = (hours < 10) ? "0" + hours : hours;
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
+    milis = (milis < 10) ? "0" + milis : milis;
+
+    display.innerHTML = hours + ":" + minutes + ":" + seconds + "." + milis;
   }
 </script>
 {% endblock %}

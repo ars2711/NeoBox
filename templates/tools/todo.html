@@ -1,34 +1,62 @@
-{% extends "layout.html" %} {% block title %}To-Do List{% endblock %} {% block
-main %}
-<div class="container mt-4" style="max-width: 600px">
-  <h2>To-Do List</h2>
-  <form method="post" class="mb-3 d-flex gap-2">
-    <input
-      type="text"
-      name="content"
-      class="form-control"
-      placeholder="Add a new task..."
-      required
-    />
-    <input
-      type="date"
-      name="due_date"
-      class="form-control"
-      style="max-width: 160px"
-    />
-    <button class="btn btn-primary">Add</button>
-  </form>
-  <ul class="list-group">
-    {% for todo in todos %}
-    <li
-      class="list-group-item d-flex justify-content-between align-items-center"
-    >
-      <span>{{ todo.content }}</span>
-      <span class="text-muted small">{{ todo.due_date or "" }}</span>
-    </li>
-    {% else %}
-    <li class="list-group-item text-muted">No to-dos yet.</li>
-    {% endfor %}
-  </ul>
+{% extends "layout.html" %} {% block title %}To-Do List{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-check2-square me-2"></i>To-Do List</h2>
+             <p class="text-muted">Manage your daily tasks efficiently.</p>
+        </div>
+    </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4 mb-4">
+        <form method="post" class="d-flex gap-2">
+            <input
+              type="text"
+              name="content"
+              class="form-control form-control-lg border-0 bg-light shadow-inner"
+              placeholder="What needs to be done?"
+              required
+            />
+            <input
+              type="date"
+              name="due_date"
+              class="form-control form-control-lg border-0 bg-light shadow-inner"
+              style="max-width: 180px;"
+            />
+            <button class="btn btn-neo px-4">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </form>
+      </div>
+
+      <div class="glass-card p-0 overflow-hidden fade-in-up" style="animation-delay: 0.2s;">
+          <ul class="list-group list-group-flush">
+              {% for todo in todos %}
+              <li class="list-group-item bg-transparent p-3 d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-3">
+                      <div class="form-check">
+                          <input class="form-check-input rounded-circle p-2" type="checkbox" {% if todo.completed %}checked{% endif %}>
+                      </div>
+                      <div class="{{ 'text-decoration-line-through text-muted' if todo.completed else '' }}">
+                          <span class="fw-bold d-block">{{ todo.content }}</span>
+                          {% if todo.due_date %}
+                          <small class="text-muted"><i class="bi bi-calendar-event me-1"></i> {{ todo.due_date }}</small>
+                          {% endif %}
+                      </div>
+                  </div>
+                  <button class="btn btn-sm btn-link text-danger"><i class="bi bi-trash"></i></button>
+              </li>
+              {% else %}
+              <li class="list-group-item bg-transparent p-5 text-center text-muted">
+                  <i class="bi bi-clipboard-check display-4 mb-3 d-block opacity-25"></i>
+                  No tasks yet. Enjoy your day!
+              </li>
+              {% endfor %}
+          </ul>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,91 +1,167 @@
 {% extends "layout.html" %} {% block title %}Reverse Image Search{% endblock %}
 {% block main %}
-<div class="container py-4" style="max-width: 500px">
-  <h2 class="mb-3">Reverse Image Search</h2>
-  <form method="post" enctype="multipart/form-data" id="imgForm">
-    <div class="mb-3">
-      <input
-        type="file"
-        name="image"
-        id="imageInput"
-        class="form-control"
-        accept="image/*"
-      />
-      <div
-        id="dropZone"
-        class="border rounded p-3 text-center mt-2"
-        style="background: var(--bs-body-bg)"
-      >
-        Drag & drop an image here or click above to select.
-      </div>
-      <div class="preview-container mt-3"></div>
-      <div class="form-text text-muted mt-1">
-        Only image files allowed. Max size: 5MB.
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-image-search me-2"></i>Reverse Image Search
+      </h2>
+      <p class="text-muted">Find similar images across the web instantly.</p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post" enctype="multipart/form-data" id="imgForm">
+          <div class="mb-4 text-center">
+            <div
+              class="upload-area p-5 border-2 border-dashed rounded-4 bg-light bg-opacity-50 position-relative transition-all"
+              id="dropZone"
+              style="cursor: pointer"
+            >
+              <i class="bi bi-cloud-arrow-up display-3 text-primary mb-3"></i>
+              <p class="mb-1 fw-bold text-dark">
+                Drag & drop or click to upload
+              </p>
+              <p class="small text-muted mb-0">
+                Supports JPG, PNG, WEBP (Max 5MB)
+              </p>
+
+              <input
+                type="file"
+                name="image"
+                id="imageInput"
+                class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                accept="image/*"
+                style="cursor: pointer"
+              />
+            </div>
+
+            <div class="preview-container mt-4 d-none">
+              <span class="d-block small text-muted text-uppercase fw-bold mb-2"
+                >Preview</span
+              >
+              <div id="previewWrapper" class="position-relative d-inline-block">
+                <!-- Image injected here -->
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-neo w-100 rounded-pill py-3 fw-bold shadow-sm"
+            type="submit"
+          >
+            <i class="bi bi-search me-2"></i>Search Images
+          </button>
+        </form>
+
+        {% if search_links %}
+        <div class="mt-5 animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-center mb-4 text-gradient">Search Results</h5>
+          <div class="row g-3 justify-content-center">
+            {% for link in search_links %}
+            <div class="col-6 col-md-4">
+              <a
+                href="{{ link.url }}"
+                target="_blank"
+                class="glass-card d-flex flex-column align-items-center justify-content-center p-3 text-decoration-none text-dark hover-scale bg-white"
+              >
+                <i class="bi {{ link.icon }} display-6 text-primary mb-2"></i>
+                <span class="small fw-bold">{{ link.name }}</span>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %} {% if image_url %}
+        <div class="mt-4 text-center p-3 bg-white rounded-3 shadow-sm d-none">
+          <!-- Hidden as preview handles it, but kept for logic if backend re-renders -->
+          <img
+            src="{{ image_url }}"
+            class="img-fluid rounded"
+            alt="Uploaded image"
+            style="max-height: 200px"
+          />
+        </div>
+        {% endif %}
+
+        <div
+          class="alert alert-light bg-white bg-opacity-50 border-0 shadow-sm mt-4 text-center small text-muted"
+        >
+          <i class="bi bi-shield-check me-1"></i> Privacy: Uploaded images are
+          processed securely and deleted automatically.
+        </div>
       </div>
     </div>
-    <button class="btn btn-primary">Search</button>
-  </form>
-
-  {% if search_links %}
-  <hr />
-  <h5 class="mt-4">Search this image on:</h5>
-  <div class="row">
-    {% for link in search_links %}
-    <div class="col-6 col-md-4 mb-3">
-      <a
-        href="{{ link.url }}"
-        target="_blank"
-        class="btn btn-outline-primary w-100 d-flex align-items-center"
-      >
-        <i class="bi {{ link.icon }} me-2"></i> {{ link.name }}
-      </a>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %} {% if image_url %}
-  <div class="mt-4">
-    <img src="{{ image_url }}" class="img-fluid" alt="Uploaded image" />
-  </div>
-  {% endif %}
-
-  <div class="alert alert-warning mt-3">
-    Uploaded images are stored temporarily and deleted after search.
   </div>
 </div>
+
+<style>
+  .upload-area:hover,
+  .upload-area.dragover {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    border-color: var(--neo-primary) !important;
+  }
+</style>
 
 <script>
   const dropZone = document.getElementById("dropZone");
   const imageInput = document.getElementById("imageInput");
-  dropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZone.classList.add("bg-secondary");
-  });
-  dropZone.addEventListener("dragleave", (e) => {
-    dropZone.classList.remove("bg-secondary");
-  });
-  dropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropZone.classList.remove("bg-secondary");
-    imageInput.files = e.dataTransfer.files;
-  });
-  dropZone.addEventListener("click", () => imageInput.click());
+  const previewContainer = document.querySelector(".preview-container");
+  const previewWrapper = document.getElementById("previewWrapper");
 
-  // Display image preview before upload
+  ["dragenter", "dragover"].forEach((eventName) => {
+    dropZone.addEventListener(
+      eventName,
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add("dragover");
+      },
+      false,
+    );
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    dropZone.addEventListener(
+      eventName,
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove("dragover");
+      },
+      false,
+    );
+  });
+
+  dropZone.addEventListener("drop", (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    imageInput.files = files;
+    handleFiles(files);
+  });
+
+  // Also handle normal select
   imageInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    handleFiles(e.target.files);
+  });
+
+  function handleFiles(files) {
+    const file = files[0];
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
-      reader.onload = function (event) {
-        const previewImage = document.createElement("img");
-        previewImage.src = event.target.result;
-        previewImage.classList.add("img-fluid", "mt-3");
-        previewImage.alt = "Image Preview";
-        const previewContainer = document.querySelector(".preview-container");
-        previewContainer.innerHTML = "";
-        previewContainer.appendChild(previewImage);
+      reader.onload = function (e) {
+        previewWrapper.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded-3 shadow-sm" style="max-height: 250px;">`;
+        previewContainer.classList.remove("d-none");
+        previewContainer.classList.add("animate__animated", "animate__fadeIn");
       };
       reader.readAsDataURL(file);
     }
-  });
+  }
 </script>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
 {% endblock %}

@@ -1,35 +1,89 @@
-{% extends "layout.html" %} {% block title %}{{ _('Bookmark Manager') }}{%
-endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Bookmark Manager') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Title') }}</label>
-      <input type="text" name="title" class="form-control" required />
+{% extends "layout.html" %} 
+{% block title %}{{ _('Bookmark Manager') }}{% endblock %} 
+{% block main %}
+<div class="container py-5">
+    <div class="text-center mb-5 fade-in-up">
+        <h1 class="display-4 fw-bold mb-3 tool-header">Bookmark Manager</h1>
+        <p class="lead text-muted">Organize your favorite links in a visual library.</p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('URL') }}</label>
-      <input type="url" name="url" class="form-control" required />
+
+    <!-- Controls -->
+    <div class="row justify-content-center mb-4 fade-in-up" style="animation-delay: 0.1s;">
+        <div class="col-lg-8 text-center">
+            <button class="btn btn-primary d-inline-flex align-items-center gap-2 rounded-pill px-4 py-2" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#addBookmarkForm" 
+                    aria-expanded="false" 
+                    aria-controls="addBookmarkForm">
+                <i class="bi bi-plus-lg"></i> {{ _('Add New Bookmark') }}
+            </button>
+        </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Bookmark') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Bookmarks') }}</div>
-    <ul class="list-group list-group-flush">
-      {% for b in bookmarks %}
-      <li class="list-group-item">
-        <a href="{{ b.url }}" target="_blank">{{ b.title }}</a>
-      </li>
-      {% else %}
-      <li class="list-group-item text-muted">{{ _('No bookmarks yet.') }}</li>
-      {% endfor %}
-    </ul>
-  </div>
+
+    <!-- Add Form (Collapsed) -->
+    <div class="row justify-content-center mb-5 collapse" id="addBookmarkForm">
+        <div class="col-lg-6">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-pencil-square me-2"></i>New Entry</h5>
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">{{ _('Title') }}</label>
+                        <input type="text" name="title" class="form-control form-control-lg" placeholder="e.g., My Portfolio" required />
+                    </div>
+                    <div class="mb-3">
+                         <label class="form-label fw-bold small text-uppercase text-muted">{{ _('URL') }}</label>
+                         <div class="input-group input-group-lg">
+                             <span class="input-group-text bg-white"><i class="bi bi-link-45deg"></i></span>
+                             <input type="url" name="url" class="form-control" placeholder="https://example.com" required />
+                         </div>
+                    </div>
+                    <button class="btn btn-success w-100 btn-lg rounded-pill" type="submit">
+                        <i class="bi bi-check2-circle me-2"></i> {{ _('Save Bookmark') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookmarks Grid -->
+    <div class="row g-4 fade-in-up" style="animation-delay: 0.2s;">
+        {% for b in bookmarks %}
+        <div class="col-md-6 col-lg-4">
+            <a href="{{ b.url }}" target="_blank" class="text-decoration-none">
+                <div class="glass-card p-3 h-100 d-flex align-items-center gap-3 hover-lift transition-all">
+                    <!-- Icon Placeholder (could be favicon fetcher later) -->
+                    <div class="flex-shrink-0 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-globe2 fs-4 text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <h5 class="mb-0 text-truncate fw-bold text-dark">{{ b.title }}</h5>
+                        <small class="text-muted text-truncate d-block">{{ b.url }}</small>
+                    </div>
+                    <i class="bi bi-box-arrow-up-right text-muted opacity-50"></i>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="opacity-50">
+                <i class="bi bi-bookmark-plus display-1 mb-3 d-block"></i>
+                <h3 class="h4 text-muted">No bookmarks yet</h3>
+                <p>Click "Add New Bookmark" to get started.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
+
+<style>
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.95);
+    }
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+</style>
 {% endblock %}

@@ -1,0 +1,50 @@
+#toolsGrid.row > * {
+  margin-bottom: 1.5rem;
+  border-radius: 1rem;
+}
+
+.tool-card .card {
+  border-radius: 1rem !important;
+  overflow: hidden;
+}
+
+/* Shared Utility Classes for Tools */
+.tool-header {
+  background: linear-gradient(
+    135deg,
+    var(--neo-accent, #667eea),
+    var(--neo-accent-2, #764ba2)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.5s ease;
+}
+
+.glass-card {
+  background: var(--neo-card-bg, rgba(255, 255, 255, 0.95));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border-radius: 1rem;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

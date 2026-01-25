@@ -1,54 +1,56 @@
-{% extends "layout.html" %} {% block title %}Star Map{% endblock %} {% block
-main %}
-<h2>Star Map / Night Sky</h2>
-<form method="post" class="mb-3">
-  <div class="row g-2">
-    <div class="col">
-      <label>Latitude</label>
-      <input
-        type="number"
-        step="any"
-        name="lat"
-        value="{{ lat }}"
-        class="form-control"
-      />
+{% extends "layout.html" %} {% block title %}Star Map{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-stars me-2"></i>Interactive Star Map</h2>
+             <p class="text-muted">Explore the constellations and celestial bodies in real-time.</p>
+        </div>
     </div>
-    <div class="col">
-      <label>Longitude</label>
-      <input
-        type="number"
-        step="any"
-        name="lon"
-        value="{{ lon }}"
-        class="form-control"
-      />
-    </div>
-    <div class="col">
-      <label>Date</label>
-      <input type="date" name="date" value="{{ date }}" class="form-control" />
-    </div>
-    <div class="col">
-      <label>Time</label>
-      <input type="time" name="time" value="{{ time }}" class="form-control" />
-    </div>
-    <div class="col-auto align-self-end">
-      <button class="btn btn-primary">Show Sky</button>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-2 p-md-3">
+        <!-- VirtualSky Container -->
+        <div id="starmap" style="width: 100%; height: 600px; border-radius: 15px; overflow: hidden;" class="bg-dark shadow-inner"></div>
+         <div class="text-center mt-3 small text-muted">
+            <i class="bi bi-info-circle me-1"></i> Drag to rotate • Scroll to zoom • Click objects for info
+         </div>
+      </div>
     </div>
   </div>
-</form>
-<div class="mt-3">
-  <iframe
-    src="https://virtualsky.lco.global/embed/index.html?longitude={{ lon }}&latitude={{ lat }}&constellations=true&showstarlabels=true&gridlines_az=true&live=true"
-    width="100%"
-    height="500"
-    style="border: 0"
-  ></iframe>
 </div>
-<div class="alert alert-secondary mt-3">
-  <small>
-    Powered by
-    <a href="https://virtualsky.lco.global/" target="_blank">VirtualSky</a>. For
-    advanced astrology, integrate with an API or add zodiac calculations.
-  </small>
-</div>
+
+<!-- VirtualSky Library -->
+<script src="https://stuquery.com/stuquery.js"></script>
+<script src="https://virtualsky.lco.global/embed/virtualsky.js"></script>
+
+<script>
+  // Initialize Planetarium
+  let planetarium = S.virtualsky({
+    id: "starmap",
+    projection: "stereo",
+    fov: 45, // Field of view
+    latitude: 34.0522, // Default (LA), can ask for GeoLocation later
+    longitude: -118.2437,
+    lang: "en",
+    showstarlabels: true,
+    showplanetlabels: true,
+    constellations: true,
+    gridlines_az: true,
+    live: true, // Live time
+    az: 180, // Facing South
+  });
+
+  // Optional: Try to get user location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        planetarium.latitude = pos.coords.latitude;
+        planetarium.longitude = pos.coords.longitude;
+      },
+      (err) => console.log("Location denied or error")
+    );
+  }
+</script>
 {% endblock %}

@@ -1,0 +1,399 @@
+{% extends "layout.html" %} {% block title %}Cron Generator{% endblock %} {%
+block content %}
+<div class="container py-4">
+  <div class="tool-header d-flex align-items-center mb-4">
+    <div
+      class="feature-icon-small d-inline-flex align-items-center justify-content-center bg-gradient text-white fs-4 rounded-3 me-3"
+      style="width: 48px; height: 48px"
+    >
+      <i class="bi bi-clock-history"></i>
+    </div>
+    <div>
+      <h1 class="h3 mb-0">Cron Generator</h1>
+      <p class="text-muted mb-0">Build standard Cron schedule expressions</p>
+    </div>
+  </div>
+
+  <div class="card glass-card mb-4 bg-dark text-white text-center py-4">
+    <h2 class="font-monospace display-4" id="cronResult">* * * * *</h2>
+    <p class="text-light opacity-75" id="cronHuman">Every minute</p>
+    <div class="d-flex justify-content-center gap-2">
+      <button class="btn btn-outline-light btn-sm" onclick="copyCron()">
+        Copy Expression
+      </button>
+    </div>
+  </div>
+
+  <div class="card glass-card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+          <button
+            class="nav-link active"
+            id="min-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-minute"
+            type="button"
+          >
+            Minute
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="hour-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-hour"
+            type="button"
+          >
+            Hour
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="day-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-day"
+            type="button"
+          >
+            Day
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="month-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-month"
+            type="button"
+          >
+            Month
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="week-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-week"
+            type="button"
+          >
+            Week
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="tab-content" id="myTabContent">
+        <!-- Minutes -->
+        <div class="tab-pane fade show active" id="tab-minute">
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMin"
+              id="cronMin1"
+              value="*"
+              checked
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronMin1"
+              >Every minute (*)</label
+            >
+          </div>
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMin"
+              id="cronMin2"
+              value="even"
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronMin2"
+              >Even minutes (*/2)</label
+            >
+          </div>
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMin"
+              id="cronMin3"
+              value="odd"
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronMin3"
+              >Odd minutes (1-59/2)</label
+            >
+          </div>
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMin"
+              id="cronMin4"
+              value="everyN"
+              onchange="updateCron()"
+            />
+            <label
+              class="form-check-label d-flex align-items-center gap-2"
+              for="cronMin4"
+            >
+              Every
+              <input
+                type="number"
+                id="cronMinN"
+                class="form-control form-control-sm"
+                style="width: 60px"
+                value="5"
+                min="1"
+                max="59"
+                oninput="
+                  document.getElementById('cronMin4').checked = true;
+                  updateCron();
+                "
+              />
+              minutes
+            </label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMin"
+              id="cronMin5"
+              value="specific"
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronMin5"
+              >Specific minute</label
+            >
+            <div class="d-flex flex-wrap gap-2 mt-2" id="minSelects">
+              <!-- JS will gen select boxes -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Hours -->
+        <div class="tab-pane fade" id="tab-hour">
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronHour"
+              id="cronHour1"
+              value="*"
+              checked
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronHour1"
+              >Every hour (*)</label
+            >
+          </div>
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronHour"
+              id="cronHour2"
+              value="even"
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronHour2">Even hours</label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronHour"
+              id="cronHour5"
+              value="specific"
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronHour5"
+              >Specific hour</label
+            >
+            <div class="d-flex flex-wrap gap-2 mt-2" id="hourSelects"></div>
+          </div>
+        </div>
+
+        <!-- Days -->
+        <div class="tab-pane fade" id="tab-day">
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronDay"
+              id="cronDay1"
+              value="*"
+              checked
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronDay1">Every day (*)</label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronDay"
+              id="cronDay5"
+              value="specific"
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronDay5"
+              >Specific day(s)</label
+            >
+            <div class="d-flex flex-wrap gap-2 mt-2" id="daySelects"></div>
+          </div>
+        </div>
+
+        <!-- Months -->
+        <div class="tab-pane fade" id="tab-month">
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMonth"
+              id="cronMonth1"
+              value="*"
+              checked
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronMonth1"
+              >Every month (*)</label
+            >
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronMonth"
+              id="cronMonth5"
+              value="specific"
+              onchange="updateCron()"
+            />
+            <div class="d-flex flex-wrap gap-2 mt-2" id="monthSelects"></div>
+          </div>
+        </div>
+
+        <!-- Weeks -->
+        <div class="tab-pane fade" id="tab-week">
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronWeek"
+              id="cronWeek1"
+              value="*"
+              checked
+              onchange="updateCron()"
+            />
+            <label class="form-check-label" for="cronWeek1"
+              >Every weekday (*)</label
+            >
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="cronWeek"
+              id="cronWeek5"
+              value="specific"
+              onchange="updateCron()"
+            />
+            <div class="d-flex flex-wrap gap-2 mt-2" id="weekSelects"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Gen UI
+  function createCheckboxes(containerId, count, start = 0, labels = null) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+    for (let i = start; i < start + count; i++) {
+      const val = i;
+      const label = labels ? labels[i - start] : i;
+      const div = document.createElement("div");
+      div.className = "form-check form-check-inline";
+      div.innerHTML = `
+                <input class="form-check-input cron-multi" type="checkbox" id="${containerId}_${val}" value="${val}" onchange="document.querySelector('input[name=${containerId.replace("Selects", "").replace("Week", "cronWeek").replace("Day", "cronDay").replace("Month", "cronMonth").replace("Hour", "cronHour").replace("Min", "cronMin").replace("min", "cronMin").replace("week", "cronWeek")}][value=specific]').checked=true; updateCron()">
+                <label class="form-check-label" for="${containerId}_${val}">${label}</label>
+            `;
+      container.appendChild(div);
+    }
+  }
+
+  createCheckboxes("minSelects", 60);
+  createCheckboxes("hourSelects", 24);
+  createCheckboxes("daySelects", 31, 1);
+  createCheckboxes("monthSelects", 12, 1, [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ]);
+  createCheckboxes("weekSelects", 7, 0, [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+  ]);
+
+  function getVal(name, specificContainerId) {
+    const rad = document.querySelector(`input[name="${name}"]:checked`);
+    if (!rad) return "*";
+    const type = rad.value;
+
+    if (type === "*") return "*";
+    if (type === "even") return "*/2";
+    if (type === "odd") return "1-59/2"; // Approximate for minutes
+    if (type === "everyN")
+      return "*/" + document.getElementById("cronMinN").value;
+
+    if (type === "specific") {
+      const checked = Array.from(
+        document.querySelectorAll(`#${specificContainerId} input:checked`),
+      ).map((c) => c.value);
+      return checked.length > 0 ? checked.join(",") : "*";
+    }
+    return "*";
+  }
+
+  function updateCron() {
+    const min = getVal("cronMin", "minSelects");
+    const hour = getVal("cronHour", "hourSelects");
+    const day = getVal("cronDay", "daySelects");
+    const month = getVal("cronMonth", "monthSelects");
+    const week = getVal("cronWeek", "weekSelects");
+
+    const cron = `${min} ${hour} ${day} ${month} ${week}`;
+    document.getElementById("cronResult").innerText = cron;
+
+    // Simple human text
+    document.getElementById("cronHuman").innerText = "Custom schedule";
+  }
+
+  function copyCron() {
+    navigator.clipboard.writeText(
+      document.getElementById("cronResult").innerText,
+    );
+  }
+</script>
+{% endblock %}

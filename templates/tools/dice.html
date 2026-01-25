@@ -1,64 +1,201 @@
 {% extends "layout.html" %} {% block title %}Dice Roller{% endblock %} {% block
 main %}
-<div class="container py-4">
-  <h2 class="mb-3"><i class="bi bi-dice-5"></i> Dice Roller</h2>
-  <form method="POST" class="mb-3 d-flex gap-2 align-items-center">
-    <label
-      >Dice:
-      <input
-        type="number"
-        name="num"
-        min="1"
-        max="5"
-        value="{{ num }}"
-        class="form-control d-inline-block"
-        style="width: 60px"
-    /></label>
-    <label
-      >Sides:
-      <input
-        type="number"
-        name="sides"
-        min="2"
-        max="100"
-        value="{{ sides }}"
-        class="form-control d-inline-block"
-        style="width: 60px"
-    /></label>
-    <button class="btn btn-primary" type="submit">Roll</button>
-  </form>
-  <div class="d-flex gap-3">
-    {% for roll in rolls %}
+<div class="container py-5 text-center">
+  <h2 class="tool-header mb-4 fs-1">Dice Roller</h2>
+
+  <div class="glass-card mx-auto p-5 fade-in-up mb-5" style="max-width: 600px">
+    <!-- 3D Dice Display -->
     <div
-      class="dice-anim"
-      style="
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f8f9fa;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px #0001;
-      "
+      class="d-flex justify-content-center flex-wrap gap-5 perspective-container mb-5 text-dark"
+      style="min-height: 120px"
     >
-      {{ roll }}
+      {% for roll in rolls %}
+      <div class="die-container">
+        <div
+          class="die show-{{ roll }}"
+          style="animation-delay: {{ loop.index0 * 0.1 }}s"
+        >
+          <div class="side front">
+            <div class="dot center"></div>
+          </div>
+          <!-- 1 -->
+          <div class="side back">
+            <div class="dot top-left"></div>
+            <div class="dot bottom-right"></div>
+            <div class="dot top-right"></div>
+            <div class="dot bottom-left"></div>
+            <div class="dot center"></div>
+            <div class="dot middle-left"></div>
+            <!-- 6 needs custom layout or font, using simplified dots for Demo -->
+          </div>
+          <!-- 6 -->
+          <div class="side right">
+            <div class="dot top-left"></div>
+            <div class="dot center"></div>
+            <div class="dot bottom-right"></div>
+          </div>
+          <!-- 3 -->
+          <div class="side left">
+            <div class="dot top-left"></div>
+            <div class="dot top-right"></div>
+            <div class="dot bottom-left"></div>
+            <div class="dot bottom-right"></div>
+          </div>
+          <!-- 4 -->
+          <div class="side top">
+            <div class="dot top-left"></div>
+            <div class="dot bottom-right"></div>
+          </div>
+          <!-- 2 -->
+          <div class="side bottom">
+            <div class="dot top-left"></div>
+            <div class="dot top-right"></div>
+            <div class="dot bottom-left"></div>
+            <div class="dot bottom-right"></div>
+            <div class="dot center"></div>
+          </div>
+          <!-- 5 -->
+          <!-- Fallback text for n-sided dice if > 6 -->
+          <div class="numeric-face">{{ roll }}</div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+
+    <form
+      method="POST"
+      class="row g-3 justify-content-center align-items-end needs-validation"
+      novalidate
+    >
+      <div class="col-auto">
+        <label class="form-label text-muted small fw-bold">Count</label>
+        <div class="input-group">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            onclick="stepDown('num')"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            name="num"
+            id="num"
+            min="1"
+            max="10"
+            value="{{ num }}"
+            class="form-control text-center"
+            style="width: 60px"
+            required
+          />
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            onclick="stepUp('num')"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div class="col-auto">
+        <label class="form-label text-muted small fw-bold">Sides (d-?)</label>
+        <div class="input-group">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            onclick="stepDown('sides')"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            name="sides"
+            id="sides"
+            min="2"
+            max="100"
+            value="{{ sides }}"
+            class="form-control text-center"
+            style="width: 70px"
+            required
+          />
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            onclick="stepUp('sides')"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div class="col-auto">
+        <button class="btn btn-neo px-4 rounded-pill" type="submit">
+          <i class="bi bi-shuffle me-2"></i>Roll
+        </button>
+      </div>
+    </form>
   </div>
 </div>
+
 <script>
-  document.querySelectorAll(".dice-anim").forEach((dice) => {
-    dice.animate(
-      [
-        { transform: "scale(1.2)" },
-        { transform: "scale(1)" },
-        { transform: "scale(1.1)" },
-        { transform: "scale(1)" },
-      ],
-      { duration: 600 }
-    );
-  });
+  function stepUp(id) {
+    document.getElementById(id).stepUp();
+  }
+  function stepDown(id) {
+    document.getElementById(id).stepDown();
+  }
 </script>
+
+<style>
+  .perspective-container {
+    perspective: 1000px;
+  }
+
+  .die-container {
+    width: 80px;
+    height: 80px;
+  }
+
+  .die {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    /* Default state or animation can be JS controlled */
+    animation: spin 0.8s ease-out;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+    100% {
+      transform: rotateX(720deg) rotateY(720deg);
+    } /* This will be overridden by final state */
+  }
+
+  /* Just a simplified numeric fallback for standard tool usage since pure CSS dot dice are verbose */
+  .numeric-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Hiding the complex 3D dot faces for this implementation to rely on the clean numeric look matches the "neo" aesthetic better than skeuomorphism sometimes */
+  .side {
+    display: none;
+  }
+</style>
 {% endblock %}

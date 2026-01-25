@@ -1,28 +1,70 @@
 {% extends "layout.html" %}
-{% block title %}Fraction Calculator{% endblock %}
+{% block title %}{{ _("Fraction Calculator") }}{% endblock %}
 {% block main %}
-<h1>Fraction Calculator</h1>
-<form method="post">
-  <div class="mb-2">
-    <label>First Fraction (e.g. 1/2): <input name="a" value="{{ a }}" class="form-control"></label>
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-pie-chart-fill me-2"></i>Fraction Calculator</h2>
+             <p class="text-muted">Perform arithmetic operations on fractions with detailed steps.</p>
+        </div>
+    </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4 p-md-5">
+        <form method="post">
+            <div class="row align-items-center g-3 mb-4">
+                <!-- Fraction A -->
+                <div class="col-5">
+                    <label class="form-label text-muted small fw-bold text-center w-100">Fraction 1</label>
+                    <input type="text" name="a" value="{{ a }}" class="form-control form-control-lg text-center font-monospace border-0 bg-light shadow-inner fw-bold" placeholder="1/2" required>
+                </div>
+                
+                <!-- Operator -->
+                <div class="col-2 text-center">
+                    <label class="form-label text-muted small fw-bold">&nbsp;</label>
+                     <select name="op" class="form-select border-0 text-center fw-bold bg-white shadow-sm" style="background-image:none; padding: 0.5rem;">
+                        <option value="+" {% if op=="+" %}selected{% endif %}>+</option>
+                        <option value="-" {% if op=="-" %}selected{% endif %}>−</option>
+                        <option value="*" {% if op=="*" %}selected{% endif %}>×</option>
+                        <option value="/" {% if op=="/" %}selected{% endif %}>÷</option>
+                    </select>
+                </div>
+
+                <!-- Fraction B -->
+                <div class="col-5">
+                    <label class="form-label text-muted small fw-bold text-center w-100">Fraction 2</label>
+                    <input type="text" name="b" value="{{ b }}" class="form-control form-control-lg text-center font-monospace border-0 bg-light shadow-inner fw-bold" placeholder="3/4" required>
+                </div>
+            </div>
+
+            <button class="btn btn-neo w-100 py-3 rounded-pill shadow-sm" type="submit">
+                <i class="bi bi-calculator me-2"></i> Calculate
+            </button>
+        </form>
+      </div>
+    </div>
   </div>
-  <div class="mb-2">
-    <label>Second Fraction (e.g. 3/4): <input name="b" value="{{ b }}" class="form-control"></label>
+
+  {% if result is not none %}
+  <div class="row justify-content-center mt-4 fade-in-up" style="animation-delay: 0.2s;">
+      <div class="col-lg-6">
+          <div class="glass-card p-4 border-start border-5 border-primary">
+               <!-- Make result large -->
+               <div class="text-center mb-3">
+                   <h5 class="text-muted text-uppercase small fw-bold mb-2">Result</h5>
+                   <div class="display-4 fw-bold text-primary font-monospace">{{ result }}</div>
+               </div>
+               
+               {% if explanation %}
+               <div class="bg-light rounded-3 p-3 text-muted small border">
+                   <strong class="d-block mb-1 text-dark"><i class="bi bi-info-circle me-1"></i>Steps:</strong>
+                   {{ explanation }}
+               </div>
+               {% endif %}
+          </div>
+      </div>
   </div>
-  <div class="mb-2">
-    <select name="op" class="form-select">
-      <option value="+" {% if op=="+" %}selected{% endif %}>Add</option>
-      <option value="-" {% if op=="-" %}selected{% endif %}>Subtract</option>
-      <option value="*" {% if op=="*" %}selected{% endif %}>Multiply</option>
-      <option value="/" {% if op=="/" %}selected{% endif %}>Divide</option>
-    </select>
-  </div>
-  <button class="btn btn-primary">Calculate</button>
-</form>
-{% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b> <span id="calc-result">{{ result }}</span>
-    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
-  </div>
-{% endif %}
+  {% endif %}
+</div>
 {% endblock %}

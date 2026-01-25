@@ -1,0 +1,119 @@
+{% extends "layout.html" %} {% block title %}Text Cleaner{% endblock %} {% block
+content %}
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="glass-card fade-in p-4">
+      <h2 class="mb-4 display-6 text-center">
+        <i class="bi bi-eraser text-secondary me-2"></i>Text Cleaner
+      </h2>
+
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="card h-100 border-0 bg-transparent">
+            <h6 class="border-bottom pb-2">Cleaning Options</h6>
+            <div class="d-flex flex-column gap-2">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="rmDoubleSpaces"
+                  checked
+                />
+                <label class="form-check-label">Remove Double Spaces</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="rmLineBreaks"
+                />
+                <label class="form-check-label">Remove Line Breaks</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="rmEmptyLines"
+                  checked
+                />
+                <label class="form-check-label">Remove Empty Lines</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="rmHTML" />
+                <label class="form-check-label">Remove HTML Tags</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="sentenceCase"
+                />
+                <label class="form-check-label">Sentence Case</label>
+              </div>
+            </div>
+            <button class="btn btn-primary mt-4" onclick="cleanText()">
+              Clean Text
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-9">
+          <div class="mb-3">
+            <label class="form-label">Input Text</label>
+            <textarea id="rawText" class="form-control" rows="8"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Cleaned Output</label>
+            <textarea
+              id="cleanOutput"
+              class="form-control bg-light"
+              rows="8"
+              readonly
+            ></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function cleanText() {
+    let text = document.getElementById("rawText").value;
+
+    // HTML Removal
+    if (document.getElementById("rmHTML").checked) {
+      text = text.replace(/<[^>]*>?/gm, "");
+    }
+
+    // Line Breaks -> Spaces (if selected)
+    if (document.getElementById("rmLineBreaks").checked) {
+      text = text.replace(/(\r\n|\n|\r)/gm, " ");
+    }
+
+    // Remove Empty Lines (if NOT removing all line breaks)
+    if (
+      document.getElementById("rmEmptyLines").checked &&
+      !document.getElementById("rmLineBreaks").checked
+    ) {
+      text = text.replace(/^\s*[\r\n]/gm, "");
+    }
+
+    // Double Spaces
+    if (document.getElementById("rmDoubleSpaces").checked) {
+      text = text.replace(/\s\s+/g, " ");
+    }
+
+    // Sentence Case (Basic implementation)
+    if (document.getElementById("sentenceCase").checked) {
+      text = text
+        .toLowerCase()
+        .replace(/(^\s*\w|[\.\!\?]\s*\w)/g, function (c) {
+          return c.toUpperCase();
+        });
+    }
+
+    document.getElementById("cleanOutput").value = text.trim();
+  }
+</script>
+{% endblock %}

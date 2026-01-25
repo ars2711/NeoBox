@@ -1,71 +1,84 @@
-{% extends "layout.html" %} {% block title %}Text Counter{% endblock %} {% block
-main %}
-<div class="container py-4">
-  <h2 class="mb-3"><i class="bi bi-bar-chart-line"></i> Text Counter</h2>
-  <form method="POST" enctype="multipart/form-data" class="mb-3">
-    <textarea
-      id="counter-text"
-      name="text"
-      rows="8"
-      class="form-control mb-2"
-      placeholder="Paste or type your text here..."
-    >
-{{ text }}</textarea
-    >
-    <div class="d-flex align-items-center gap-2">
-      <input
-        type="file"
-        name="file"
-        accept=".txt"
-        class="form-control"
-        style="max-width: 200px"
-      />
-      <button class="btn btn-primary" type="submit">
-        <i class="bi bi-upload"></i> Upload
-      </button>
+{% extends "layout.html" %} {% block title %}Text Counter{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row mb-5 text-center fade-in-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="tool-header mb-3"><i class="bi bi-123 me-2"></i>Instant Text Counter</h2>
+             <p class="text-muted">Real-time analysis of characters, words, whitespaces, and more.</p>
+        </div>
     </div>
-  </form>
-  <div class="row g-3 mt-3" id="counter-results">
-    <!-- JS will fill this -->
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="glass-card p-4">
+        
+        <div class="row g-2 mb-3">
+             <div class="col-md-3 col-6 text-center">
+                 <div class="p-2 border rounded bg-white shadow-sm">
+                     <div class="display-6 fw-bold text-primary" id="charCount">0</div>
+                     <small class="text-muted">Characters</small>
+                 </div>
+             </div>
+             <div class="col-md-3 col-6 text-center">
+                 <div class="p-2 border rounded bg-white shadow-sm">
+                     <div class="display-6 fw-bold text-success" id="wordCount">0</div>
+                     <small class="text-muted">Words</small>
+                 </div>
+             </div>
+             <div class="col-md-3 col-6 text-center">
+                 <div class="p-2 border rounded bg-white shadow-sm">
+                     <div class="display-6 fw-bold text-warning" id="lineCount">0</div>
+                     <small class="text-muted">Lines</small>
+                 </div>
+             </div>
+             <div class="col-md-3 col-6 text-center">
+                 <div class="p-2 border rounded bg-white shadow-sm">
+                     <div class="display-6 fw-bold text-info" id="spaceCount">0</div>
+                     <small class="text-muted">Spaces</small>
+                 </div>
+             </div>
+        </div>
+
+        <div class="position-relative">
+            <textarea
+              id="input"
+              class="form-control form-control-lg border-0 bg-light shadow-inner p-4"
+              rows="12"
+              placeholder="Start typing or paste text..."
+              oninput="analyze()"
+            >{{ text if text else '' }}</textarea>
+             <!-- File upload overlay capability simplified to just a button below for now -->
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <div>
+                 <form method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center">
+                    <input type="file" name="file" class="form-control form-control-sm me-2" style="width: 250px;">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Load File</button>
+                 </form>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="document.getElementById('input').value=''; analyze();">Clear</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
 <script>
-  function countStats(text) {
-    const stats = {};
-    stats.characters = text.length;
-    stats.letters = (text.match(/[a-zA-Z]/g) || []).length;
-    stats.vowels = (text.match(/[aeiouAEIOU]/g) || []).length;
-    stats.words = (text.match(/\b\w+\b/g) || []).length;
-    stats.sentences = (text.match(/[\.\!\?]+/g) || []).length;
-    stats.paragraphs = (text.match(/\n\s*\n/g) || []).length + 1;
-    stats.numbers = (text.match(/\d+/g) || []).length;
-    stats.punctuation = (
-      text.match(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g) || []
-    ).length;
-    stats.emoji = (text.match(/[\u{1F600}-\u{1F64F}]/gu) || []).length;
-    stats.titles = (text.match(/(^|\n)[A-Z][^\n]{5,}/g) || []).length;
-    stats.subheadings = (text.match(/(^|\n)#+\s+[^\n]+/g) || []).length;
-    return stats;
-  }
-  function renderStats(stats) {
-    const results = document.getElementById("counter-results");
-    results.innerHTML = "";
-    for (const [key, val] of Object.entries(stats)) {
-      const col = document.createElement("div");
-      col.className = "col-6 col-md-3";
-      col.innerHTML = `<div class="card text-center p-3 shadow-sm"><div class="fw-bold fs-4">${val}</div><div class="small text-muted text-capitalize">${key.replace(
-        /_/g,
-        " "
-      )}</div></div>`;
-      results.appendChild(col);
+    function analyze() {
+        const text = document.getElementById('input').value;
+        const charCount = text.length;
+        const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+        const lineCount = text.trim() === '' ? 0 : text.split(/\n/).length;
+        const spaceCount = (text.match(/ /g) || []).length;
+
+        document.getElementById('charCount').innerText = charCount;
+        document.getElementById('wordCount').innerText = wordCount;
+        document.getElementById('lineCount').innerText = lineCount;
+        document.getElementById('spaceCount').innerText = spaceCount;
     }
-  }
-  const textarea = document.getElementById("counter-text");
-  textarea.addEventListener("input", () =>
-    renderStats(countStats(textarea.value))
-  );
-  window.addEventListener("DOMContentLoaded", () =>
-    renderStats(countStats(textarea.value))
-  );
+    
+    // Run on load if backend provided text
+    window.onload = analyze;
 </script>
 {% endblock %}

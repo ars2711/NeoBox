@@ -1,83 +1,247 @@
 {% extends "layout.html" %} {% block title %}{{ _('Health Tracker') }}{%
 endblock %} {% block main %}
-<div class="container py-4">
-  <h2 class="mb-4 text-center">{{ _('Health Tracker') }}</h2>
-  <form
-    method="post"
-    class="card p-4 shadow-sm mx-auto mb-4"
-    style="max-width: 600px"
-  >
-    <div class="mb-3">
-      <label class="form-label">{{ _('Date') }}</label>
-      <input type="date" name="date" class="form-control" required />
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-heart-pulse-fill me-2"></i>Health Tracker
+      </h2>
+      <p class="text-muted">
+        Monitor your weight, BMI, and vital stats over time.
+      </p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Weight (kg)') }}</label>
-      <input
-        type="number"
-        name="weight"
-        class="form-control"
-        step="0.01"
-        required
-      />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('Height (cm)') }}</label>
-      <input
-        type="number"
-        name="height"
-        class="form-control"
-        step="0.1"
-        required
-      />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">{{ _('BMI') }}</label>
-      <input
-        type="number"
-        name="bmi"
-        class="form-control"
-        step="0.01"
-        required
-      />
-      <div class="form-text">
-        {{ _('Calculate BMI: weight (kg) / (height (m))²') }}
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <!-- Input Form -->
+    <div class="col-lg-4 mb-4 mb-lg-0 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4">
+        <h5 class="fw-bold mb-4 text-gradient">New Entry</h5>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >{{ _('Date') }}</label
+            >
+            <input
+              type="date"
+              name="date"
+              class="form-control bg-light-subtle"
+              required
+            />
+          </div>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >{{ _('Weight (kg)') }}</label
+              >
+              <input
+                type="number"
+                name="weight"
+                class="form-control bg-light-subtle"
+                step="0.01"
+                placeholder="0.00"
+                required
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label text-muted small fw-bold text-uppercase"
+                >{{ _('Height (cm)') }}</label
+              >
+              <input
+                type="number"
+                name="height"
+                class="form-control bg-light-subtle"
+                step="0.1"
+                placeholder="170"
+                required
+              />
+            </div>
+          </div>
+          <div class="my-3">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >{{ _('BMI (Approx)') }}</label
+            >
+            <input
+              type="number"
+              name="bmi"
+              class="form-control bg-secondary bg-opacity-10"
+              step="0.01"
+              placeholder="Auto-calculated if omitted"
+            />
+            <div class="form-text small">
+              <i class="bi bi-info-circle me-1"></i>Weight (kg) / Height (m)²
+            </div>
+          </div>
+          <button class="btn btn-neo w-100 rounded-pill py-2" type="submit">
+            <i class="bi bi-plus-lg me-2"></i>Log Data
+          </button>
+        </form>
       </div>
     </div>
-    <button class="btn btn-primary w-100" type="submit">
-      {{ _('Add Entry') }}
-    </button>
-  </form>
-  <div class="card shadow-sm mx-auto" style="max-width: 700px">
-    <div class="card-header">{{ _('Your Health Data') }}</div>
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0">
-        <thead>
-          <tr>
-            <th>{{ _('Date') }}</th>
-            <th>{{ _('Weight (kg)') }}</th>
-            <th>{{ _('Height (cm)') }}</th>
-            <th>{{ _('BMI') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for h in health_data %}
-          <tr>
-            <td>{{ h.date }}</td>
-            <td>{{ h.weight }}</td>
-            <td>{{ h.height }}</td>
-            <td>{{ h.bmi }}</td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="4" class="text-muted text-center">
-              {{ _('No health data yet.') }}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    <!-- Right Column: Visualization & History -->
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.2s">
+      <!-- Chart Section -->
+      {% if health_data %}
+      <div class="glass-card p-4 mb-4">
+        <h5 class="fw-bold mb-3 text-gradient">
+          <i class="bi bi-graph-up me-2"></i>Trends
+        </h5>
+        <div
+          class="chart-container"
+          style="position: relative; height: 300px; width: 100%"
+        >
+          <canvas id="healthChart"></canvas>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Data Table -->
+      <div class="glass-card p-0 overflow-hidden">
+        <div class="p-4 border-bottom bg-light bg-opacity-25">
+          <h5 class="fw-bold m-0">
+            <i class="bi bi-journal-text me-2"></i>History
+          </h5>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            class="table table-hover align-middle mb-0"
+            style="background: transparent"
+          >
+            <thead class="bg-light bg-opacity-50">
+              <tr>
+                <th class="ps-4">{{ _('Date') }}</th>
+                <th>{{ _('Weight') }}</th>
+                <th>{{ _('Height') }}</th>
+                <th class="pe-4">{{ _('BMI') }}</th>
+              </tr>
+            </thead>
+            <tbody class="border-top-0">
+              {% for h in health_data %}
+              <tr>
+                <td class="ps-4 fw-medium">{{ h.date }}</td>
+                <td>{{ h.weight }} kg</td>
+                <td>{{ h.height }} cm</td>
+                <td class="pe-4">
+                  <span
+                    class="badge {% if h.bmi < 18.5 %}bg-info{% elif h.bmi < 25 %}bg-success{% elif h.bmi < 30 %}bg-warning{% else %}bg-danger{% endif %} bg-opacity-75 rounded-pill"
+                  >
+                    {{ h.bmi }}
+                  </span>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-muted text-center py-5">
+                  <p class="mb-0">{{ _('No entries found.') }}</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      // Auto-calculate BMI logic optional, but let's stick to Visualization
+
+      const rawData = {{ health_data | tojson | safe }};
+      if (!rawData || rawData.length === 0) return;
+
+      // Sort by date ascending
+      const sortedData = rawData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      const labels = sortedData.map(d => d.date);
+      const weightData = sortedData.map(d => d.weight);
+      const bmiData = sortedData.map(d => d.bmi);
+
+      const ctx = document.getElementById('healthChart').getContext('2d');
+
+      // Neo Colors
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--neo-primary').trim() || '#0d6efd';
+      const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--neo-accent').trim() || '#6610f2';
+
+      new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: [
+                  {
+                      label: 'Weight (kg)',
+                      data: weightData,
+                      borderColor: primaryColor,
+                      backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                      borderWidth: 3,
+                      pointBackgroundColor: '#fff',
+                      pointBorderColor: primaryColor,
+                      pointRadius: 4,
+                      yAxisID: 'y',
+                      tension: 0.4,
+                      fill: true
+                  },
+                  {
+                      label: 'BMI',
+                      data: bmiData,
+                      borderColor: accentColor,
+                      backgroundColor: 'transparent',
+                      borderWidth: 3,
+                      borderDash: [5, 5],
+                      pointRadius: 0,
+                      pointHoverRadius: 4,
+                      yAxisID: 'y1',
+                      tension: 0.4
+                  }
+              ]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: {
+                  mode: 'index',
+                  intersect: false,
+              },
+              plugins: {
+                  legend: {
+                      position: 'top',
+                      labels: { usePointStyle: true, boxWidth: 8 }
+                  },
+                  tooltip: {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      titleColor: '#333',
+                      bodyColor: '#666',
+                      borderColor: 'rgba(0,0,0,0.1)',
+                      borderWidth: 1,
+                      padding: 10,
+                      displayColors: true
+                  }
+              },
+              scales: {
+                  x: {
+                      grid: { display: false }
+                  },
+                  y: {
+                      type: 'linear',
+                      display: true,
+                      position: 'left',
+                      title: { display: true, text: 'Weight (kg)', color: '#999' },
+                      grid: { borderDash: [2, 2], color: 'rgba(0,0,0,0.05)' }
+                  },
+                  y1: {
+                      type: 'linear',
+                      display: true,
+                      position: 'right',
+                      title: { display: true, text: 'BMI', color: '#999' },
+                      grid: { display: false },
+                  },
+              }
+          }
+      });
+  });
+</script>
 {% endblock %}

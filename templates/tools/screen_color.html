@@ -1,0 +1,154 @@
+{% extends "layout.html" %} {% block title %}Screen Color Tool{% endblock %} {%
+block main %}
+<div
+  class="container-fluid p-0 position-relative text-center"
+  style="height: calc(100vh - 56px)"
+>
+  <!-- Full height minus navbar -->
+
+  <!-- Floating Control Panel -->
+  <div
+    id="control-panel"
+    class="position-absolute top-50 start-50 translate-middle glass-card p-5 animate__animated animate__fadeIn"
+    style="z-index: 10; min-width: 320px"
+  >
+    <h2 class="mb-4 text-gradient fw-bold">
+      <i class="bi bi-palette me-2"></i>Screen Light
+    </h2>
+    <p class="text-muted mb-4 small">Select a color to fill the screen.</p>
+
+    <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+      <button
+        class="color-btn rounded-circle shadow-sm border"
+        style="width: 48px; height: 48px; background: white"
+        onclick="setColor('white')"
+        title="White"
+      ></button>
+      <button
+        class="color-btn rounded-circle shadow-sm border-0"
+        style="width: 48px; height: 48px; background: #ffadad"
+        onclick="setColor('#ffadad')"
+        title="Warm Red"
+      ></button>
+      <button
+        class="color-btn rounded-circle shadow-sm border-0"
+        style="width: 48px; height: 48px; background: #ffd6a5"
+        onclick="setColor('#ffd6a5')"
+        title="Warm Orange"
+      ></button>
+      <button
+        class="color-btn rounded-circle shadow-sm border-0"
+        style="width: 48px; height: 48px; background: #fdffb6"
+        onclick="setColor('#fdffb6')"
+        title="Soft Yellow"
+      ></button>
+      <button
+        class="color-btn rounded-circle shadow-sm border-0"
+        style="width: 48px; height: 48px; background: #caffbf"
+        onclick="setColor('#caffbf')"
+        title="Soft Green"
+      ></button>
+      <button
+        class="color-btn rounded-circle shadow-sm border-0"
+        style="width: 48px; height: 48px; background: #9bf6ff"
+        onclick="setColor('#9bf6ff')"
+        title="Cyan"
+      ></button>
+      <button
+        class="color-btn rounded-circle shadow-sm border-0"
+        style="width: 48px; height: 48px; background: #bdb2ff"
+        onclick="setColor('#bdb2ff')"
+        title="Purple"
+      ></button>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label small text-muted text-uppercase fw-bold"
+        >Custom Color</label
+      >
+      <input
+        type="color"
+        class="form-control form-control-color w-100 border-0 rounded-pill shadow-inner"
+        style="height: 40px"
+        onchange="setColor(this.value)"
+        title="Choose custom color"
+      />
+    </div>
+
+    <button
+      class="btn btn-neo w-100 rounded-pill mb-2"
+      onclick="toggleFullscreen()"
+    >
+      <i class="bi bi-arrows-fullscreen me-2"></i> Toggle Fullscreen
+    </button>
+    <p class="mt-3 small text-muted opacity-75">
+      <i class="bi bi-mouse me-1"></i> Double click anywhere to toggle menu
+    </p>
+  </div>
+
+  <!-- The actual screen overlay -->
+  <div
+    id="light-screen"
+    class="w-100 h-100 bg-white"
+    style="transition: background-color 0.5s"
+  ></div>
+</div>
+
+<style>
+  .color-btn {
+    transition: transform 0.2s;
+  }
+  .color-btn:hover {
+    transform: scale(1.15);
+    z-index: 5;
+  }
+</style>
+
+<script>
+  const panel = document.getElementById("control-panel");
+  const screen = document.getElementById("light-screen");
+  let isHidden = false;
+
+  function setColor(color) {
+    screen.style.backgroundColor = color;
+  }
+
+  // Toggle menu visibility on double click
+  document.body.addEventListener("dblclick", (e) => {
+    // Prevent accidental toggle if clicking controls
+    if (e.target.closest("#control-panel")) return;
+
+    isHidden = !isHidden;
+    if (isHidden) {
+      panel.classList.replace("animate__fadeIn", "animate__fadeOut");
+      setTimeout(() => (panel.style.display = "none"), 500);
+    } else {
+      panel.style.display = "block";
+      panel.classList.replace("animate__fadeOut", "animate__fadeIn");
+    }
+  });
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      // Auto hide panel on fullscreen
+      isHidden = true;
+      panel.classList.remove("animate__fadeIn");
+      panel.classList.add("animate__fadeOut");
+      setTimeout(() => (panel.style.display = "none"), 500);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        isHidden = false;
+        panel.style.display = "block";
+        panel.classList.remove("animate__fadeOut");
+        panel.classList.add("animate__fadeIn");
+      }
+    }
+  }
+</script>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
+{% endblock %}

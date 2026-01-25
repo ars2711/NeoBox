@@ -1,0 +1,188 @@
+{% extends "layout.html" %} {% block title %}Image Splitter{% endblock %} {%
+block content %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-grid-3x3-gap-fill me-2"></i>Image Splitter
+      </h2>
+      <p class="text-muted">
+        Slice your visuals into perfect grids for Instagram and social media.
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s">
+      <div
+        class="glass-card p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center"
+      >
+        <input
+          type="file"
+          id="fileInput"
+          accept="image/*"
+          class="form-control form-control-lg bg-light-subtle mb-4"
+        />
+        <div
+          class="bg-light bg-opacity-50 p-2 rounded-3 w-100 flex-grow-1 d-flex align-items-center justify-content-center border border-dashed"
+          style="min-height: 400px"
+        >
+          <img
+            id="preview"
+            class="img-fluid rounded shadow-sm"
+            style="max-height: 400px; display: none"
+          />
+          <div id="placeholder-text" class="text-muted opacity-50">
+            <i class="bi bi-image display-1"></i>
+            <p class="mt-2">Image Preview</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 fade-in-up" style="animation-delay: 0.2s">
+      <div class="glass-card p-4 h-100">
+        <h5 class="fw-bold mb-4 text-gradient">Grid Settings</h5>
+
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Rows (Y)</label
+            >
+            <input
+              type="number"
+              id="rows"
+              class="form-control bg-light-subtle form-control-lg text-center fw-bold"
+              value="3"
+              min="1"
+              max="10"
+            />
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-bold text-uppercase"
+              >Columns (X)</label
+            >
+            <input
+              type="number"
+              id="cols"
+              class="form-control bg-light-subtle form-control-lg text-center fw-bold"
+              value="3"
+              min="1"
+              max="10"
+            />
+          </div>
+        </div>
+
+        <button
+          class="btn btn-neo w-100 rounded-pill py-3 shadow-sm mb-4"
+          onclick="splitImage()"
+        >
+          <i class="bi bi-scissors me-2"></i>Split Image
+        </button>
+
+        <div
+          id="results-label"
+          class="d-none border-bottom pb-2 mb-3 fw-bold small text-uppercase text-muted"
+        >
+          Generated Tiles
+        </div>
+        <div
+          id="results"
+          class="row g-3"
+          style="max-height: 400px; overflow-y: auto"
+        >
+          <!-- Tiles appear here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById("fileInput");
+  const preview = document.getElementById("preview");
+  const placeholder = document.getElementById("placeholder-text");
+  const results = document.getElementById("results");
+  const resultsLabel = document.getElementById("results-label");
+
+  let img = new Image();
+
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        img.onload = () => {
+          preview.src = img.src;
+          preview.style.display = "block";
+          placeholder.style.display = "none";
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+
+  function splitImage() {
+    if (!img.src) {
+      alert("Please select an image first.");
+      return;
+    }
+
+    results.innerHTML = "";
+    resultsLabel.classList.remove("d-none");
+
+    const rows = parseInt(document.getElementById("rows").value);
+    const cols = parseInt(document.getElementById("cols").value);
+
+    const tileWidth = img.width / cols;
+    const tileHeight = img.height / rows;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const canvas = document.createElement("canvas");
+        canvas.width = tileWidth;
+        canvas.height = tileHeight;
+        const ctx = canvas.getContext("2d");
+
+        // Draw slice
+        ctx.drawImage(
+          img,
+          c * tileWidth,
+          r * tileHeight,
+          tileWidth,
+          tileHeight,
+          0,
+          0,
+          tileWidth,
+          tileHeight,
+        );
+
+        // Create Element
+        const col = document.createElement("div");
+        col.className = "col-4 mb-2"; // Just fixed cols for display, logic handles grid
+        // Actually if we want to mimic the grid look, we should probably use flex calculation, but simple grid is cleaner for download lists
+
+        const card = document.createElement("div");
+        card.className =
+          "bg-light p-2 rounded shadow-sm h-100 text-center border";
+
+        const imgElem = document.createElement("img");
+        imgElem.src = canvas.toDataURL();
+        imgElem.className = "img-fluid rounded mb-2 d-block mx-auto";
+
+        const btn = document.createElement("a");
+        btn.href = imgElem.src;
+        btn.download = `tile_${r + 1}_${c + 1}.png`; // 1-based indexing for filenames
+        btn.className =
+          "btn btn-xs btn-outline-primary w-100 rounded-pill py-1 small";
+        btn.innerHTML = `<i class="bi bi-download me-1"></i> Tile ${r + 1}-${c + 1}`;
+
+        card.appendChild(imgElem);
+        card.appendChild(btn);
+        col.appendChild(card);
+        results.appendChild(col);
+      }
+    }
+  }
+</script>
+{% endblock %}

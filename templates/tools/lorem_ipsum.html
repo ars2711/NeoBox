@@ -1,0 +1,256 @@
+{% extends "layout.html" %} {% block title %}Lorem Ipsum Generator{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="tool-header d-flex align-items-center mb-4">
+    <div
+      class="feature-icon-small d-inline-flex align-items-center justify-content-center bg-gradient text-white fs-4 rounded-3 me-3"
+      style="width: 48px; height: 48px"
+    >
+      <i class="bi bi-paragraph"></i>
+    </div>
+    <div>
+      <h1 class="h3 mb-0">Lorem Ipsum Generator</h1>
+      <p class="text-muted mb-0">Generate placeholder text for your projects</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card glass-card">
+        <div class="card-body">
+          <form
+            id="loremForm"
+            onsubmit="
+              event.preventDefault();
+              generateLorem();
+            "
+          >
+            <div class="mb-3">
+              <label class="form-label">Type</label>
+              <select id="type" class="form-select">
+                <option value="paragraphs">Paragraphs</option>
+                <option value="sentences">Sentences</option>
+                <option value="words">Words</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Count</label>
+              <input
+                type="number"
+                id="count"
+                class="form-control"
+                value="3"
+                min="1"
+                max="100"
+              />
+            </div>
+            <div class="mb-3 form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="startWith"
+                checked
+              />
+              <label class="form-check-label" for="startWith"
+                >Start with "Lorem ipsum..."</label
+              >
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">Generate</button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                onclick="copyText()"
+              >
+                Copy to Clipboard
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card glass-card h-100">
+        <div class="card-body">
+          <textarea
+            id="output"
+            class="form-control border-0 h-100"
+            style="min-height: 400px; resize: none"
+            readonly
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const WORDS = [
+    "lorem",
+    "ipsum",
+    "dolor",
+    "sit",
+    "amet",
+    "consectetur",
+    "adipiscing",
+    "elit",
+    "sed",
+    "do",
+    "eiusmod",
+    "tempor",
+    "incididunt",
+    "ut",
+    "labore",
+    "et",
+    "dolore",
+    "magna",
+    "aliqua",
+    "ut",
+    "enim",
+    "ad",
+    "minim",
+    "veniam",
+    "quis",
+    "nostrud",
+    "exercitation",
+    "ullamco",
+    "laboris",
+    "nisi",
+    "ut",
+    "aliquip",
+    "ex",
+    "ea",
+    "commodo",
+    "consequat",
+    "duis",
+    "aute",
+    "irure",
+    "dolor",
+    "in",
+    "reprehenderit",
+    "in",
+    "voluptate",
+    "velit",
+    "esse",
+    "cillum",
+    "dolore",
+    "eu",
+    "fugiat",
+    "nulla",
+    "pariatur",
+    "excepteur",
+    "sint",
+    "occaecat",
+    "cupidatat",
+    "non",
+    "proident",
+    "sunt",
+    "in",
+    "culpa",
+    "qui",
+    "officia",
+    "deserunt",
+    "mollit",
+    "anim",
+    "id",
+    "est",
+    "laborum",
+  ];
+
+  function generateLorem() {
+    const type = document.getElementById("type").value;
+    const count = parseInt(document.getElementById("count").value);
+    const startWith = document.getElementById("startWith").checked;
+
+    let result = "";
+
+    if (type === "words") {
+      result = generateWords(count);
+    } else if (type === "sentences") {
+      result = generateSentences(count);
+    } else {
+      result = generateParagraphs(count);
+    }
+
+    if (startWith && !result.toLowerCase().startsWith("lorem ipsum")) {
+      // For simplicity, just prepending if selected, handling overlap logic can be complex
+      // But usually generators force it as the very first phrase.
+      if (type === "words") {
+        result = "Lorem ipsum " + result;
+      } else {
+        result = "Lorem ipsum dolor sit amet. " + result;
+      }
+    }
+
+    // Proper standard start override
+    if (startWith) {
+      // Reset and force standard start for standard experience
+      if (type === "paragraphs" || type === "sentences") {
+        let temp = generateParagraphs(count).split(" ");
+        // Very naive replacement, but sufficient for tool
+        if (type === "paragraphs") {
+          // Re-gen with offset logic or simply prepend
+          // Let's just generate normally and replace first few words
+        }
+      }
+      // Actually, simplest way:
+      // just generate random text. If startWith is true, replace first 5 words with Lorem ipsum...
+      let text = result;
+      if (type === "words") {
+        if (count < 5)
+          text = "Lorem ipsum dolor sit amet"
+            .split(" ")
+            .slice(0, count)
+            .join(" ");
+        else text = "Lorem ipsum dolor sit amet " + generateWords(count - 5);
+      } else {
+        // For sentences/paragraphs, just replace beginning
+        const prefix =
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ";
+        text = prefix + text;
+      }
+      result = text;
+    }
+
+    document.getElementById("output").value = result;
+  }
+
+  function generateWords(num) {
+    let arr = [];
+    for (let i = 0; i < num; i++) {
+      arr.push(WORDS[Math.floor(Math.random() * WORDS.length)]);
+    }
+    return arr.join(" ");
+  }
+
+  function generateSentences(num) {
+    let sentences = [];
+    for (let i = 0; i < num; i++) {
+      let wc = Math.floor(Math.random() * 10) + 5;
+      let sentence = generateWords(wc);
+      sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
+      sentences.push(sentence);
+    }
+    return sentences.join(" ");
+  }
+
+  function generateParagraphs(num) {
+    let paras = [];
+    for (let i = 0; i < num; i++) {
+      let sc = Math.floor(Math.random() * 5) + 3;
+      paras.push(generateSentences(sc));
+    }
+    return paras.join("\n\n");
+  }
+
+  function copyText() {
+    const text = document.getElementById("output");
+    text.select();
+    navigator.clipboard.writeText(text.value);
+  }
+
+  // Init
+  generateLorem();
+</script>
+{% endblock %}

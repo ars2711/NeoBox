@@ -1,0 +1,281 @@
+{% extends "layout.html" %} {% block title %}Calendar{% endblock %} {% block
+content %}
+<div class="container py-5">
+  <div class="row mb-5">
+    <div class="col-md-8 mx-auto text-center fade-in-up">
+      <h1 class="tool-header mb-3">
+        <i class="bi bi-calendar-range me-2"></i>Calendar
+      </h1>
+      <p class="lead opacity-75">
+        View dates, plan ahead, and navigate time effortlessly.
+      </p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div
+        class="glass-card shadow-lg fade-in-up"
+        style="animation-delay: 0.1s"
+      >
+        <div
+          class="card-header border-0 bg-transparent d-flex justify-content-between align-items-center py-4 px-4"
+        >
+          <button
+            class="btn btn-outline-light rounded-circle shadow-sm"
+            id="prevMonth"
+            style="width: 40px; height: 40px"
+          >
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <h3 class="mb-0 fw-bold" id="currentMonthYear">Month Year</h3>
+          <button
+            class="btn btn-outline-light rounded-circle shadow-sm"
+            id="nextMonth"
+            style="width: 40px; height: 40px"
+          >
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table
+              class="table table-borderless text-center mb-0"
+              id="calendarTable"
+            >
+              <thead class="">
+                <tr>
+                  <th class="py-3 text-danger opacity-75 fw-bold">Sun</th>
+                  <th class="py-3 opacity-75">Mon</th>
+                  <th class="py-3 opacity-75">Tue</th>
+                  <th class="py-3 opacity-75">Wed</th>
+                  <th class="py-3 opacity-75">Thu</th>
+                  <th class="py-3 opacity-75">Fri</th>
+                  <th class="py-3 opacity-75">Sat</th>
+                </tr>
+              </thead>
+              <tbody id="calendarBody">
+                <!-- Calendar days will be generated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer border-0 bg-transparent text-center py-4">
+          <button class="btn btn-neo rounded-pill px-4" id="todayBtn">
+            <i class="bi bi-calendar-check me-2"></i>Jump to Today
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .calendar-day {
+    height: 100px;
+    vertical-align: top;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .calendar-day:hover {
+    background-color: rgba(var(--neo-accent-rgb), 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+  }
+
+  .calendar-day.today {
+    background: linear-gradient(
+      135deg,
+      rgba(var(--neo-accent-rgb), 0.1),
+      rgba(var(--neo-accent-rgb), 0.05)
+    );
+    border: 2px solid var(--neo-accent);
+  }
+
+  .calendar-day.today .day-number {
+    color: var(--neo-accent);
+    font-weight: 800;
+    transform: scale(1.1);
+    display: inline-block;
+  }
+
+  .calendar-day.other-month {
+    background-color: rgba(0, 0, 0, 0.02);
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  .day-number {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+    transition: color 0.2s;
+    font-size: 1.1rem;
+    padding: 5px;
+  }
+
+  /* Cell animation on load */
+  .calendar-day {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const calendarBody = document.getElementById("calendarBody");
+    const currentMonthYear = document.getElementById("currentMonthYear");
+    const prevBtn = document.getElementById("prevMonth");
+    const nextBtn = document.getElementById("nextMonth");
+    const todayBtn = document.getElementById("todayBtn");
+
+    let currentDate = new Date();
+
+    function generateCalendar(date) {
+      calendarBody.innerHTML = "";
+
+      const year = date.getFullYear();
+      const month = date.getMonth();
+
+      // Set header
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+      // Optional: Animate entry of header text
+      currentMonthYear.animate(
+        [
+          { opacity: 0.5, transform: "translateY(-5px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        { duration: 300 },
+      );
+
+      // First day of the month
+      const firstDay = new Date(year, month, 1);
+      // Last day of the month
+      const lastDay = new Date(year, month + 1, 0);
+
+      // Day of week (0-6) for the first day
+      const startingDay = firstDay.getDay();
+
+      // Total days in month
+      const totalDays = lastDay.getDate();
+
+      // Previous month last day
+      const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+      let row = document.createElement("tr");
+      let dayCounter = 1;
+      let nextMonthDayCounter = 1;
+
+      // Fill previous month days
+      for (let i = 0; i < startingDay; i++) {
+        const cell = document.createElement("td");
+        cell.className = "calendar-day other-month";
+        cell.innerHTML = `<span class="day-number">${prevMonthLastDay - startingDay + 1 + i}</span>`;
+        row.appendChild(cell);
+      }
+
+      // Fill current month days
+      for (let i = startingDay; i < 7; i++) {
+        const cell = document.createElement("td");
+        cell.className = "calendar-day";
+
+        // Check if today
+        const today = new Date();
+        if (
+          dayCounter === today.getDate() &&
+          month === today.getMonth() &&
+          year === today.getFullYear()
+        ) {
+          cell.classList.add("today");
+        }
+
+        cell.innerHTML = `<span class="day-number">${dayCounter}</span>`;
+        row.appendChild(cell);
+        dayCounter++;
+      }
+      calendarBody.appendChild(row);
+
+      // Remaining rows
+      while (dayCounter <= totalDays) {
+        row = document.createElement("tr");
+        for (let i = 0; i < 7; i++) {
+          if (dayCounter <= totalDays) {
+            const cell = document.createElement("td");
+            cell.className = "calendar-day";
+
+            const today = new Date();
+            if (
+              dayCounter === today.getDate() &&
+              month === today.getMonth() &&
+              year === today.getFullYear()
+            ) {
+              cell.classList.add("today");
+            }
+
+            cell.innerHTML = `<span class="day-number">${dayCounter}</span>`;
+            row.appendChild(cell);
+            dayCounter++;
+          } else {
+            // Next month days
+            const cell = document.createElement("td");
+            cell.className = "calendar-day other-month";
+            cell.innerHTML = `<span class="day-number">${nextMonthDayCounter}</span>`;
+            row.appendChild(cell);
+            nextMonthDayCounter++;
+          }
+        }
+        calendarBody.appendChild(row);
+        if (dayCounter > totalDays) break; // formatting break
+      }
+    }
+
+    prevBtn.addEventListener("click", () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      generateCalendar(currentDate);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      generateCalendar(currentDate);
+    });
+
+    todayBtn.addEventListener("click", () => {
+      currentDate = new Date();
+      generateCalendar(currentDate);
+    });
+
+    generateCalendar(currentDate);
+  });
+</script>
+{% endblock %}

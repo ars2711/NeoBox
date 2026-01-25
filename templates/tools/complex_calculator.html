@@ -1,28 +1,175 @@
-{% extends "layout.html" %}
-{% block title %}Complex Number Calculator{% endblock %}
-{% block main %}
-<h1>Complex Number Calculator</h1>
-<form method="post">
-  <div class="mb-2">
-    <label>First Number (e.g. 2+3i): <input name="a" value="{{ a }}" class="form-control"></label>
+{% extends "layout.html" %} {% block title %}Complex Number Calculator{%
+endblock %} {% block main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">Complex Number Calculator</h2>
+      <p class="lead opacity-75">
+        Perform arithmetic operations on complex numbers (a + bi).
+      </p>
+    </div>
   </div>
-  <div class="mb-2">
-    <label>Second Number (e.g. 1-2i): <input name="b" value="{{ b }}" class="form-control"></label>
+
+  <div class="row justify-content-center">
+    <div class="col-md-6 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 h-100">
+        <form method="post" id="complexForm">
+          <div class="mb-4">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >First Number (z₁)</label
+            >
+            <div class="input-group">
+              <span
+                class="input-group-text bg-transparent border-end-0 text-muted"
+                ><i class="bi bi-music-note-beamed" style="font-style: normal"
+                  >z₁</i
+                ></span
+              >
+              <input
+                name="a"
+                value="{{ a }}"
+                class="form-control bg-light-subtle border-start-0"
+                placeholder="e.g. 2+3i"
+                required
+              />
+            </div>
+            <div class="form-text text-end small opacity-50">Format: a+bi</div>
+          </div>
+
+          <div class="mb-4 text-center">
+            <div class="btn-group w-100" role="group" aria-label="Operation">
+              <input
+                type="radio"
+                class="btn-check"
+                name="op"
+                id="op_add"
+                value="+"
+                {%
+                if
+                op=""
+                ="+"
+                %}checked{%
+                endif
+                %}
+                required
+              />
+              <label class="btn btn-outline-primary" for="op_add"
+                ><i class="bi bi-plus-lg"></i
+              ></label>
+
+              <input
+                type="radio"
+                class="btn-check"
+                name="op"
+                id="op_sub"
+                value="-"
+                {%
+                if
+                op=""
+                ="-"
+                %}checked{%
+                endif
+                %}
+              />
+              <label class="btn btn-outline-primary" for="op_sub"
+                ><i class="bi bi-dash-lg"></i
+              ></label>
+
+              <input
+                type="radio"
+                class="btn-check"
+                name="op"
+                id="op_mul"
+                value="*"
+                {%
+                if
+                op=""
+                ="*"
+                %}checked{%
+                endif
+                %}
+              />
+              <label class="btn btn-outline-primary" for="op_mul"
+                ><i class="bi bi-x-lg"></i
+              ></label>
+
+              <input
+                type="radio"
+                class="btn-check"
+                name="op"
+                id="op_div"
+                value="/"
+                {%
+                if
+                op=""
+                ="/"
+                %}checked{%
+                endif
+                %}
+              />
+              <label class="btn btn-outline-primary" for="op_div"
+                ><i class="bi bi-slash-lg"></i
+              ></label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label
+              class="form-label text-muted small fw-bold text-uppercase ps-1"
+              >Second Number (z₂)</label
+            >
+            <div class="input-group">
+              <span
+                class="input-group-text bg-transparent border-end-0 text-muted"
+                ><i class="bi bi-music-note-beamed" style="font-style: normal"
+                  >z₂</i
+                ></span
+              >
+              <input
+                name="b"
+                value="{{ b }}"
+                class="form-control bg-light-subtle border-start-0"
+                placeholder="e.g. 1-2i"
+                required
+              />
+            </div>
+          </div>
+
+          <button class="btn btn-neo w-100 py-3 rounded-3" type="submit">
+            Execute Operation
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-5 fade-in-up" style="animation-delay: 0.2s">
+      {% if result is not none %}
+      <div
+        class="glass-card p-4 h-100 d-flex flex-column justify-content-center text-center result-card"
+      >
+        <h5 class="text-muted text-uppercase fw-bold mb-3 small">Result</h5>
+        <div class="display-4 fw-bold mb-3 text-gradient font-monospace">
+          {{ result }}
+        </div>
+        {% if explanation %}
+        <div
+          class="p-3 bg-light-subtle rounded-3 text-start small border border-light"
+        >
+          <i class="bi bi-info-circle me-1 text-primary"></i>
+          {{ explanation }}
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div
+        class="glass-card p-4 h-100 d-flex flex-column justify-content-center text-center opacity-50"
+      >
+        <i class="bi bi-calculator display-1 mb-3 text-muted"></i>
+        <p>Result will appear here</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
-  <div class="mb-2">
-    <select name="op" class="form-select">
-      <option value="+" {% if op=="+" %}selected{% endif %}>Add</option>
-      <option value="-" {% if op=="-" %}selected{% endif %}>Subtract</option>
-      <option value="*" {% if op=="*" %}selected{% endif %}>Multiply</option>
-      <option value="/" {% if op=="/" %}selected{% endif %}>Divide</option>
-    </select>
-  </div>
-  <button class="btn btn-primary">Calculate</button>
-</form>
-{% if result is not none %}
-  <div class="alert alert-info mt-3">
-    <b>Result:</b> <span id="calc-result">{{ result }}</span>
-    {% if explanation %}<div class="mt-2 small text-muted">{{ explanation }}</div>{% endif %}
-  </div>
-{% endif %}
+</div>
 {% endblock %}

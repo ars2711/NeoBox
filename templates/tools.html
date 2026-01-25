@@ -5,7 +5,7 @@
   <h1>Tools</h1>
   <p class="text-muted">Explore our collection of tools to enhance your experience.</p>
     <div class="mb-3">
-    <div class="d-flex overflow-auto" id="categoryTabs">
+    <div class="d-flex" id="categoryTabs">
       {% for cat in tool_categories %}
         <button class="btn btn-outline-primary category-tab" data-category="{{ cat.key }}">{{ cat.name }}</button>
       {% endfor %}
@@ -56,6 +56,7 @@
       {% endfor %}
     </div>
   {% endif %}
+  {% if upcoming_tools %}
   <h2 class="mt-5">Upcoming Tools <i class="bi bi-clock-history float-animation"></i></h2>
   <p class="text-muted">These tools are currently planned for future release.</p>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
@@ -72,6 +73,7 @@
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 </div>
 <script>
 const toolCards = document.querySelectorAll('.tool-card');

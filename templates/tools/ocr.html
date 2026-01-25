@@ -1,0 +1,199 @@
+{% extends "layout.html" %} {% block title %}Image to Text (OCR){% endblock %}
+{% block main %}
+<div class="container py-5">
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-file-earmark-text me-2"></i>Image to Text (OCR)
+      </h2>
+      <p class="text-muted">
+        Extract editable text from images using optical character recognition.
+      </p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
+      <div class="glass-card p-4 p-md-5">
+        <div class="mb-4 text-center">
+          <label
+            for="imagebox"
+            class="form-label d-block p-5 border-2 border-dashed rounded-4 bg-light bg-opacity-50 cursor-pointer transition-hover"
+            id="drop-area"
+          >
+            <div class="mb-3">
+              <span class="display-4 text-primary opacity-50"
+                ><i class="bi bi-cloud-upload"></i
+              ></span>
+            </div>
+            <h5 class="fw-bold text-muted">Click or Drag & Drop Image Here</h5>
+            <p class="text-muted small mb-0">Supports JPG, PNG, BMP</p>
+          </label>
+          <input type="file" id="imagebox" accept="image/*" class="d-none" />
+        </div>
+
+        <div
+          id="preview-container"
+          class="d-none mb-4 text-center p-3 bg-white rounded-4 shadow-sm border position-relative"
+        >
+          <button
+            type="button"
+            class="btn-close position-absolute top-0 end-0 m-3"
+            onclick="clearImage()"
+            aria-label="Close"
+          ></button>
+          <img
+            id="image-preview"
+            src=""
+            class="img-fluid rounded shadow-sm"
+            style="max-height: 300px"
+          />
+        </div>
+
+        <div class="d-grid mb-4">
+          <button
+            class="btn btn-neo btn-lg rounded-pill shadow-sm"
+            id="extract-btn"
+            disabled
+            onclick="extractText()"
+          >
+            <i class="bi bi-magic me-2"></i>Extract Text
+          </button>
+        </div>
+
+        <div id="progress-bar-container" class="mb-4 d-none">
+          <div class="progress" style="height: 10px">
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated bg-neo-gradient"
+              role="progressbar"
+              style="width: 0%"
+            ></div>
+          </div>
+          <p
+            id="status-text"
+            class="text-center small text-muted mt-2 fw-medium"
+          >
+            Initializing...
+          </p>
+        </div>
+
+        <div class="mb-0">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-bold small text-uppercase text-muted"
+              >Extracted Text</label
+            >
+            <button
+              class="btn btn-sm btn-link text-decoration-none"
+              onclick="copyText()"
+            >
+              <i class="bi bi-clipboard me-1"></i>Copy
+            </button>
+          </div>
+          <div class="position-relative">
+            <textarea
+              id="result-text"
+              class="form-control bg-light-subtle border-0 rounded-4 shadow-inner"
+              rows="8"
+              readonly
+              placeholder="Result will appear here..."
+            ></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+  const fileInput = document.getElementById("imagebox");
+  const preview = document.getElementById("image-preview");
+  const previewCont = document.getElementById("preview-container");
+  const extractBtn = document.getElementById("extract-btn");
+  const resultText = document.getElementById("result-text");
+  const progressBar = document.querySelector(".progress-bar");
+  const progressCont = document.getElementById("progress-bar-container");
+  const statusText = document.getElementById("status-text");
+
+  fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+      preview.src = URL.createObjectURL(file);
+      previewCont.classList.remove("d-none");
+      extractBtn.disabled = false;
+      resultText.value = "";
+      document.getElementById("drop-area").classList.add("d-none");
+    }
+  });
+
+  function clearImage() {
+    fileInput.value = "";
+    preview.src = "";
+    previewCont.classList.add("d-none");
+    extractBtn.disabled = true;
+    document.getElementById("drop-area").classList.remove("d-none");
+    resultText.value = "";
+    progressCont.classList.add("d-none");
+  }
+
+  function extractText() {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    extractBtn.disabled = true;
+    progressCont.classList.remove("d-none");
+    statusText.innerText = "Initializing engine...";
+
+    Tesseract.recognize(file, "eng", {
+      logger: (m) => {
+        if (m.status === "recognizing text") {
+          progressBar.style.width = m.progress * 100 + "%";
+          statusText.innerText = `Recognizing Text: ${Math.round(m.progress * 100)}%`;
+        } else {
+          statusText.innerText =
+            m.status.charAt(0).toUpperCase() + m.status.slice(1);
+        }
+      },
+    })
+      .then(({ data: { text } }) => {
+        resultText.value = text;
+        extractBtn.disabled = false;
+        // Dont hide progress bar immediately, show success
+        progressBar.style.width = "100%";
+        progressBar.classList.add("bg-success");
+        progressBar.classList.remove("bg-neo-gradient");
+        statusText.innerText = "Done!";
+        statusText.classList.add("text-success");
+      })
+      .catch((err) => {
+        console.error(err);
+        statusText.innerText = "Error processing image.";
+        statusText.classList.add("text-danger");
+        extractBtn.disabled = false;
+      });
+  }
+
+  function copyText() {
+    resultText.select();
+    document.execCommand("copy");
+  }
+</script>
+<style>
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .border-dashed {
+    border-style: dashed !important;
+  }
+  .transition-hover {
+    transition: all 0.3s ease;
+  }
+  .transition-hover:hover {
+    background-color: rgba(var(--neo-primary-rgb), 0.05) !important;
+    border-color: var(--neo-primary) !important;
+  }
+  .bg-neo-gradient {
+    background: linear-gradient(45deg, var(--neo-primary), var(--neo-accent));
+  }
+</style>
+{% endblock %}
