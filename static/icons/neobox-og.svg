@@ -1,0 +1,47 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F172A"/>
+      <stop offset="0.55" stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#0B1020"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="210" y1="160" x2="990" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="0.5" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(980 130) rotate(135) scale(480 360)">
+      <stop offset="0" stop-color="#60A5FA" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="0" y="0" width="200%" height="200%">
+      <feDropShadow dx="0" dy="14" stdDeviation="20" flood-color="#0B1020" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" rx="56" fill="url(#bg)"/>
+  <rect width="1200" height="630" rx="56" fill="url(#glow)"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="140" y="150" width="240" height="240" rx="40" fill="url(#accent)"/>
+    <rect x="176" y="186" width="168" height="168" rx="28" fill="#0F172A" opacity="0.25"/>
+    <path d="M214 246C214 223.909 231.909 206 254 206H326C348.091 206 366 223.909 366 246V294C366 316.091 348.091 334 326 334H254C231.909 334 214 316.091 214 294V246Z" fill="#0F172A"/>
+    <path d="M248 254H332V286C332 299.255 321.255 310 308 310H272C258.745 310 248 299.255 248 286V254Z" fill="#E2E8F0"/>
+    <circle cx="262" cy="238" r="12" fill="#E2E8F0"/>
+    <circle cx="318" cy="238" r="12" fill="#E2E8F0"/>
+  </g>
+
+  <text x="430" y="275" fill="#F8FAFC" font-family="Poppins, Montserrat, Arial, sans-serif" font-size="92" font-weight="700">NeoBox</text>
+  <text x="430" y="335" fill="#CBD5F5" font-family="Poppins, Montserrat, Arial, sans-serif" font-size="32" font-weight="500">Your all-in-one toolkit for modern productivity</text>
+
+  <g opacity="0.65">
+    <rect x="430" y="382" width="330" height="8" rx="4" fill="#38BDF8"/>
+    <rect x="770" y="382" width="180" height="8" rx="4" fill="#A855F7"/>
+  </g>
+
+  <g opacity="0.35">
+    <circle cx="980" cy="470" r="110" stroke="#7DD3FC" stroke-width="2"/>
+    <circle cx="1025" cy="470" r="70" stroke="#C4B5FD" stroke-width="2"/>
+    <circle cx="935" cy="470" r="50" stroke="#A855F7" stroke-width="2"/>
+  </g>
+</svg>

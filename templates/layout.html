@@ -20,6 +20,8 @@
     <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.min.js"></script>
 
     <link id="app-favicon" href="/static/icons/neobox-light.svg" rel="icon" type="image/svg+xml" />
+    <link rel="icon" href="/static/icons/favicon-theme-light.png" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/static/icons/favicon-theme-dark.png" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="/static/favicon.ico" sizes="any" />
     <link href="/static/icons/icon-192x192.png" rel="apple-touch-icon" />
     <link href="/static/styles.css" rel="stylesheet" />
@@ -51,12 +53,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     
+    {% set base_url = request.url_root.rstrip('/') %}
     <!-- Open Graph / Viral Tags -->
     <meta property="og:title" content="NeoBox - The All-in-One Toolkit" />
     <meta property="og:description" content="Over 50+ free tools: AI, PDF, Converters, Math, and Productivity. No login required for most tools." />
-    <meta property="og:image" content="/static/icons/icon-512x512.png" />
+    <meta property="og:image" content="{{ base_url }}/static/icons/neobox-og.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="NeoBox - The All-in-One Toolkit" />
     <meta property="og:url" content="https://neobox.app" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="{{ base_url }}/static/icons/neobox-og.svg" />
+    <meta name="twitter:image:alt" content="NeoBox - The All-in-One Toolkit" />
     
     <title>NeoBox | {% block title %}{% endblock %}</title>
 
