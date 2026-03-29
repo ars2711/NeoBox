@@ -1,42 +1,61 @@
-{% extends "layout.html" %} {% block title %}Reset Password{% endblock %} {%
-block main %}
-<div class="container mt-5">
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Reset Password') }}{% endblock %}
+{% block main %}
+<div class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow">
-        <div class="card-body">
-          <h4 class="card-title mb-3">Reset Your Password</h4>
-          <form method="post">
-            <div class="mb-3">
-              <label for="password" class="form-label">New Password</label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                class="form-control"
-                required
-                autofocus
-              />
-            </div>
-            <div class="mb-3">
-              <label for="confirmation" class="form-label"
-                >Confirm Password</label
-              >
-              <input
-                type="password"
-                name="confirmation"
-                id="confirmation"
-                class="form-control"
-                required
-              />
-            </div>
-            <button type="submit" class="btn btn-primary w-100">
-              Reset Password
-            </button>
-          </form>
+    <div class="col-sm-10 col-md-7 col-lg-5">
+      <div class="text-center mb-4 reveal">
+        <div class="feature-card-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;border-radius:16px">
+          <i class="bi bi-key"></i>
         </div>
+        <h2 class="fw-bold">{{ _('Reset Your Password') }}</h2>
+        <p class="text-muted">{{ _('Choose a strong new password below.') }}</p>
+      </div>
+      <div class="dashboard-stat-card reveal">
+        <form method="post" class="needs-validation" novalidate id="resetForm">
+          <div class="mb-3">
+            <label for="password" class="form-label fw-semibold">{{ _('New Password') }}</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" id="password" class="form-control" required autofocus minlength="8" placeholder="{{ _('Min. 8 characters') }}" />
+              <button class="btn btn-outline-secondary" type="button" onclick="togglePw('password',this)"><i class="bi bi-eye"></i></button>
+              <div class="invalid-feedback">{{ _('Password must be at least 8 characters.') }}</div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label for="confirmation" class="form-label fw-semibold">{{ _('Confirm Password') }}</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="confirmation" id="confirmation" class="form-control" required placeholder="{{ _('Repeat your password') }}" />
+              <button class="btn btn-outline-secondary" type="button" onclick="togglePw('confirmation',this)"><i class="bi bi-eye"></i></button>
+              <div class="invalid-feedback" id="confirmFeedback">{{ _('Please confirm your password.') }}</div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 shimmer">
+            <i class="bi bi-check-circle me-2"></i>{{ _('Reset Password') }}
+          </button>
+        </form>
       </div>
     </div>
   </div>
 </div>
+<script>
+function togglePw(id, btn) {
+  var inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.querySelector('i').className = inp.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+document.getElementById('resetForm').addEventListener('submit', function(e) {
+  var p = document.getElementById('password').value;
+  var c = document.getElementById('confirmation').value;
+  if (p !== c) {
+    e.preventDefault(); e.stopPropagation();
+    document.getElementById('confirmation').setCustomValidity('Passwords do not match.');
+    document.getElementById('confirmFeedback').textContent = "{{ _('Passwords do not match.') }}";
+  } else {
+    document.getElementById('confirmation').setCustomValidity('');
+  }
+  this.classList.add('was-validated');
+});
+</script>
 {% endblock %}

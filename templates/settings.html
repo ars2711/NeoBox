@@ -1,85 +1,65 @@
-{% extends "layout.html" %}
-{% block title %}Settings{% endblock %}
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Settings') }}{% endblock %}
 {% block main %}
-<div class="container mt-5">
-  <h2 class="mb-4"><i class="bi bi-gear-fill"></i> Settings</h2>
-  
-  <div class="card shadow-sm mb-4">
-    <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-circle-half"></i> Appearance</h5>
-    </div>
-    <div class="card-body">
-      <form method="post">
-        <div class="mb-3">
-          <label for="colorScheme" class="form-label">Color Scheme</label>
-          <select name="color_scheme" id="colorScheme" class="form-select">
-            <option value="auto">Auto (System)</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="uiTheme" class="form-label">Theme Style</label>
-          <select name="theme" id="uiTheme" class="form-select">
-            <option value="default" {% if user.theme in ["default", "auto", None] %}selected{% endif %}>Default</option>
-            <option value="classic" {% if user.theme == "classic" %}selected{% endif %}>Classic (Elegant Serif)</option>
-            <option value="coding" {% if user.theme == "coding" %}selected{% endif %}>Coding (Hacker Green)</option>
-            <option value="goofy" {% if user.theme == "goofy" %}selected{% endif %}>Goofy (Fun & Playful)</option>
-            <option value="ocean" {% if user.theme == "ocean" %}selected{% endif %}>Ocean (Cool Blue)</option>
-            <option value="sunset" {% if user.theme == "sunset" %}selected{% endif %}>Sunset (Warm Glow)</option>
-            <option value="forest" {% if user.theme == "forest" %}selected{% endif %}>Forest (Earthy Green)</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="language" class="form-label">Language</label>
-          <select name="language" id="language" class="form-select">
-            {% for lang in available_languages %}
-              <option value="{{ lang.code }}" {% if session.get('lang') == lang.code %}selected{% endif %}>{{ lang.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Settings</button>
-      </form>
-    </div>
-  </div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-10 col-md-8 col-lg-6">
 
-  <div class="card shadow-sm">
-    <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-info-circle"></i> Tips</h5>
-    </div>
-    <div class="card-body">
-      <p class="text-muted mb-0">Your color scheme and theme apply across all tools, including scrollbars, cursor, and glow effects.</p>
+      <div class="text-center mb-4 reveal">
+        <div class="feature-card-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;border-radius:16px">
+          <i class="bi bi-gear-fill"></i>
+        </div>
+        <h2 class="fw-bold">{{ _('Settings') }}</h2>
+        <p class="text-muted">{{ _('Customise your NeoBox experience') }}</p>
+      </div>
+
+      <!-- Appearance card -->
+      <div class="dashboard-stat-card reveal">
+        <div class="d-flex align-items-center gap-2 mb-4">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0">
+            <i class="bi bi-palette"></i>
+          </div>
+          <h5 class="fw-bold mb-0">{{ _('Appearance') }}</h5>
+        </div>
+        <form method="post">
+          <div class="mb-4">
+            <label for="colorScheme" class="form-label fw-semibold">{{ _('Theme Mode') }}</label>
+            <select name="color_scheme" id="colorScheme" class="form-select">
+              <option value="auto" {% if session.get('color_scheme', 'auto') == 'auto' %}selected{% endif %}>{{ _('Auto (System)') }}</option>
+              <option value="light" {% if session.get('color_scheme') == 'light' %}selected{% endif %}>{{ _('Light') }}</option>
+              <option value="dark" {% if session.get('color_scheme') == 'dark' %}selected{% endif %}>{{ _('Dark') }}</option>
+            </select>
+            <small class="text-muted d-block mt-2">Choose Auto to match your system preference</small>
+          </div>
+          <div class="mb-4">
+            <label for="language" class="form-label fw-semibold">{{ _('Language') }}</label>
+            <select name="language" id="language" class="form-select">
+              {% for lang in available_languages %}
+                <option value="{{ lang.code }}" {% if session.get('lang') == lang.code %}selected{% endif %}>{{ lang.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary shimmer">
+              <i class="bi bi-floppy me-2"></i>{{ _('Save Settings') }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tips card -->
+      <div class="dashboard-stat-card reveal mt-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0">
+            <i class="bi bi-lightbulb"></i>
+          </div>
+          <h5 class="fw-bold mb-0">{{ _('Tips') }}</h5>
+        </div>
+        <p class="text-muted mb-0 small">{{ _('You can switch between light and dark mode while keeping the same blue accent style.') }}</p>
+      </div>
+
     </div>
   </div>
 </div>
-<script>
-const colorSchemeSelect = document.getElementById("colorScheme");
-const uiThemeSelect = document.getElementById("uiTheme");
 
-function applyScheme(value) {
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const resolved = value === 'auto' ? (prefersDark ? 'dark' : 'light') : value;
-  document.documentElement.setAttribute('data-bs-theme', resolved);
-  localStorage.setItem('colorScheme', value);
-}
-
-function applyUiTheme(value) {
-  document.documentElement.setAttribute('data-theme', value);
-  localStorage.setItem('uiTheme', value);
-}
-
-const storedScheme = localStorage.getItem('colorScheme') || 'auto';
-const storedUiTheme = localStorage.getItem('uiTheme') || 'default';
-colorSchemeSelect.value = storedScheme;
-uiThemeSelect.value = storedUiTheme;
-applyScheme(storedScheme);
-applyUiTheme(storedUiTheme);
-
-colorSchemeSelect.addEventListener("change", function() {
-  applyScheme(this.value);
-});
-uiThemeSelect.addEventListener("change", function() {
-  applyUiTheme(this.value);
-});
-</script>
 {% endblock %}

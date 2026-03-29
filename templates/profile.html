@@ -1,113 +1,145 @@
-{% extends "layout.html" %}
-{% block title %}Profile{% endblock %}
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Profile') }}{% endblock %}
 {% block main %}
-<h2>Profile</h2>
-<form method="post" class="text-start" style="max-width: 400px; margin: 0 auto" enctype="multipart/form-data">
-  <div class="mb-3">
-    <label class="form-label">Username</label>
-    <input class="form-control" value="{{ user.username }}" disabled>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-11 col-md-9 col-lg-7">
+
+      <div class="text-center mb-4 reveal">
+        <div class="feature-card-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;border-radius:16px">
+          <i class="bi bi-person-circle"></i>
+        </div>
+        <h2 class="fw-bold">{{ _('Your Profile') }}</h2>
+        <p class="text-muted">{{ _('Manage your personal information') }}</p>
+      </div>
+
+      <!-- Avatar + main form -->
+      <div class="dashboard-stat-card reveal">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+          <div class="text-center mb-4">
+            <img src="{{ user.avatar_url or url_for('static', filename='default_avatar.png') }}"
+              class="rounded-circle border mb-3 shadow-sm"
+              width="90" height="90" style="object-fit:cover;" alt="{{ _('Avatar') }}">
+            <div>
+              <label class="btn btn-sm btn-outline-secondary" for="avatar">
+                <i class="bi bi-camera me-1"></i>{{ _('Change Avatar') }}
+              </label>
+              <input type="file" id="avatar" name="avatar" accept="image/*" class="d-none">
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ _('Username') }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-at"></i></span>
+                <input class="form-control" value="{{ user.username }}" disabled>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ _('Email') }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input class="form-control" value="{{ user.email }}" disabled>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ _('Phone') }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <input name="phone" type="tel" class="form-control" value="{{ user.phone or '' }}"
+                  placeholder="{{ _('e.g. +1 555 0100') }}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ _('Date of Birth') }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                <input name="dob" type="date" class="form-control" value="{{ user.dob }}">
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">{{ _('Gender') }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                <select name="gender" class="form-select">
+                  <option value="">{{ _('Prefer not to say') }}</option>
+                  <option value="male"   {% if user.gender == 'male'   %}selected{% endif %}>{{ _('Male') }}</option>
+                  <option value="female" {% if user.gender == 'female' %}selected{% endif %}>{{ _('Female') }}</option>
+                  <option value="other"  {% if user.gender == 'other'  %}selected{% endif %}>{{ _('Other') }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-12 d-grid">
+              <button type="submit" class="btn btn-primary shimmer">
+                <i class="bi bi-check-circle me-2"></i>{{ _('Update Profile') }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Account Security -->
+      <div class="dashboard-stat-card reveal mt-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0">
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          <h5 class="fw-bold mb-0">{{ _('Account Security') }}</h5>
+        </div>
+        <p class="text-muted small">{{ _('Register a passkey (Windows Hello, Face ID, Touch ID) to log in without a password.') }}</p>
+        <button type="button" class="btn btn-outline-primary" id="register-passkey">
+          <i class="bi bi-key me-2"></i>{{ _('Register Passkey') }}
+        </button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="dashboard-stat-card reveal mt-4" style="border-left:3px solid var(--bs-danger)">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0;background:rgba(var(--bs-danger-rgb),.15)">
+            <i class="bi bi-exclamation-triangle text-danger"></i>
+          </div>
+          <h5 class="fw-bold mb-0 text-danger">{{ _('Danger Zone') }}</h5>
+        </div>
+        {% if user.delete_requested_at %}
+        <div class="alert alert-danger mb-3 small">
+          {{ _('Your account is scheduled for deletion on') }}
+          <strong>{{ (user.delete_requested_at + timedelta(days=7)).strftime('%Y-%m-%d') }}</strong>.
+        </div>
+        <form method="post" action="{{ url_for('cancel_delete') }}">
+          <button class="btn btn-warning btn-sm">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>{{ _('Cancel Deletion') }}
+          </button>
+        </form>
+        {% else %}
+        <p class="text-muted small">{{ _('Requesting deletion will permanently remove your account after 7 days.') }}</p>
+        <form method="post" action="{{ url_for('delete_account') }}">
+          <button class="btn btn-danger btn-sm">
+            <i class="bi bi-trash me-1"></i>{{ _('Request Account Deletion') }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Email</label>
-    <input class="form-control" value="{{ user.email }}" disabled>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Phone</label>
-    <input name="phone" class="form-control" value="{{ user.phone or '' }}">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Date of Birth</label>
-    <input name="dob" type="date" class="form-control" value="{{ user.dob }}">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Gender</label>
-    <select name="gender" class="form-select">
-      <option value="">Prefer not to say</option>
-      <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
-      <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
-      <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Other</option>
-    </select>
-  </div>
-  <div class="mb-3">
-    <img src="{{ user.avatar_url or url_for('static', filename='default_avatar.png') }}" class="rounded-circle mb-2" width="80">
-    <input type="file" name="avatar" accept="image/*" class="form-control mb-2">
-  </div>
-  <button class="btn btn-primary" type="submit">Update</button>
-</form>
-<button type="button" class="btn btn-secondary mt-2" id="register-passkey">
-  Register Passkey (Windows Hello, Face ID, etc.)
-</button>
-<form method="post" action="{{ url_for('delete_account') }}">
-  <button class="btn btn-danger">Request Account Deletion</button>
-</form>
-{% if user.delete_requested_at %}
-  <div class="alert alert-danger mt-3">
-    Your account is scheduled for deletion on <b>{{ (user.delete_requested_at + timedelta(days=7)).strftime('%Y-%m-%d') }}</b>.<br>
-    <form method="post" action="{{ url_for('cancel_delete') }}">
-      <button class="btn btn-warning">Cancel Deletion</button>
-    </form>
-  </div>
-{% endif %}
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.js"></script>
 <script>
-  // Passkey creation script
-  document.addEventListener("DOMContentLoaded", function () {
-  	const btn = document.getElementById("create-passkey");
-
-  	btn.addEventListener("click", async function () {
-  		if (!window.PublicKeyCredential) {
-  			alert("This browser does not support WebAuthn or Passkeys.");
-  			return;
-  		}
-
-  		if (!navigator.credentials || !navigator.credentials.create) {
-  			alert("Credentials API is not available.");
-  			return;
-  		}
-
-  		try {
-  			const publicKey = {
-  				challenge: new Uint8Array(32), // Replace with real challenge
-  				rp: { name: "NeoBox" },
-  				user: {
-  					id: new Uint8Array(16), // Replace with real user ID
-  					name: "example@neobox.com",
-  					displayName: "NeoBox User",
-  				},
-  				pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-  				authenticatorSelection: {
-  					authenticatorAttachment: "platform",
-  					userVerification: "preferred",
-  				},
-  				timeout: 60000,
-  				attestation: "none",
-  			};
-
-  			const credential = await navigator.credentials.create({ publicKey });
-  			console.log("Passkey created:", credential);
-  		} catch (err) {
-  			console.error("WebAuthn error:", err);
-  			alert("Something went wrong creating the passkey.");
-  		}
-  	});
+document.getElementById("register-passkey").onclick = async function () {
+  const resp = await fetch("/passkey/register/begin", { method: "POST" });
+  const options = await resp.arrayBuffer();
+  const cred = await navigator.credentials.create({ publicKey: CBOR.decode(options) });
+  const complete = await fetch("/passkey/register/complete", {
+    method: "POST",
+    body: CBOR.encode({
+      clientDataJSON: cred.response.clientDataJSON,
+      attestationObject: cred.response.attestationObject,
+    }),
   });
-  
-  // Register passkey button
-  document.getElementById("register-passkey").onclick = async function () {
-    const resp = await fetch("/passkey/register/begin", { method: "POST" });
-    const options = await resp.arrayBuffer();
-    const cred = await navigator.credentials.create({
-      publicKey: CBOR.decode(options),
-    });
-    const complete = await fetch("/passkey/register/complete", {
-      method: "POST",
-      body: CBOR.encode({
-        clientDataJSON: cred.response.clientDataJSON,
-        attestationObject: cred.response.attestationObject,
-      }),
-    });
-    if (complete.ok)
-      alert("Passkey registered! You can now log in with your device.");
-  };
+  if (complete.ok) alert("{{ _('Passkey registered! You can now log in with your device.') }}");
+};
 </script>
 {% endblock %}

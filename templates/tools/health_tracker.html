@@ -164,7 +164,7 @@ endblock %} {% block main %}
       const ctx = document.getElementById('healthChart').getContext('2d');
 
       // Neo Colors
-      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--neo-primary').trim() || '#0d6efd';
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--neo-accent').trim() || '#3b82f6';
       const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--neo-accent').trim() || '#6610f2';
 
       new Chart(ctx, {

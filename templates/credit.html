@@ -1,140 +1,97 @@
-{% extends "layout.html" %} {% block title %}Credits{% endblock %} {% block main
-%}
-<div class="container py-4 text-start">
-  <h2 class="mb-3">
-    <i class="bi bi-info-circle me-2"></i> {{ _('Credits & Acknowledgements') }}
-  </h2>
-  <p class="lead text-muted mb-5">
-    {{ _('NeoBox would not have been possible without the help of these amazing
-    people, tools, and resources.') }}
-  </p>
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Credits') }}{% endblock %}
+{% block main %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
 
-  <!-- Section: Frameworks -->
-  <h4 class="fw-semibold mt-5 mb-3">
-    <i class="bi bi-box-seam me-2"></i> {{ _('Frameworks & Libraries') }}
-  </h4>
-  <ul class="list-group list-group-flush mb-4 ps-3">
-    <li class="list-group-item border-0 ps-0">
-      <strong
-        ><i class="bi bi-bootstrap text-primary me-2"></i>Bootstrap 5</strong
-      >
-      - Frontend layout & components
-      <a href="https://getbootstrap.com" target="_blank" class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong
-        ><i class="bi bi-file-code-fill text-success me-2"></i>Flask</strong
-      >
-      - Python web framework
-      <a
-        href="https://flask.palletsprojects.com/"
-        target="_blank"
-        class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong><i class="bi bi-translate text-info me-2"></i>Flask-Babel</strong>
-      - i18n & l10n
-      <a
-        href="https://python-babel.github.io/flask-babel/"
-        target="_blank"
-        class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong><i class="bi bi-google text-danger me-2"></i>Flask-Dance</strong>
-      - Google OAuth login
-      <a
-        href="https://flask-dance.readthedocs.io/"
-        target="_blank"
-        class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong
-        ><i class="bi bi-database-check text-warning me-2"></i
-        >SQLAlchemy</strong
-      >
-      - ORM + Database
-      <a href="https://www.sqlalchemy.org/" target="_blank" class="small ms-2"
-        >[link]</a
-      >
-    </li>
-  </ul>
+      <div class="text-center mb-5 reveal">
+        <div class="feature-card-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;border-radius:16px">
+          <i class="bi bi-heart-fill"></i>
+        </div>
+        <h2 class="fw-bold">{{ _('Credits & Acknowledgements') }}</h2>
+        <p class="text-muted">{{ _('NeoBox would not have been possible without the help of these amazing people, tools, and resources.') }}</p>
+      </div>
 
-  <!-- Section: Icons -->
-  <h4 class="fw-semibold mt-4 mb-3">
-    <i class="bi bi-palette-fill me-2"></i> {{ _('Icons & Visuals') }}
-  </h4>
-  <ul class="list-group list-group-flush mb-4 ps-3">
-    <li class="list-group-item border-0 ps-0">
-      <strong
-        ><i class="bi bi-bootstrap-icons text-purple me-2"></i>Bootstrap
-        Icons</strong
-      >
-      - UI icons
-      <a
-        href="https://icons.getbootstrap.com/"
-        target="_blank"
-        class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong><i class="bi bi-image text-secondary me-2"></i>unDraw</strong> -
-      SVG illustrations
-      <a href="https://undraw.co/" target="_blank" class="small ms-2">[link]</a>
-    </li>
-  </ul>
+      <div class="dashboard-stat-card reveal mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0"><i class="bi bi-box-seam"></i></div>
+          <h5 class="fw-bold mb-0">{{ _('Frameworks & Libraries') }}</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-bootstrap text-primary me-2"></i><strong>Bootstrap 5</strong> — Frontend layout & components</span>
+            <a href="https://getbootstrap.com" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-file-code-fill text-success me-2"></i><strong>Flask</strong> — Python web framework</span>
+            <a href="https://flask.palletsprojects.com/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-translate text-info me-2"></i><strong>Flask-Babel</strong> — i18n & l10n</span>
+            <a href="https://python-babel.github.io/flask-babel/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-google text-danger me-2"></i><strong>Flask-Dance</strong> — Google OAuth login</span>
+            <a href="https://flask-dance.readthedocs.io/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-database-check text-warning me-2"></i><strong>SQLAlchemy</strong> — ORM + Database</span>
+            <a href="https://www.sqlalchemy.org/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+        </ul>
+      </div>
 
-  <!-- Section: AI Tools -->
-  <h4 class="fw-semibold mt-4 mb-3">
-    <i class="bi bi-robot me-2"></i> {{ _('AI & Assistants') }}
-  </h4>
-  <ul class="list-group list-group-flush mb-4 ps-3">
-    <li class="list-group-item border-0 ps-0">
-      <strong><i class="bi bi-github text-dark me-2"></i>GitHub Copilot</strong>
-      - AI pair programmer
-      <a
-        href="https://github.com/features/copilot"
-        target="_blank"
-        class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong><i class="bi bi-chat-left-dots-fill me-2"></i>ChatGPT</strong> -
-      Idea exploration and debugging
-      <a href="https://chat.openai.com/" target="_blank" class="small ms-2"
-        >[link]</a
-      >
-    </li>
-  </ul>
+      <div class="dashboard-stat-card reveal mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0"><i class="bi bi-palette-fill"></i></div>
+          <h5 class="fw-bold mb-0">{{ _('Icons & Visuals') }}</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-bootstrap-icons me-2"></i><strong>Bootstrap Icons</strong> — UI icons</span>
+            <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-image text-secondary me-2"></i><strong>unDraw</strong> — SVG illustrations</span>
+            <a href="https://undraw.co/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+        </ul>
+      </div>
 
-  <!-- Section: Inspiration -->
-  <h4 class="fw-semibold mt-4 mb-3">
-    <i class="bi bi-lightbulb-fill me-2"></i> {{ _('Inspiration & Education') }}
-  </h4>
-  <ul class="list-group list-group-flush mb-5 ps-3">
-    <li class="list-group-item border-0 ps-0">
-      <strong>CS50x - Introduction to Computer Science</strong> by Harvard
-      University
-      <a href="https://cs50.harvard.edu/x/" target="_blank" class="small ms-2"
-        >[link]</a
-      >
-    </li>
-    <li class="list-group-item border-0 ps-0">
-      <strong>David J. Malan</strong> - For making CS accessible to the world 💡
-    </li>
-  </ul>
+      <div class="dashboard-stat-card reveal mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0"><i class="bi bi-robot"></i></div>
+          <h5 class="fw-bold mb-0">{{ _('AI & Assistants') }}</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-github me-2"></i><strong>GitHub Copilot</strong> — AI pair programmer</span>
+            <a href="https://github.com/features/copilot" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-chat-left-dots-fill me-2"></i><strong>ChatGPT</strong> — Idea exploration and debugging</span>
+            <a href="https://chat.openai.com/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+        </ul>
+      </div>
 
-  <p class="text-muted small text-center">
-    Built with ❤️ by Arsalan - as part of CS50 2025 Final Project.
-  </p>
+      <div class="dashboard-stat-card reveal mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0"><i class="bi bi-lightbulb-fill"></i></div>
+          <h5 class="fw-bold mb-0">{{ _('Inspiration & Education') }}</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+            <span><strong>CS50x</strong> — Introduction to Computer Science by Harvard University</span>
+            <a href="https://cs50.harvard.edu/x/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary ms-2">Link</a>
+          </li>
+          <li class="list-group-item border-0 px-0"><strong>David J. Malan</strong> — For making CS accessible to the world 💡</li>
+        </ul>
+      </div>
+
+      <p class="text-muted small text-center mt-3 reveal">Built with ❤️ by Arsalan — as part of CS50 2025 Final Project.</p>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,85 +1,110 @@
-{% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block
-main %}
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-8">
-      <h1 class="mb-3">
-        Welcome, {{ g.user.username if g.user else 'User' }}!
-      </h1>
-      <div class="mb-4">
-        <strong>Daily Quote:</strong>
-        <blockquote class="blockquote">
-          <p>
-            {{ daily_quote or "Stay positive, work hard, make it happen." }}
-          </p>
-        </blockquote>
-        <strong>Daily Question:</strong>
-        <blockquote class="blockquote">
-          <p>
-            {{ daily_question or "What is one thing you want to accomplish
-            today?" }}
-          </p>
-        </blockquote>
+﻿{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block main %}
+
+<div class="container mt-4 pb-5">
+
+  <!-- Welcome Banner -->
+  <div class="dashboard-stat-card mb-4 reveal">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.08em">
+          <i class="bi bi-sunrise me-1"></i>Welcome back
+        </p>
+        <h2 class="fw-bold mb-0 gradient-text">{{ g.user.username if g.user else 'User' }}</h2>
       </div>
-      <h4>Frequent Tools</h4>
-      <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="/profile" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person me-1"></i>Profile</a>
+        <a href="/settings" class="btn btn-outline-secondary btn-sm"><i class="bi bi-gear me-1"></i>Settings</a>
+        <a href="/tools" class="btn btn-primary btn-sm shimmer"><i class="bi bi-grid-3x3-gap me-1"></i>All Tools</a>
+        {% if g.user and g.user.is_admin %}
+        <a href="/admin" class="btn btn-outline-danger btn-sm"><i class="bi bi-shield-fill me-1"></i>Admin</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- LEFT: Daily inspiration + frequent tools -->
+    <div class="col-md-8">
+
+      <!-- Daily Quote + Question cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 reveal reveal-delay-1">
+          <div class="dashboard-stat-card h-100">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="feature-card-icon" style="width:36px;height:36px;font-size:1.1rem;border-radius:10px"><i class="bi bi-quote"></i></span>
+              <span class="fw-semibold small text-uppercase" style="letter-spacing:.06em">Daily Quote</span>
+            </div>
+            <p class="fst-italic text-muted small mb-0">&ldquo;{{ daily_quote or "Stay positive, work hard, make it happen." }}&rdquo;</p>
+          </div>
+        </div>
+        <div class="col-sm-6 reveal reveal-delay-2">
+          <div class="dashboard-stat-card h-100">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="feature-card-icon" style="width:36px;height:36px;font-size:1.1rem;border-radius:10px"><i class="bi bi-question-circle"></i></span>
+              <span class="fw-semibold small text-uppercase" style="letter-spacing:.06em">Daily Question</span>
+            </div>
+            <p class="text-muted small mb-0">{{ daily_question or "What is one thing you want to accomplish today?" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frequent Tools -->
+      <div class="d-flex align-items-center justify-content-between mb-3 reveal">
+        <h5 class="fw-bold mb-0">Frequent Tools</h5>
+        <a href="/tools" class="btn btn-sm btn-outline-secondary">See all <i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+      <div class="row row-cols-2 row-cols-sm-3 g-3 mb-4">
         {% for tool in frequent_tools %}
-        <div class="col">
+        <div class="col reveal">
           <a href="{{ tool.url }}" class="text-decoration-none">
-            <div class="card h-100 text-center shadow-sm">
-              <div class="card-body">
-                <i class="bi {{ tool.icon }}" style="font-size: 2rem"></i>
-                <h6 class="card-title mt-2">{{ tool.name }}</h6>
+            <div class="feature-card text-center py-3">
+              <div class="feature-card-icon mx-auto mb-2">
+                <i class="bi {{ tool.icon }}"></i>
               </div>
+              <h6 class="card-title mb-0 small fw-semibold">{{ tool.name }}</h6>
             </div>
           </a>
         </div>
+        {% else %}
+        <div class="col-12">
+          <p class="text-muted small">No frequent tools yet. Start using tools to see them here!</p>
+        </div>
         {% endfor %}
       </div>
-      <h4>Quick Links</h4>
-      <ul class="list-inline">
-        <li class="list-inline-item">
-          <a href="/profile" class="btn btn-outline-primary btn-sm">Profile</a>
-        </li>
-        <li class="list-inline-item">
-          <a href="/settings" class="btn btn-outline-secondary btn-sm"
-            >Settings</a
-          >
-        </li>
-        <li class="list-inline-item">
-          <a href="/feedback" class="btn btn-outline-success btn-sm"
-            >Feedback</a
-          >
-        </li>
-        <li class="list-inline-item">
-          <a href="/tools" class="btn btn-outline-info btn-sm">All Tools</a>
-        </li>
-        {% if g.user and g.user.is_admin %}
-        <li class="list-inline-item">
-          <a href="/admin" class="btn btn-outline-danger btn-sm">Admin Panel</a>
-        </li>
-        {% endif %}
-      </ul>
+
+      <!-- Quick Links -->
+      <div class="d-flex gap-2 flex-wrap reveal">
+        <a href="/feedback" class="btn btn-outline-success btn-sm"><i class="bi bi-chat-dots me-1"></i>Feedback</a>
+        <a href="/activity_log" class="btn btn-outline-info btn-sm"><i class="bi bi-clock-history me-1"></i>Activity Log</a>
+      </div>
     </div>
+
+    <!-- RIGHT: Notifications -->
     <div class="col-md-4">
-      <h5>Notifications</h5>
-      <ul class="list-group mb-3">
+      <div class="d-flex align-items-center justify-content-between mb-3 reveal">
+        <h5 class="fw-bold mb-0"><i class="bi bi-bell me-2"></i>Notifications</h5>
+        <a href="/notifications" class="btn btn-sm btn-link p-0">View all</a>
+      </div>
+      <div class="d-flex flex-column gap-2 reveal">
         {% for note in notifications[:5] %}
-        <li
-          class="list-group-item {% if not note.read %}list-group-item-warning{% endif %}"
-        >
-          {{ note.message }}
-          <span class="text-muted small float-end"
-            >{{ note.created_at.strftime('%b %d, %H:%M') }}</span
-          >
-        </li>
+        <div class="dashboard-stat-card py-2 px-3 {% if not note.read %}border-warning{% endif %}">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <p class="mb-0 small">{{ note.message }}</p>
+            {% if not note.read %}
+            <span class="badge rounded-pill" style="background:var(--neo-accent);font-size:.65rem;flex-shrink:0">New</span>
+            {% endif %}
+          </div>
+          <p class="text-muted mb-0" style="font-size:.7rem;margin-top:.25rem">{{ note.created_at.strftime('%b %d, %H:%M') }}</p>
+        </div>
         {% else %}
-        <li class="list-group-item text-muted">No notifications</li>
+        <div class="dashboard-stat-card text-center py-3">
+          <i class="bi bi-bell-slash opacity-40 mb-1 d-block" style="font-size:1.5rem"></i>
+          <p class="text-muted mb-0 small">No notifications yet</p>
+        </div>
         {% endfor %}
-      </ul>
-      <a href="/notifications" class="btn btn-link btn-sm"
-        >View all notifications</a
-      >
+      </div>
     </div>
   </div>
 </div>

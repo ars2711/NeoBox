@@ -1,124 +1,164 @@
 {% extends "layout.html" %} {% block title %}Statistics Calculator{% endblock %}
 {% block main %}
 <div class="container py-5">
-    <div class="row mb-5 text-center fade-in-up">
-        <div class="col-lg-8 mx-auto">
-             <h2 class="tool-header mb-3"><i class="bi bi-graph-up me-2"></i>Statistics Calculator</h2>
-             <p class="text-muted">Calculate Mean, Median, Mode, SD and visualize data.</p>
-        </div>
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-graph-up me-2"></i>Statistics Calculator
+      </h2>
+      <p class="text-muted">
+        Calculate Mean, Median, Mode, SD and visualize data.
+      </p>
     </div>
+  </div>
 
   <div class="row justify-content-center">
-    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s;">
+    <div class="col-lg-8 fade-in-up" style="animation-delay: 0.1s">
       <div class="glass-card p-4 p-md-5">
         <form method="post">
-            <div class="mb-4">
-                <label for="numbers" class="form-label fw-bold">Enter Numbers</label>
-                <div class="input-group">
-                    <input
-                        type="text"
-                        class="form-control form-control-lg border-0 bg-light shadow-inner"
-                        id="numbers"
-                        name="numbers"
-                        placeholder="e.g. 10, 20, 30, 40"
-                        value="{{ request.form.numbers if request.form.numbers else '' }}"
-                        required
-                    />
-                    <button class="btn btn-neo px-4" type="submit">Calculate</button>
-                </div>
-                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> Comma separated values.</div>
+          <div class="mb-4">
+            <label for="numbers" class="form-label fw-bold"
+              >Enter Numbers</label
+            >
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control form-control-lg border-0 bg-light shadow-inner"
+                id="numbers"
+                name="numbers"
+                placeholder="e.g. 10, 20, 30, 40"
+                value="{{ request.form.numbers if request.form.numbers else '' }}"
+                required
+              />
+              <button class="btn btn-neo px-4" type="submit">Calculate</button>
             </div>
+            <div class="form-text mt-2">
+              <i class="bi bi-info-circle me-1"></i> Comma separated values.
+            </div>
+          </div>
         </form>
 
         {% if stats %}
         <div class="row g-3 mt-4 animate__animated animate__fadeIn">
-             <div class="col-md-6">
-                 <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
-                     <span class="d-block small text-muted text-uppercase fw-bold mb-1">Mean (Average)</span>
-                     <h3 class="fw-bold text-primary mb-0">{{ stats.mean }}</h3>
-                 </div>
-             </div>
-             <div class="col-md-6">
-                 <div class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
-                     <span class="d-block small text-muted text-uppercase fw-bold mb-1">Median</span>
-                     <h3 class="fw-bold text-success mb-0">{{ stats.median }}</h3>
-                 </div>
-             </div>
-             <div class="col-md-6">
-                 <div class="p-3 rounded-3 bg-info bg-opacity-10 border border-info border-opacity-25 h-100">
-                     <span class="d-block small text-muted text-uppercase fw-bold mb-1">Mode</span>
-                     <h3 class="fw-bold text-info mb-0">{{ stats.mode }}</h3>
-                 </div>
-             </div>
-             <div class="col-md-6">
-                 <div class="p-3 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 h-100">
-                     <span class="d-block small text-muted text-uppercase fw-bold mb-1">Standard Dev.</span>
-                     <h3 class="fw-bold text-warning mb-0">{{ stats.stdev }}</h3>
-                 </div>
-             </div>
-             <div class="col-md-6">
-                 <div class="p-3 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 h-100">
-                     <span class="d-block small text-muted text-uppercase fw-bold mb-1">Min Value</span>
-                     <h3 class="fw-bold text-secondary mb-0">{{ stats.min_val }}</h3>
-                 </div>
-             </div>
-             <div class="col-md-6">
-                 <div class="p-3 rounded-3 bg-dark bg-opacity-10 border border-dark border-opacity-25 h-100">
-                     <span class="d-block small text-muted text-uppercase fw-bold mb-1">Max Value</span>
-                     <h3 class="fw-bold text-dark mb-0">{{ stats.max_val }}</h3>
-                 </div>
-             </div>
+          <div class="col-md-6">
+            <div
+              class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100"
+            >
+              <span class="d-block small text-muted text-uppercase fw-bold mb-1"
+                >Mean (Average)</span
+              >
+              <h3 class="fw-bold text-primary mb-0">{{ stats.mean }}</h3>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 h-100"
+            >
+              <span class="d-block small text-muted text-uppercase fw-bold mb-1"
+                >Median</span
+              >
+              <h3 class="fw-bold text-success mb-0">{{ stats.median }}</h3>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="p-3 rounded-3 bg-info bg-opacity-10 border border-info border-opacity-25 h-100"
+            >
+              <span class="d-block small text-muted text-uppercase fw-bold mb-1"
+                >Mode</span
+              >
+              <h3 class="fw-bold text-info mb-0">{{ stats.mode }}</h3>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="p-3 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 h-100"
+            >
+              <span class="d-block small text-muted text-uppercase fw-bold mb-1"
+                >Standard Dev.</span
+              >
+              <h3 class="fw-bold text-warning mb-0">{{ stats.stdev }}</h3>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="p-3 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 h-100"
+            >
+              <span class="d-block small text-muted text-uppercase fw-bold mb-1"
+                >Min Value</span
+              >
+              <h3 class="fw-bold text-secondary mb-0">{{ stats.min_val }}</h3>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="p-3 rounded-3 bg-dark bg-opacity-10 border border-dark border-opacity-25 h-100"
+            >
+              <span class="d-block small text-muted text-uppercase fw-bold mb-1"
+                >Max Value</span
+              >
+              <h3 class="fw-bold text-dark mb-0">{{ stats.max_val }}</h3>
+            </div>
+          </div>
         </div>
 
-        <div class="mt-5 animate__animated animate__fadeIn" style="animation-delay: 0.2s;">
-            <h5 class="fw-bold text-center mb-4">Distribution Chart</h5>
-             <div class="bg-white p-3 rounded-4 shadow-sm">
-                <canvas id="statsChart" height="200"></canvas>
-             </div>
+        <div
+          class="mt-5 animate__animated animate__fadeIn"
+          style="animation-delay: 0.2s"
+        >
+          <h5 class="fw-bold text-center mb-4">Distribution Chart</h5>
+          <div class="bg-white p-3 rounded-4 shadow-sm">
+            <canvas id="statsChart" height="200"></canvas>
+          </div>
         </div>
-        
-         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-         <script>
-            const ctx = document.getElementById('statsChart').getContext('2d');
-            const dataValues = [{{ stats.numbers|join(', ') }}];
-            // Simple Line/Bar chart
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dataValues.map((_, i) => i + 1), // Index labels
-                    datasets: [{
-                        label: 'Values',
-                        data: dataValues,
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                        fill: true,
-                        tension: 0.3,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#0d6efd',
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-         </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+          const ctx = document.getElementById('statsChart').getContext('2d');
+          const dataValues = [{{ stats.numbers|join(', ') }}];
+          // Simple Line/Bar chart
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: dataValues.map((_, i) => i + 1), // Index labels
+                  datasets: [{
+                      label: 'Values',
+                      data: dataValues,
+                      borderColor: '#3b82f6',
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      fill: true,
+                      tension: 0.3,
+                      pointBackgroundColor: '#fff',
+                      pointBorderColor: '#3b82f6',
+                      pointRadius: 5
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: { display: false }
+                  },
+                  scales: {
+                      y: { beginAtZero: true }
+                  }
+              }
+          });
+        </script>
         {% endif %}
       </div>
-    
+
       {% if error %}
-      <div class="alert alert-danger shadow-sm border-0 rounded-3 mt-4 fade-in-up">
+      <div
+        class="alert alert-danger shadow-sm border-0 rounded-3 mt-4 fade-in-up"
+      >
         <i class="bi bi-exclamation-triangle me-2"></i> {{ error }}
       </div>
       {% endif %}
     </div>
   </div>
 </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
 {% endblock %}

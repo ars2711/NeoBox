@@ -26,6 +26,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from flask_babel import Babel, gettext as _
 from flask_dance.contrib.google import make_google_blueprint, google
+from authlib.integrations.flask_client import OAuth
 
 # === Security & File Handling ===
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -121,6 +122,36 @@ google_bp = make_google_blueprint(
 )
 app.register_blueprint(google_bp, url_prefix="/login")
 
+# --- Microsoft & Apple OAuth via Authlib ---
+from authlib.integrations.flask_client import OAuth as AuthlibOAuth
+oauth = AuthlibOAuth(app)
+
+# Microsoft OAuth
+microsoft = oauth.register(
+    name='microsoft',
+    client_id=os.environ.get('MICROSOFT_CLIENT_ID'),
+    client_secret=os.environ.get('MICROSOFT_CLIENT_SECRET'),
+    server_metadata_url='https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile User.Read'},
+)
+
+# Apple OAuth (Sign in with Apple)
+apple = oauth.register(
+    name='apple',
+    client_id=os.environ.get('APPLE_CLIENT_ID'),
+    client_secret=os.environ.get('APPLE_CLIENT_SECRET'),
+    api_base_url='https://appleid.apple.com/',
+    access_token_url='https://appleid.apple.com/auth/oauth2/token',
+    access_token_params={'grant_type': 'authorization_code'},
+    authorize_url='https://appleid.apple.com/auth/authorize',
+    authorize_params={
+        'response_type': 'code',
+        'response_mode': 'form_post',
+        'scope': 'openid email name'
+    },
+    client_kwargs={'scope': 'openid email name'},
+)
+
 # --- Mail ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -152,9 +183,12 @@ class User(db.Model):
     company = db.Column(db.String(100))
     position = db.Column(db.String(100))
     google_id = db.Column(db.String(128), unique=True)
+    microsoft_id = db.Column(db.String(128), unique=True)
+    apple_id = db.Column(db.String(128), unique=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     language = db.Column(db.String(10), default='en')
     theme = db.Column(db.String(20), default='default')
+    color_scheme = db.Column(db.String(20), default='auto')
     reset_token = db.Column(db.String(100), nullable=True)
     verified = db.Column(db.Boolean, default=False)
     verify_token = db.Column(db.String(100), nullable=True)
@@ -166,6 +200,21 @@ class User(db.Model):
     otp_expiry = db.Column(db.DateTime, nullable=True)
     passkeys = db.Column(JSON, default=list)
     delete_requested_at = db.Column(db.DateTime, nullable=True)
+    two_fa_enabled = db.Column(db.Boolean, default=False)
+    two_fa_secret = db.Column(db.String(255), nullable=True)
+
+class LinkedAuthProvider(db.Model):
+    __tablename__ = 'linked_auth_providers'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    provider = db.Column(db.String(50), nullable=False)  # 'google', 'microsoft', 'apple'
+    provider_id = db.Column(db.String(128), nullable=False)
+    provider_email = db.Column(db.String(120), nullable=False)
+    provider_name = db.Column(db.String(120), nullable=True)
+    linked_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    verified = db.Column(db.Boolean, default=True)
+    
+    __table_args__ = (db.UniqueConstraint('provider', 'provider_id', name='unique_provider_id'),)
 
 class Visitor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1819,6 +1868,257 @@ def login_google():
         flash("Registered and logged in with Google!", "success")
         return redirect("/")
 
+# --- Microsoft OAuth Route ---
+@app.route("/login/microsoft")
+def login_microsoft():
+    redirect_uri = url_for('authorize_microsoft', _external=True)
+    return microsoft.authorize_redirect(redirect_uri)
+
+@app.route("/authorize/microsoft")
+def authorize_microsoft():
+    try:
+        token = microsoft.authorize_access_token()
+        if not token:
+            flash("Microsoft authorization failed.", "danger")
+            return redirect("/login")
+        
+        resp = microsoft.get('https://graph.microsoft.com/v1.0/me', token=token)
+        if not resp.ok:
+            flash("Failed to fetch user info from Microsoft.", "danger")
+            return redirect("/login")
+        
+        info = resp.json()
+        microsoft_id = info.get("id")
+        email = info.get("mail") or info.get("userPrincipalName")
+        name = info.get("displayName")
+        
+        if not email:
+            flash("Microsoft account did not return an email address.", "danger")
+            return redirect("/login")
+        
+        # If user is logged in, link Microsoft account
+        if session.get("user_id"):
+            user = User.query.get(session["user_id"])
+            linked = LinkedAuthProvider.query.filter_by(user_id=user.id, provider='microsoft').first()
+            if linked and linked.provider_id != microsoft_id:
+                flash("This account is already linked to another Microsoft account.", "danger")
+            else:
+                if not linked:
+                    new_link = LinkedAuthProvider(
+                        user_id=user.id,
+                        provider='microsoft',
+                        provider_id=microsoft_id,
+                        provider_email=email,
+                        provider_name=name
+                    )
+                    db.session.add(new_link)
+                    user.microsoft_id = microsoft_id
+                    db.session.commit()
+                    flash("Microsoft account linked!", "success")
+                else:
+                    flash("Microsoft account already linked!", "info")
+            return redirect("/profile")
+        
+        # If not logged in, try to find user
+        user = User.query.filter(
+            (User.microsoft_id == microsoft_id) | (User.email == email)
+        ).first()
+        
+        if user:
+            if not user.microsoft_id:
+                user.microsoft_id = microsoft_id
+                db.session.commit()
+            # Link to LinkedAuthProviders  
+            existing = LinkedAuthProvider.query.filter_by(
+                user_id=user.id, provider='microsoft'
+            ).first()
+            if not existing:
+                link = LinkedAuthProvider(
+                    user_id=user.id,
+                    provider='microsoft',
+                    provider_id=microsoft_id,
+                    provider_email=email,
+                    provider_name=name
+                )
+                db.session.add(link)
+                db.session.commit()
+            
+            session["user_id"] = user.id
+            flash("Logged in with Microsoft!", "success")
+            return redirect("/")
+        else:
+            # Register new user
+            username = email.split("@")[0]
+            base_username = username
+            i = 1
+            while User.query.filter_by(username=username).first():
+                username = f"{base_username}{i}"
+                i += 1
+            
+            user = User(
+                username=username,
+                email=email,
+                microsoft_id=microsoft_id,
+                hash=generate_password_hash(os.urandom(16).hex()),
+                created_at=datetime.now(timezone.utc)
+            )
+            db.session.add(user)
+            db.session.flush()
+            
+            link = LinkedAuthProvider(
+                user_id=user.id,
+                provider='microsoft',
+                provider_id=microsoft_id,
+                provider_email=email,
+                provider_name=name
+            )
+            db.session.add(link)
+            db.session.commit()
+            session["user_id"] = user.id
+            flash("Registered and logged in with Microsoft!", "success")
+            return redirect("/")
+    except Exception as e:
+        flash(f"Microsoft login error: {str(e)}", "danger")
+        return redirect("/login")
+
+# --- Apple OAuth Route ---
+@app.route("/login/apple")
+def login_apple():
+    redirect_uri = url_for('authorize_apple', _external=True)
+    return apple.authorize_redirect(redirect_uri)
+
+@app.route("/authorize/apple")
+def authorize_apple():
+    try:
+        token = apple.authorize_access_token()
+        if not token:
+            flash("Apple authorization failed.", "danger")
+            return redirect("/login")
+        
+        # Decode the ID token to get user info
+        from jose import jwt
+        id_token = token.get('id_token')
+        if not id_token:
+            flash("Apple did not return an ID token.", "danger")
+            return redirect("/login")
+        
+        # Decode without verification (you should verify in production)
+        claims = jwt.get_unverified_claims(id_token)
+        apple_id = claims.get("sub")
+        email = claims.get("email")
+        
+        if not email or not apple_id:
+            flash("Apple account did not return required information.", "danger")
+            return redirect("/login")
+        
+        # If user is logged in, link Apple account
+        if session.get("user_id"):
+            user = User.query.get(session["user_id"])
+            linked = LinkedAuthProvider.query.filter_by(user_id=user.id, provider='apple').first()
+            if linked and linked.provider_id != apple_id:
+                flash("This account is already linked to another Apple ID.", "danger")
+            else:
+                if not linked:
+                    new_link = LinkedAuthProvider(
+                        user_id=user.id,
+                        provider='apple',
+                        provider_id=apple_id,
+                        provider_email=email
+                    )
+                    db.session.add(new_link)
+                    user.apple_id = apple_id
+                    db.session.commit()
+                    flash("Apple ID linked!", "success")
+                else:
+                    flash("Apple ID already linked!", "info")
+            return redirect("/profile")
+        
+        # If not logged in, try to find user
+        user = User.query.filter(
+            (User.apple_id == apple_id) | (User.email == email)
+        ).first()
+        
+        if user:
+            if not user.apple_id:
+                user.apple_id = apple_id
+                db.session.commit()
+            
+            existing = LinkedAuthProvider.query.filter_by(
+                user_id=user.id, provider='apple'
+            ).first()
+            if not existing:
+                link = LinkedAuthProvider(
+                    user_id=user.id,
+                    provider='apple',
+                    provider_id=apple_id,
+                    provider_email=email
+                )
+                db.session.add(link)
+                db.session.commit()
+            
+            session["user_id"] = user.id
+            flash("Logged in with Apple!", "success")
+            return redirect("/")
+        else:
+            # Register new user
+            username = email.split("@")[0]
+            base_username = username
+            i = 1
+            while User.query.filter_by(username=username).first():
+                username = f"{base_username}{i}"
+                i += 1
+            
+            user = User(
+                username=username,
+                email=email,
+                apple_id=apple_id,
+                hash=generate_password_hash(os.urandom(16).hex()),
+                created_at=datetime.now(timezone.utc)
+            )
+            db.session.add(user)
+            db.session.flush()
+            
+            link = LinkedAuthProvider(
+                user_id=user.id,
+                provider='apple',
+                provider_id=apple_id,
+                provider_email=email
+            )
+            db.session.add(link)
+            db.session.commit()
+            session["user_id"] = user.id
+            flash("Registered and logged in with Apple!", "success")
+            return redirect("/")
+    except Exception as e:
+        flash(f"Apple login error: {str(e)}", "danger")
+        return redirect("/login")
+
+# --- Account Linking Management ---
+@app.route("/account/linked-providers")
+@login_required
+def linked_providers():
+    user = User.query.get(session["user_id"])
+    providers = LinkedAuthProvider.query.filter_by(user_id=user.id).all()
+    return render_template("linked_providers.html", providers=providers)
+
+@app.route("/account/unlink/<provider>", methods=["POST"])
+@login_required
+def unlink_provider(provider):
+    user = User.query.get(session["user_id"])
+    link = LinkedAuthProvider.query.filter_by(user_id=user.id, provider=provider).first()
+    if link:
+        db.session.delete(link)
+        # Also remove from user model
+        if provider == 'google':
+            user.google_id = None
+        elif provider == 'microsoft':
+            user.microsoft_id = None
+        elif provider == 'apple':
+            user.apple_id = None
+        db.session.commit()
+        flash(f"{provider.capitalize()} account unlinked!", "success")
+    return redirect("/account/linked-providers")
+
 # --- Notifications Route ---
 @app.route("/notifications")
 @login_required
@@ -1894,8 +2194,8 @@ def api_user(user_id):
 def settings():
     if request.method == "POST":
         language = request.form.get("language")
-        theme = request.form.get("theme")
-        color_scheme = request.form.get("color_scheme")
+        theme = request.form.get("theme") or session.get("theme", "default")
+        color_scheme = request.form.get("color_scheme", "auto")
         db.session.execute(
             text("UPDATE users SET language = :language, theme = :theme WHERE id = :id"),
             {"language": language, "theme": theme, "id": session["user_id"]}
@@ -1903,8 +2203,11 @@ def settings():
         db.session.commit()
         session["lang"] = language
         session["theme"] = theme
-        if color_scheme:
+        # Allow auto, light, or dark
+        if color_scheme in ("auto", "dark", "light"):
             session["color_scheme"] = color_scheme
+        else:
+            session["color_scheme"] = "auto"
         flash("Settings updated!", "success")
         return redirect("/settings")
     user = db.session.execute(

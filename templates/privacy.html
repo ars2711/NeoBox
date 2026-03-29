@@ -1,120 +1,93 @@
-{% extends "layout.html" %} {% block title %}{{ _('Privacy Policy') }}{%
-endblock %} {% block main %}
-<div class="container py-5 text-start">
-  <h2 class="mb-3">
-    <i class="bi bi-shield-lock-fill me-2"></i> {{ _('Privacy Policy') }}
-  </h2>
-  <p class="text-muted mb-5">
-    {{ _('Your privacy matters. This policy explains how we collect, use, and
-    protect your data.') }}
-  </p>
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Privacy Policy') }}{% endblock %}
+{% block main %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
 
-  <section class="mb-4">
-    <h5>1. {{ _('Information We Collect') }}</h5>
-    <ul class="list-group list-group-flush ps-3">
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Account info (username, email, phone)') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Usage preferences and app activity') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Content created or submitted by you') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Device/browser details') }}
-      </li>
-    </ul>
-  </section>
+      <div class="text-center mb-5 reveal">
+        <div class="feature-card-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;border-radius:16px">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h2 class="fw-bold">{{ _('Privacy Policy') }}</h2>
+        <p class="text-muted">{{ _('Your privacy matters. This policy explains how we collect, use, and protect your data.') }}</p>
+      </div>
 
-  <section class="mb-4">
-    <h5>2. {{ _('How We Use Your Information') }}</h5>
-    <ul class="list-group list-group-flush ps-3">
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Deliver and improve services') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Tailor your experience') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Maintain security and performance') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Send important communications') }}
-      </li>
-    </ul>
-  </section>
+      <div class="dashboard-stat-card reveal">
 
-  <section class="mb-4">
-    <h5>3. {{ _('Data Storage & Security') }}</h5>
-    <p>
-      {{ _('Your data is encrypted and securely stored. Only authorized systems
-      and personnel have access to your data when necessary.') }}
-    </p>
-  </section>
+        <section class="mb-4">
+          <h6 class="fw-bold">1. {{ _('Information We Collect') }}</h6>
+          <ul class="list-unstyled text-muted small ms-2">
+            <li class="mb-1">• {{ _('Account info (username, email, phone)') }}</li>
+            <li class="mb-1">• {{ _('Usage preferences and app activity') }}</li>
+            <li class="mb-1">• {{ _('Content created or submitted by you') }}</li>
+            <li class="mb-1">• {{ _('Device/browser details') }}</li>
+          </ul>
+        </section>
+        <hr class="gradient-divider">
 
-  <section class="mb-4">
-    <h5>4. {{ _('Cookies & Tracking') }}</h5>
-    <p>{{ _('We use cookies to:') }}</p>
-    <ul class="list-group list-group-flush ps-3">
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Remember login preferences') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Analyze usage for improvement') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Ensure secure sessions') }}
-      </li>
-    </ul>
-  </section>
+        <section class="mb-4">
+          <h6 class="fw-bold">2. {{ _('How We Use Your Information') }}</h6>
+          <ul class="list-unstyled text-muted small ms-2">
+            <li class="mb-1">• {{ _('Deliver and improve services') }}</li>
+            <li class="mb-1">• {{ _('Tailor your experience') }}</li>
+            <li class="mb-1">• {{ _('Maintain security and performance') }}</li>
+            <li class="mb-1">• {{ _('Send important communications') }}</li>
+          </ul>
+        </section>
+        <hr class="gradient-divider">
 
-  <section class="mb-4">
-    <h5>5. {{ _('Data Sharing') }}</h5>
-    <p>
-      {{ _('We do not sell your personal data. We may share information:') }}
-    </p>
-    <ul class="list-group list-group-flush ps-3">
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('When legally required') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('With your explicit consent') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('With trusted services that help us operate NeoBox') }}
-      </li>
-    </ul>
-  </section>
+        <section class="mb-4">
+          <h6 class="fw-bold">3. {{ _('Data Storage & Security') }}</h6>
+          <p class="text-muted small">{{ _('Your data is encrypted and securely stored. Only authorized systems and personnel have access to your data when necessary.') }}</p>
+        </section>
+        <hr class="gradient-divider">
 
-  <section class="mb-4">
-    <h5>6. {{ _('Your Rights') }}</h5>
-    <ul class="list-group list-group-flush ps-3">
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Access the data we hold about you') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Request corrections or updates') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Request deletion of your data') }}
-      </li>
-      <li class="list-group-item border-0 ps-0">
-        • {{ _('Export your data') }}
-      </li>
-    </ul>
-  </section>
+        <section class="mb-4">
+          <h6 class="fw-bold">4. {{ _('Cookies & Tracking') }}</h6>
+          <p class="text-muted small mb-1">{{ _('We use cookies to:') }}</p>
+          <ul class="list-unstyled text-muted small ms-2">
+            <li class="mb-1">• {{ _('Remember login preferences') }}</li>
+            <li class="mb-1">• {{ _('Analyze usage for improvement') }}</li>
+            <li class="mb-1">• {{ _('Ensure secure sessions') }}</li>
+          </ul>
+        </section>
+        <hr class="gradient-divider">
 
-  <section class="mb-4">
-    <h5>7. {{ _('Contact Us') }}</h5>
-    <p>
-      {{ _('If you have any concerns about your privacy or data usage, feel free
-      to reach out at') }}
-      <a href="mailto:arsalanhero2711@gmail.com">arsalanhero2711@gmail.com</a>.
-    </p>
-  </section>
+        <section class="mb-4">
+          <h6 class="fw-bold">5. {{ _('Data Sharing') }}</h6>
+          <p class="text-muted small mb-1">{{ _('We do not sell your personal data. We may share information:') }}</p>
+          <ul class="list-unstyled text-muted small ms-2">
+            <li class="mb-1">• {{ _('When legally required') }}</li>
+            <li class="mb-1">• {{ _('With your explicit consent') }}</li>
+            <li class="mb-1">• {{ _('With trusted services that help us operate NeoBox') }}</li>
+          </ul>
+        </section>
+        <hr class="gradient-divider">
 
-  <hr class="my-4" />
-  <p class="text-muted">{{ _('Last updated: June 15, 2025') }}</p>
+        <section class="mb-4">
+          <h6 class="fw-bold">6. {{ _('Your Rights') }}</h6>
+          <ul class="list-unstyled text-muted small ms-2">
+            <li class="mb-1">• {{ _('Access the data we hold about you') }}</li>
+            <li class="mb-1">• {{ _('Request corrections or updates') }}</li>
+            <li class="mb-1">• {{ _('Request deletion of your data') }}</li>
+            <li class="mb-1">• {{ _('Export your data') }}</li>
+          </ul>
+        </section>
+        <hr class="gradient-divider">
+
+        <section class="mb-2">
+          <h6 class="fw-bold">7. {{ _('Contact Us') }}</h6>
+          <p class="text-muted small">
+            {{ _('If you have any concerns about your privacy or data usage, feel free to reach out at') }}
+            <a href="mailto:arsalanhero2711@gmail.com">arsalanhero2711@gmail.com</a>.
+          </p>
+        </section>
+
+        <p class="text-muted small mt-3 mb-0">{{ _('Last updated: June 15, 2025') }}</p>
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}

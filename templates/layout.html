@@ -19,13 +19,12 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cbor-js@0.1.0/cbor.min.js"></script>
 
-    <link id="app-favicon" href="/static/icons/neobox-light.svg" rel="icon" type="image/svg+xml" />
-    <link rel="icon" href="/static/icons/favicon-theme-light.png" media="(prefers-color-scheme: light)" />
-    <link rel="icon" href="/static/icons/favicon-theme-dark.png" media="(prefers-color-scheme: dark)" />
-    <link rel="icon" href="/static/favicon.ico" sizes="any" />
-    <link href="/static/icons/icon-192x192.png" rel="apple-touch-icon" />
+    <link id="app-favicon" href="/static/logos/favicon.png" rel="icon" type="image/png" />
+    <link rel="icon" href="/static/logos/favicon.png" type="image/png" />
+    <link rel="icon" href="/static/logos/favicon.ico" sizes="any" />
+    <link href="/static/logos/apple-touch-icon.png" rel="apple-touch-icon" />
     <link href="/static/styles.css" rel="stylesheet" />
-    <link href="/static/themes.css" rel="stylesheet" />
+    <link href="/static/styles_patch.css" rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
@@ -42,45 +41,47 @@
     <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/static/service-worker.js");
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Fira+Code:wght@400;600&family=Poppins:wght@400;600&family=Nunito:wght@400;600&family=Montserrat:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
       }
     </script>
 
-    <meta name="theme-color" content="#0d6efd" />
+    <meta name="theme-color" content="#3b82f6" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     
     {% set base_url = request.url_root.rstrip('/') %}
     <!-- Open Graph / Viral Tags -->
     <meta property="og:title" content="NeoBox - The All-in-One Toolkit" />
-    <meta property="og:description" content="Over 50+ free tools: AI, PDF, Converters, Math, and Productivity. No login required for most tools." />
-    <meta property="og:image" content="{{ base_url }}/static/icons/neobox-og.svg" />
+    <meta property="og:description" content="Over 50+ tools: AI, PDF, Converters, Math, and Productivity. No login required for most tools." />
+    <meta property="og:image" content="{{ base_url }}/static/logos/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="NeoBox - The All-in-One Toolkit" />
     <meta property="og:url" content="https://neobox.app" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="{{ base_url }}/static/icons/neobox-og.svg" />
+    <meta name="twitter:image" content="{{ base_url }}/static/logos/og-image.png" />
     <meta name="twitter:image:alt" content="NeoBox - The All-in-One Toolkit" />
     
     <title>NeoBox | {% block title %}{% endblock %}</title>
 
     <script>
       try {
-        const serverTheme = "{{ session.get('theme', 'default') }}";
         const serverScheme = "{{ session.get('color_scheme', 'auto') }}";
-        const storedScheme = localStorage.getItem("colorScheme") || serverScheme || "auto";
-        const storedUiTheme = localStorage.getItem("uiTheme") || serverTheme || "default";
-        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const resolvedScheme = storedScheme === "auto" ? (prefersDark ? "dark" : "light") : storedScheme;
-        document.documentElement.setAttribute("data-bs-theme", resolvedScheme);
-        document.documentElement.setAttribute("data-theme", storedUiTheme);
+        const storedScheme = localStorage.getItem("colorScheme");
+        
+        function resolveTheme(scheme) {
+          if (scheme === "auto") {
+            return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          return scheme === "dark" || scheme === "light" ? scheme : "light";
+        }
+        
+        const resolved = storedScheme 
+          ? resolveTheme(storedScheme)
+          : resolveTheme(serverScheme);
+        
+        document.documentElement.setAttribute("data-bs-theme", resolved);
       } catch (e) {
         document.documentElement.setAttribute("data-bs-theme", "light");
-        document.documentElement.setAttribute("data-theme", "default");
       }
     </script>
   </head>
@@ -91,7 +92,10 @@
       id="main-navbar"
     >
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">NeoBox</a>
+        <a class="navbar-brand d-inline-flex align-items-center gap-2" href="/" style="font-size:1.3rem;font-weight:600;letter-spacing:-0.5px">
+          <img src="/static/logos/logo.png" alt="NeoBox" class="brand-logo" width="40" height="40" />
+          <span style="font-size:1.2rem">NeoBox</span>
+        </a>
         <button
           aria-controls="navbar"
           aria-expanded="false"
@@ -127,30 +131,10 @@
                 <i class="bi bi-circle-half"></i>
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="schemeDropdown">
-                <li><button class="dropdown-item scheme-option" data-scheme="auto"><i class="bi bi-circle-half"></i> Auto</button></li>
-                <li><button class="dropdown-item scheme-option" data-scheme="light"><i class="bi bi-sun"></i> Light</button></li>
-                <li><button class="dropdown-item scheme-option" data-scheme="dark"><i class="bi bi-moon"></i> Dark</button></li>
-              </ul>
-            </li>
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="themeDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i id="theme-icon-display" class="bi bi-palette-fill"></i>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
-                <li><button class="dropdown-item theme-option" data-theme="default"><i class="bi bi-palette"></i> Default</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="classic"><i class="bi bi-book-half"></i> Classic</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="coding"><i class="bi bi-code-slash"></i> Coding</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="goofy"><i class="bi bi-emoji-smile-fill"></i> Goofy</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="ocean"><i class="bi bi-droplet"></i> Ocean</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="sunset"><i class="bi bi-sunset"></i> Sunset</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="forest"><i class="bi bi-tree"></i> Forest</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="auto"><i class="bi bi-cpu me-2"></i>Auto</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="light"><i class="bi bi-sun me-2"></i>Light</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="dark"><i class="bi bi-moon me-2"></i>Dark</button></li>
               </ul>
             </li>
           </ul>
@@ -173,30 +157,10 @@
                 <i class="bi bi-circle-half"></i>
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="schemeDropdown2">
-                <li><button class="dropdown-item scheme-option" data-scheme="auto"><i class="bi bi-circle-half"></i> Auto</button></li>
-                <li><button class="dropdown-item scheme-option" data-scheme="light"><i class="bi bi-sun"></i> Light</button></li>
-                <li><button class="dropdown-item scheme-option" data-scheme="dark"><i class="bi bi-moon"></i> Dark</button></li>
-              </ul>
-            </li>
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="themeDropdown2"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i id="theme-icon-display-2" class="bi bi-palette-fill"></i>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown2">
-                <li><button class="dropdown-item theme-option" data-theme="default"><i class="bi bi-palette"></i> Default</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="classic"><i class="bi bi-book-half"></i> Classic</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="coding"><i class="bi bi-code-slash"></i> Coding</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="goofy"><i class="bi bi-emoji-smile-fill"></i> Goofy</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="ocean"><i class="bi bi-droplet"></i> Ocean</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="sunset"><i class="bi bi-sunset"></i> Sunset</button></li>
-                <li><button class="dropdown-item theme-option" data-theme="forest"><i class="bi bi-tree"></i> Forest</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="auto"><i class="bi bi-cpu me-2"></i>Auto</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="light"><i class="bi bi-sun me-2"></i>Light</button></li>
+                <li><button class="dropdown-item scheme-option" data-scheme="dark"><i class="bi bi-moon me-2"></i>Dark</button></li>
               </ul>
             </li>
           </ul>
@@ -205,12 +169,18 @@
       </div>
     </nav>
 
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %} {% for category, message in messages %}
-    <div class="alert alert-{{ category }} mb-0 text-center" role="alert">
-      {{ message }}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container mt-2" style="position:relative;z-index:1050">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %} {% endif %} {% endwith %}
+    {% endif %}
+    {% endwith %}
 
     <main class="container py-5 text-center">
       <div id="main-content" class="fade-in">
@@ -218,12 +188,12 @@
       </div>
     </main>
 
-    <footer class="bg-body-tertiary border-top pt-4 mt-auto">
+    <footer class="bg-body-tertiary pt-4 mt-auto">
       <div class="container">
         <div class="row text-start pb-3">
           <!-- Column 1: About -->
           <div class="col-md-3 mb-3">
-            <h5>About NeoBox</h5>
+            <h5 class="fw-bold">About NeoBox</h5>
             <p class="small text-muted">
               NeoBox is a free and open-source web application designed to help
               you with your daily tasks. It offers a variety of tools and
@@ -235,7 +205,7 @@
           </div>
           <!-- Column 2: Site Pages -->
           <div class="col-md-3 mb-3">
-            <h5>Site Pages</h5>
+            <h5 class="fw-bold">Site Pages</h5>
             <ul class="list-unstyled">
               <li><a href="/">Home</a></li>
               <li><a href="/tools">Tools</a></li>
@@ -247,7 +217,7 @@
           </div>
           <!-- Column 3: My Links -->
           <div class="col-md-3 mb-3">
-            <h5>My Links</h5>
+            <h5 class="fw-bold">My Links</h5>
             <ul class="list-unstyled">
               <li>
                 <a href="https://github.com/ars2711" target="_blank">GitHub</a>
@@ -266,7 +236,7 @@
           </div>
           <!-- Column 4: Language -->
           <div class="col-md-3 mb-3">
-            <h5>Language</h5>
+            <h5 class="fw-bold">Language</h5>
             <form method="get" action="" onChange="if(this.language.value) window.location='/set_language/' + this.language.value;">
               <select name="language" class="form-select form-select-sm" style="max-width: 170px;">
                 {% for lang in available_languages %}

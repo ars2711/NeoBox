@@ -1,204 +1,272 @@
-{% extends "layout.html" %} {% block title %}Study Laps{% endblock %}
-{% block main %}
+{% extends "layout.html" %} {% block title %}Study Laps{% endblock %} {% block
+main %}
 <div class="container py-5">
-    <div class="row mb-5 text-center fade-in-up">
-        <div class="col-lg-8 mx-auto">
-             <h2 class="tool-header mb-3"><i class="bi bi-hourglass-split me-2"></i>Study Laps & Pomodoro</h2>
-             <p class="text-muted">Track your study sessions with a visual timer and analytics.</p>
-        </div>
+  <div class="row mb-5 text-center fade-in-up">
+    <div class="col-lg-8 mx-auto">
+      <h2 class="tool-header mb-3">
+        <i class="bi bi-hourglass-split me-2"></i>Study Laps & Pomodoro
+      </h2>
+      <p class="text-muted">
+        Track your study sessions with a visual timer and analytics.
+      </p>
     </div>
+  </div>
 
   <div class="row g-4 justify-content-center">
-      
     <!-- Timer Column -->
-    <div class="col-lg-5 fade-in-up" style="animation-delay: 0.1s;">
-      <div class="glass-card p-5 text-center h-100 d-flex flex-column justify-content-center">
-          <div class="timer-circle rounded-circle border border-5 border-primary mx-auto d-flex align-items-center justify-content-center mb-4 shadow-sm position-relative" style="width: 250px; height: 250px;">
-                <!-- Could add SVG progress ring here later -->
-                <div class="display-1 fw-bold text-dark" id="display">{{ "25" if mode == 'pomodoro' else "00" }}:{{ "00" if mode == 'pomodoro' else "00" }}</div>
-                <div class="position-absolute bottom-0 mb-4 text-muted small fw-bold text-uppercase ls-1" id="mode-label">Focus</div>
+    <div class="col-lg-5 fade-in-up" style="animation-delay: 0.1s">
+      <div
+        class="glass-card p-5 text-center h-100 d-flex flex-column justify-content-center"
+      >
+        <div
+          class="timer-circle rounded-circle border border-5 border-primary mx-auto d-flex align-items-center justify-content-center mb-4 shadow-sm position-relative"
+          style="width: 250px; height: 250px"
+        >
+          <!-- Could add SVG progress ring here later -->
+          <div class="display-1 fw-bold text-dark" id="display">
+            {{ "25" if mode == 'pomodoro' else "00" }}:{{ "00" if mode ==
+            'pomodoro' else "00" }}
           </div>
-          
-          <div class="mb-4">
-              <div class="btn-group shadow-sm rounded-pill" role="group">
-                  <button type="button" class="btn btn-outline-primary active" id="modeFocus" onclick="setMode('focus')">Focus</button>
-                   <button type="button" class="btn btn-outline-primary" id="modeShort" onclick="setMode('short')">Short Break</button>
-                    <button type="button" class="btn btn-outline-primary" id="modeLong" onclick="setMode('long')">Long Break</button>
-              </div>
+          <div
+            class="position-absolute bottom-0 mb-4 text-muted small fw-bold text-uppercase ls-1"
+            id="mode-label"
+          >
+            Focus
           </div>
+        </div>
 
-          <div class="d-flex justify-content-center gap-3">
-              <button class="btn btn-success rounded-pill px-4 shadow-sm" id="btnStart" onclick="startTimer()">
-                  <i class="bi bi-play-fill"></i> Start
-              </button>
-              <button class="btn btn-warning text-white rounded-pill px-4 shadow-sm" id="btnPause" onclick="pauseTimer()">
-                  <i class="bi bi-pause-fill"></i> Pause
-              </button>
-               <button class="btn btn-danger rounded-pill px-4 shadow-sm" id="btnReset" onclick="resetTimer()">
-                  <i class="bi bi-arrow-counterclockwise"></i> Reset
-              </button>
+        <div class="mb-4">
+          <div class="btn-group shadow-sm rounded-pill" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-primary active"
+              id="modeFocus"
+              onclick="setMode('focus')"
+            >
+              Focus
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              id="modeShort"
+              onclick="setMode('short')"
+            >
+              Short Break
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              id="modeLong"
+              onclick="setMode('long')"
+            >
+              Long Break
+            </button>
           </div>
-          
-          <div class="mt-4">
-               <button class="btn btn-outline-secondary rounded-pill btn-sm" onclick="saveLap()">
-                   <i class="bi bi-save me-1"></i> Log Session
-               </button>
-          </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3">
+          <button
+            class="btn btn-success rounded-pill px-4 shadow-sm"
+            id="btnStart"
+            onclick="startTimer()"
+          >
+            <i class="bi bi-play-fill"></i> Start
+          </button>
+          <button
+            class="btn btn-warning text-white rounded-pill px-4 shadow-sm"
+            id="btnPause"
+            onclick="pauseTimer()"
+          >
+            <i class="bi bi-pause-fill"></i> Pause
+          </button>
+          <button
+            class="btn btn-danger rounded-pill px-4 shadow-sm"
+            id="btnReset"
+            onclick="resetTimer()"
+          >
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+          </button>
+        </div>
+
+        <div class="mt-4">
+          <button
+            class="btn btn-outline-secondary rounded-pill btn-sm"
+            onclick="saveLap()"
+          >
+            <i class="bi bi-save me-1"></i> Log Session
+          </button>
+        </div>
       </div>
     </div>
-    
+
     <!-- Laps / Stats Column -->
-    <div class="col-lg-7 fade-in-up" style="animation-delay: 0.2s;">
-        <div class="glass-card p-4 h-100">
-            <h5 class="fw-bold mb-3"><i class="bi bi-card-list me-2"></i>Session History</h5>
-            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                <table class="table table-hover align-middle">
-                    <thead class="text-muted small text-uppercase">
-                        <tr>
-                            <th>Mode</th>
-                            <th>Time</th>
-                            <th>Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lapsBody">
-                        <!-- JS injected -->
-                    </tbody>
-                </table>
-                 <div id="noLaps" class="text-center text-muted py-5 small">
-                    <i class="bi bi-journal-x display-4 d-block mb-3 opacity-25"></i>
-                    No sessions logged yet.
-                </div>
-            </div>
-            
-            <hr class="my-4 opacity-10">
-            
-            <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart me-2"></i>Today's Focus</h5>
-            <div style="height: 200px;" class="d-flex justify-content-center">
-                 <canvas id="studyChart"></canvas>
-            </div>
+    <div class="col-lg-7 fade-in-up" style="animation-delay: 0.2s">
+      <div class="glass-card p-4 h-100">
+        <h5 class="fw-bold mb-3">
+          <i class="bi bi-card-list me-2"></i>Session History
+        </h5>
+        <div
+          class="table-responsive"
+          style="max-height: 300px; overflow-y: auto"
+        >
+          <table class="table table-hover align-middle">
+            <thead class="text-muted small text-uppercase">
+              <tr>
+                <th>Mode</th>
+                <th>Time</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="lapsBody">
+              <!-- JS injected -->
+            </tbody>
+          </table>
+          <div id="noLaps" class="text-center text-muted py-5 small">
+            <i class="bi bi-journal-x display-4 d-block mb-3 opacity-25"></i>
+            No sessions logged yet.
+          </div>
         </div>
+
+        <hr class="my-4 opacity-10" />
+
+        <h5 class="fw-bold mb-3">
+          <i class="bi bi-pie-chart me-2"></i>Today's Focus
+        </h5>
+        <div style="height: 200px" class="d-flex justify-content-center">
+          <canvas id="studyChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    let timer;
-    let isRunning = false;
-    let timeLeft = 25 * 60; // default 25 mins
-    let currentMode = 'focus'; // focus, short, long
-    let totalFocusTime = 0;
-    
-    const display = document.getElementById('display');
-    const modeLabel = document.getElementById('mode-label');
-    const noLaps = document.getElementById('noLaps');
-    const lapsBody = document.getElementById('lapsBody');
-    
-    // Chart
-    const ctx = document.getElementById('studyChart').getContext('2d');
-    let studyChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Focus', 'Break'],
-            datasets: [{
-                data: [0, 0], // Focus min, Break min
-                backgroundColor: ['#0d6efd', '#ffc107'],
-                borderWidth: 0
-            }]
+  let timer;
+  let isRunning = false;
+  let timeLeft = 25 * 60; // default 25 mins
+  let currentMode = "focus"; // focus, short, long
+  let totalFocusTime = 0;
+
+  const display = document.getElementById("display");
+  const modeLabel = document.getElementById("mode-label");
+  const noLaps = document.getElementById("noLaps");
+  const lapsBody = document.getElementById("lapsBody");
+
+  // Chart
+  const ctx = document.getElementById("studyChart").getContext("2d");
+  let studyChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Focus", "Break"],
+      datasets: [
+        {
+          data: [0, 0], // Focus min, Break min
+          backgroundColor: ["#3b82f6", "#ffc107"],
+          borderWidth: 0,
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'right' }
-            }
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "right" },
+      },
+    },
+  });
+
+  window.setMode = function (mode) {
+    pauseTimer();
+    currentMode = mode;
+
+    // Update UI buttons
+    document
+      .querySelectorAll(".btn-group .btn")
+      .forEach((b) => b.classList.remove("active"));
+
+    if (mode === "focus") {
+      timeLeft = 25 * 60;
+      modeLabel.innerText = "Focus Time";
+      document.getElementById("modeFocus").classList.add("active");
+    } else if (mode === "short") {
+      timeLeft = 5 * 60;
+      modeLabel.innerText = "Short Break";
+      document.getElementById("modeShort").classList.add("active");
+    } else {
+      timeLeft = 15 * 60;
+      modeLabel.innerText = "Long Break";
+      document.getElementById("modeLong").classList.add("active");
+    }
+    updateDisplay();
+  };
+
+  function updateDisplay() {
+    let m = Math.floor(timeLeft / 60);
+    let s = timeLeft % 60;
+    display.innerText = `${m < 10 ? "0" + m : m}:${s < 10 ? "0" + s : s}`;
+  }
+
+  window.startTimer = function () {
+    if (!isRunning && timeLeft > 0) {
+      isRunning = true;
+      timer = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateDisplay();
+        } else {
+          pauseTimer();
+          saveLap(); // Auto save on finish?
+          alert("Timer Finished!");
         }
+      }, 1000);
+    }
+  };
+
+  window.pauseTimer = function () {
+    clearInterval(timer);
+    isRunning = false;
+  };
+
+  window.resetTimer = function () {
+    pauseTimer();
+    setMode(currentMode); // Reset to current mode start
+  };
+
+  window.saveLap = function () {
+    // Log "Session Completed" just for visual
+    noLaps.classList.add("d-none");
+
+    const row = document.createElement("tr");
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    window.setMode = function(mode) {
-        pauseTimer();
-        currentMode = mode;
-        
-        // Update UI buttons
-        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
-        
-        if (mode === 'focus') {
-            timeLeft = 25 * 60;
-            modeLabel.innerText = "Focus Time";
-            document.getElementById('modeFocus').classList.add('active');
-        } else if (mode === 'short') {
-            timeLeft = 5 * 60;
-            modeLabel.innerText = "Short Break";
-            document.getElementById('modeShort').classList.add('active');
-        } else {
-            timeLeft = 15 * 60;
-            modeLabel.innerText = "Long Break";
-            document.getElementById('modeLong').classList.add('active');
-        }
-        updateDisplay();
-    }
+    // Duration? Let's just say "Completed" for simplicity of tool
+    // Or calculate elapsed. simpler: Log the type
+    const duration =
+      (currentMode === "focus" ? "25" : currentMode === "short" ? "5" : "15") +
+      " min";
 
-    function updateDisplay() {
-        let m = Math.floor(timeLeft / 60);
-        let s = timeLeft % 60;
-        display.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-    }
-
-    window.startTimer = function() {
-        if(!isRunning && timeLeft > 0) {
-            isRunning = true;
-            timer = setInterval(() => {
-                if(timeLeft > 0) {
-                    timeLeft--;
-                    updateDisplay();
-                } else {
-                    pauseTimer();
-                    saveLap(); // Auto save on finish?
-                    alert("Timer Finished!");
-                }
-            }, 1000);
-        }
-    }
-
-    window.pauseTimer = function() {
-        clearInterval(timer);
-        isRunning = false;
-    }
-
-    window.resetTimer = function() {
-        pauseTimer();
-        setMode(currentMode); // Reset to current mode start
-    }
-    
-    window.saveLap = function() {
-        // Log "Session Completed" just for visual
-        noLaps.classList.add('d-none');
-        
-        const row = document.createElement('tr');
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        // Duration? Let's just say "Completed" for simplicity of tool 
-        // Or calculate elapsed. simpler: Log the type
-        const duration = (currentMode === 'focus' ? '25' : (currentMode === 'short' ? '5' : '15')) + ' min';
-        
-        row.innerHTML = `
-            <td><span class="badge ${currentMode === 'focus' ? 'bg-primary' : 'bg-warning'}">${currentMode.toUpperCase()}</span></td>
+    row.innerHTML = `
+            <td><span class="badge ${currentMode === "focus" ? "bg-primary" : "bg-warning"}">${currentMode.toUpperCase()}</span></td>
             <td>${duration}</td>
             <td class="text-muted small">${timeStr}</td>
         `;
-        lapsBody.insertBefore(row, lapsBody.firstChild);
-        
-        // Update chart dummy logic
-        if(currentMode === 'focus') {
-            studyChart.data.datasets[0].data[0] += parseInt(duration);
-        } else {
-            studyChart.data.datasets[0].data[1] += parseInt(duration);
-        }
-        studyChart.update();
+    lapsBody.insertBefore(row, lapsBody.firstChild);
+
+    // Update chart dummy logic
+    if (currentMode === "focus") {
+      studyChart.data.datasets[0].data[0] += parseInt(duration);
+    } else {
+      studyChart.data.datasets[0].data[1] += parseInt(duration);
     }
-    
-    // Init
-    updateDisplay();
+    studyChart.update();
+  };
+
+  // Init
+  updateDisplay();
 </script>
 {% endblock %}

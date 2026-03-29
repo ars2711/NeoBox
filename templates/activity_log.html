@@ -1,13 +1,42 @@
-{% extends "layout.html" %} {% block main %}
-<h2>Activity Log</h2>
-<ul class="list-group">
-  {% for log in logs %}
-  <li class="list-group-item">
-    <b>{{ log.action }}</b> : {{ log.details }}
-    <span class="text-muted float-end"
-      >{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</span
-    >
-  </li>
-  {% endfor %}
-</ul>
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Activity Log') }}{% endblock %}
+{% block main %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-11 col-md-9 col-lg-7">
+
+      <div class="text-center mb-4 reveal">
+        <div class="feature-card-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;border-radius:16px">
+          <i class="bi bi-activity"></i>
+        </div>
+        <h2 class="fw-bold">{{ _('Activity Log') }}</h2>
+        <p class="text-muted">{{ _('A record of actions on your account') }}</p>
+      </div>
+
+      <div class="dashboard-stat-card reveal">
+        {% if logs %}
+          <div class="list-group list-group-flush">
+          {% for log in logs %}
+            <div class="list-group-item d-flex justify-content-between align-items-start gap-2 px-0">
+              <div>
+                <span class="fw-semibold">{{ log.action }}</span>
+                {% if log.details %}
+                  <span class="text-muted"> &mdash; {{ log.details }}</span>
+                {% endif %}
+              </div>
+              <small class="text-muted text-nowrap">{{ log.timestamp.strftime('%b %d, %H:%M') }}</small>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-clock-history" style="font-size:2.5rem;opacity:.4"></i>
+            <p class="mt-3">{{ _('No activity recorded yet.') }}</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
 {% endblock %}

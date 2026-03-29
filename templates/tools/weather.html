@@ -1,219 +1,292 @@
-{% extends "layout.html" %}
-{% block title %}Weather{% endblock %}
-
-{% block main %}
+{% extends "layout.html" %} {% block title %}Weather{% endblock %} {% block main
+%}
 <div class="container py-5">
-    <div class="row justify-content-center fade-in-up">
-        <div class="col-lg-8 mx-auto text-center">
-            <h2 class="tool-header mb-4"><i class="bi bi-cloud-sun me-2"></i>Global Weather</h2>
-            
-            <div class="glass-card mb-4 p-2">
-                <div class="input-group">
-                    <span class="input-group-text bg-transparent border-0 ps-3"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="city-search" class="form-control border-0 bg-transparent py-3" placeholder="Enter city name (e.g. London, Tokyo)..." autocomplete="off" style="box-shadow:none;">
-                    <button class="btn btn-primary rounded-pill px-4 m-1" onclick="getWeather()">Search</button>
-                </div>
-            </div>
-            
-            <div id="loading-spinner" class="d-none py-5">
-                <div class="spinner-grow text-primary" role="status"></div>
-            </div>
+  <div class="row justify-content-center fade-in-up">
+    <div class="col-lg-8 mx-auto text-center">
+      <h2 class="tool-header mb-4">
+        <i class="bi bi-cloud-sun me-2"></i>Global Weather
+      </h2>
 
-            <div id="error-msg" class="alert alert-danger d-none rounded-4 text-start"></div>
+      <div class="glass-card mb-4 p-2">
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-0 ps-3"
+            ><i class="bi bi-search text-muted"></i
+          ></span>
+          <input
+            type="text"
+            id="city-search"
+            class="form-control border-0 bg-transparent py-3"
+            placeholder="Enter city name (e.g. London, Tokyo)..."
+            autocomplete="off"
+            style="box-shadow: none"
+          />
+          <button
+            class="btn btn-primary rounded-pill px-4 m-1"
+            onclick="getWeather()"
+          >
+            Search
+          </button>
         </div>
-    </div>
+      </div>
 
-    <div id="weather-result" class="row justify-content-center d-none fade-in-up" style="animation-delay:0.2s;">
-        <!-- Main Card -->
-        <div class="col-lg-8">
-            <div class="glass-card p-5 mb-4 text-center position-relative overflow-hidden">
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-primary opacity-10"></div>
-                
-                <h2 id="city-name" class="fw-bold mb-1 position-relative"></h2>
-                <h6 id="current-date" class="text-muted mb-5 position-relative"></h6>
-                
-                <div class="d-flex justify-content-center align-items-center mb-5 position-relative">
-                    <i id="weather-icon" class="bi bi-cloud-sun text-primary me-4" style="font-size: 5rem;"></i>
-                    <div class="text-start">
-                        <h1 id="temperature" class="display-1 fw-bold mb-0">--°C</h1>
-                        <p id="weather-desc" class="fs-4 text-muted mb-0">Clear Sky</p>
-                    </div>
-                </div>
-                
-                <div class="row g-3 px-lg-5 position-relative">
-                    <div class="col-4">
-                        <div class="p-3 bg-white bg-opacity-50 rounded-4 shadow-sm h-100">
-                            <i class="bi bi-wind fs-3 text-primary mb-2 d-block"></i>
-                            <span class="small text-muted text-uppercase fw-bold">Wind</span>
-                            <div id="wind-speed" class="fw-bold fs-5 mt-1">--</div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="p-3 bg-white bg-opacity-50 rounded-4 shadow-sm h-100">
-                            <i class="bi bi-droplet-fill fs-3 text-info mb-2 d-block"></i>
-                            <span class="small text-muted text-uppercase fw-bold">Humidity</span>
-                            <div id="humidity" class="fw-bold fs-5 mt-1">--%</div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="p-3 bg-white bg-opacity-50 rounded-4 shadow-sm h-100">
-                            <i class="bi bi-moisture fs-3 text-success mb-2 d-block"></i>
-                            <span class="small text-muted text-uppercase fw-bold">Precip.</span>
-                            <div id="precipitation" class="fw-bold fs-5 mt-1">--</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chart Card -->
-            <div class="glass-card p-4">
-                 <div class="d-flex justify-content-between align-items-center mb-4">
-                      <h5 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow me-2"></i>24-Hour Forecast</h5>
-                 </div>
-                 <div style="height: 250px;">
-                      <canvas id="weatherChart"></canvas>
-                 </div>
-            </div>
-            
-            <div class="text-center mt-3 text-muted small opacity-50">
-                Weather data provided by Open-Meteo
-            </div>
-        </div>
+      <div id="loading-spinner" class="d-none py-5">
+        <div class="spinner-grow text-primary" role="status"></div>
+      </div>
+
+      <div
+        id="error-msg"
+        class="alert alert-danger d-none rounded-4 text-start"
+      ></div>
     </div>
+  </div>
+
+  <div
+    id="weather-result"
+    class="row justify-content-center d-none fade-in-up"
+    style="animation-delay: 0.2s"
+  >
+    <!-- Main Card -->
+    <div class="col-lg-8">
+      <div
+        class="glass-card p-5 mb-4 text-center position-relative overflow-hidden"
+      >
+        <div
+          class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-primary opacity-10"
+        ></div>
+
+        <h2 id="city-name" class="fw-bold mb-1 position-relative"></h2>
+        <h6 id="current-date" class="text-muted mb-5 position-relative"></h6>
+
+        <div
+          class="d-flex justify-content-center align-items-center mb-5 position-relative"
+        >
+          <i
+            id="weather-icon"
+            class="bi bi-cloud-sun text-primary me-4"
+            style="font-size: 5rem"
+          ></i>
+          <div class="text-start">
+            <h1 id="temperature" class="display-1 fw-bold mb-0">--°C</h1>
+            <p id="weather-desc" class="fs-4 text-muted mb-0">Clear Sky</p>
+          </div>
+        </div>
+
+        <div class="row g-3 px-lg-5 position-relative">
+          <div class="col-4">
+            <div class="p-3 bg-white bg-opacity-50 rounded-4 shadow-sm h-100">
+              <i class="bi bi-wind fs-3 text-primary mb-2 d-block"></i>
+              <span class="small text-muted text-uppercase fw-bold">Wind</span>
+              <div id="wind-speed" class="fw-bold fs-5 mt-1">--</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-3 bg-white bg-opacity-50 rounded-4 shadow-sm h-100">
+              <i class="bi bi-droplet-fill fs-3 text-info mb-2 d-block"></i>
+              <span class="small text-muted text-uppercase fw-bold"
+                >Humidity</span
+              >
+              <div id="humidity" class="fw-bold fs-5 mt-1">--%</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-3 bg-white bg-opacity-50 rounded-4 shadow-sm h-100">
+              <i class="bi bi-moisture fs-3 text-success mb-2 d-block"></i>
+              <span class="small text-muted text-uppercase fw-bold"
+                >Precip.</span
+              >
+              <div id="precipitation" class="fw-bold fs-5 mt-1">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Card -->
+      <div class="glass-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold mb-0">
+            <i class="bi bi-graph-up-arrow me-2"></i>24-Hour Forecast
+          </h5>
+        </div>
+        <div style="height: 250px">
+          <canvas id="weatherChart"></canvas>
+        </div>
+      </div>
+
+      <div class="text-center mt-3 text-muted small opacity-50">
+        Weather data provided by Open-Meteo
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    let weatherChart;
+  let weatherChart;
 
-    document.getElementById('city-search').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') getWeather();
+  document
+    .getElementById("city-search")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") getWeather();
     });
 
-    async function getWeather() {
-        const city = document.getElementById('city-search').value;
-        const resultDiv = document.getElementById('weather-result');
-        const spinner = document.getElementById('loading-spinner');
-        const errorDiv = document.getElementById('error-msg');
-        
-        if (!city) return;
-        
-        resultDiv.classList.add('d-none');
-        errorDiv.classList.add('d-none');
-        spinner.classList.remove('d-none');
-        
-        try {
-            // Geocoding
-            const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
-            const geoData = await geoRes.json();
-            
-            if (!geoData.results || geoData.results.length === 0) {
-                throw new Error('City not found. Please try another name.');
-            }
-            
-            const { latitude, longitude, name, country } = geoData.results[0];
-            
-            // Weather Data
-            const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&hourly=temperature_2m&timezone=auto`);
-            const weatherData = await weatherRes.json();
-            const current = weatherData.current;
-            
-            // WMO Codes
-            const wmoIcons = {
-                0: 'bi-sun', 1: 'bi-cloud-sun', 2: 'bi-cloud', 3: 'bi-clouds',
-                45: 'bi-cloud-fog', 48: 'bi-cloud-fog2',
-                51: 'bi-cloud-drizzle', 61: 'bi-cloud-rain', 71: 'bi-cloud-snow',
-                95: 'bi-cloud-lightning'
-            };
-            
-            // UI Update
-            document.getElementById('city-name').innerText = `${name}, ${country}`;
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById('temperature').innerText = `${Math.round(current.temperature_2m)}${weatherData.current_units.temperature_2m}`;
-            document.getElementById('wind-speed').innerText = `${current.wind_speed_10m} ${weatherData.current_units.wind_speed_10m}`;
-            document.getElementById('humidity').innerText = `${current.relative_humidity_2m}${weatherData.current_units.relative_humidity_2m}`;
-            document.getElementById('precipitation').innerText = `${current.precipitation} ${weatherData.current_units.precipitation}`;
-            
-            const iconClass = wmoIcons[current.weather_code] || 'bi-cloud-sun';
-            document.getElementById('weather-icon').className = `bi ${iconClass} text-primary me-4`;
+  async function getWeather() {
+    const city = document.getElementById("city-search").value;
+    const resultDiv = document.getElementById("weather-result");
+    const spinner = document.getElementById("loading-spinner");
+    const errorDiv = document.getElementById("error-msg");
 
-            updateChart(weatherData.hourly);
-            
-            spinner.classList.add('d-none');
-            resultDiv.classList.remove('d-none');
-            
-        } catch (err) {
-            spinner.classList.add('d-none');
-            errorDiv.innerText = err.message || "Something went wrong.";
-            errorDiv.classList.remove('d-none');
-        }
-    }
+    if (!city) return;
 
-    function updateChart(hourly) {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const labels = [];
-        const data = [];
-        
-        let startIndex = -1;
-        // Simple search for start hour index in ISO strings
-        // Actually, hourly.time returns array of ISO strings. We can match based on index = hour of day if it starts at 00:00
-        // Open-Meteo returns 00:00 start usually.
-        startIndex = currentHour; 
+    resultDiv.classList.add("d-none");
+    errorDiv.classList.add("d-none");
+    spinner.classList.remove("d-none");
 
-        for (let i = 0; i < 24; i++) {
-            let idx = startIndex + i;
-            if(hourly.time[idx]) {
-                const date = new Date(hourly.time[idx]);
-                labels.push(date.toLocaleTimeString([], {hour: '2-digit'}));
-                data.push(hourly.temperature_2m[idx]);
-            }
-        }
+    try {
+      // Geocoding
+      const geoRes = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`,
+      );
+      const geoData = await geoRes.json();
 
-        const ctx = document.getElementById('weatherChart').getContext('2d');
-        
-        if (weatherChart) weatherChart.destroy();
+      if (!geoData.results || geoData.results.length === 0) {
+        throw new Error("City not found. Please try another name.");
+      }
 
-        // Theme check
-        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-        const color = isDark ? '#ffffff' : '#0d6efd';
+      const { latitude, longitude, name, country } = geoData.results[0];
 
-        weatherChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Temp',
-                    data: data,
-                    borderColor: '#0d6efd',
-                    backgroundColor: (ctx) => {
-                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
-                        gradient.addColorStop(0, 'rgba(13, 110, 253, 0.4)');
-                        gradient.addColorStop(1, 'rgba(13, 110, 253, 0)');
-                        return gradient;
-                    },
-                    borderWidth: 2,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#0d6efd',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: isDark?'#aaa':'#666' } },
-                    y: { display: false }
-                }
-            }
+      // Weather Data
+      const weatherRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&hourly=temperature_2m&timezone=auto`,
+      );
+      const weatherData = await weatherRes.json();
+      const current = weatherData.current;
+
+      // WMO Codes
+      const wmoIcons = {
+        0: "bi-sun",
+        1: "bi-cloud-sun",
+        2: "bi-cloud",
+        3: "bi-clouds",
+        45: "bi-cloud-fog",
+        48: "bi-cloud-fog2",
+        51: "bi-cloud-drizzle",
+        61: "bi-cloud-rain",
+        71: "bi-cloud-snow",
+        95: "bi-cloud-lightning",
+      };
+
+      // UI Update
+      document.getElementById("city-name").innerText = `${name}, ${country}`;
+      document.getElementById("current-date").innerText =
+        new Date().toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         });
+      document.getElementById("temperature").innerText =
+        `${Math.round(current.temperature_2m)}${weatherData.current_units.temperature_2m}`;
+      document.getElementById("wind-speed").innerText =
+        `${current.wind_speed_10m} ${weatherData.current_units.wind_speed_10m}`;
+      document.getElementById("humidity").innerText =
+        `${current.relative_humidity_2m}${weatherData.current_units.relative_humidity_2m}`;
+      document.getElementById("precipitation").innerText =
+        `${current.precipitation} ${weatherData.current_units.precipitation}`;
+
+      const iconClass = wmoIcons[current.weather_code] || "bi-cloud-sun";
+      document.getElementById("weather-icon").className =
+        `bi ${iconClass} text-primary me-4`;
+
+      updateChart(weatherData.hourly);
+
+      spinner.classList.add("d-none");
+      resultDiv.classList.remove("d-none");
+    } catch (err) {
+      spinner.classList.add("d-none");
+      errorDiv.innerText = err.message || "Something went wrong.";
+      errorDiv.classList.remove("d-none");
     }
+  }
+
+  function updateChart(hourly) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const labels = [];
+    const data = [];
+
+    let startIndex = -1;
+    // Simple search for start hour index in ISO strings
+    // Actually, hourly.time returns array of ISO strings. We can match based on index = hour of day if it starts at 00:00
+    // Open-Meteo returns 00:00 start usually.
+    startIndex = currentHour;
+
+    for (let i = 0; i < 24; i++) {
+      let idx = startIndex + i;
+      if (hourly.time[idx]) {
+        const date = new Date(hourly.time[idx]);
+        labels.push(date.toLocaleTimeString([], { hour: "2-digit" }));
+        data.push(hourly.temperature_2m[idx]);
+      }
+    }
+
+    const ctx = document.getElementById("weatherChart").getContext("2d");
+
+    if (weatherChart) weatherChart.destroy();
+
+    // Theme check
+    const isDark =
+      document.documentElement.getAttribute("data-bs-theme") === "dark";
+    const color = isDark ? "#93c5fd" : "#3b82f6";
+
+    weatherChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Temp",
+            data: data,
+            borderColor: color,
+            backgroundColor: (ctx) => {
+              const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+              const rgbaColor = isDark
+                ? "rgba(147, 197, 253, 0.4)"
+                : "rgba(59, 130, 246, 0.4)";
+              const rgbaZero = isDark
+                ? "rgba(147, 197, 253, 0)"
+                : "rgba(59, 130, 246, 0)";
+              gradient.addColorStop(0, rgbaColor);
+              gradient.addColorStop(1, rgbaZero);
+              return gradient;
+            },
+            borderWidth: 2,
+            pointBackgroundColor: "#fff",
+            pointBorderColor: color,
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: isDark ? "#aaa" : "#666" },
+          },
+          y: { display: false },
+        },
+      },
+    });
+  }
 </script>
 <style>
-.opacity-10 { opacity: 0.1; }
+  .opacity-10 {
+    opacity: 0.1;
+  }
 </style>
 {% endblock %}

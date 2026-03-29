@@ -1,151 +1,180 @@
-{% extends "layout.html" %} {% block title %}{{ _('Log In') }}{% endblock %} {%
+﻿{% extends "layout.html" %} {% block title %}{{ _('Log In') }}{% endblock %} {%
 block main %}
-<div class="container py-4">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h1 class="card-title mb-3">{{ _('Welcome Back') }}</h1>
-      <p class="lead text-muted mb-4">
-        {{ _('Please enter your credentials to log in') }}
-      </p>
-      <form method="post" class="needs-validation login-form" novalidate>
-        <!-- Identifier Field -->
-        <div class="mb-3">
-          <label for="identifier" class="form-label"
-            >{{ _('Username, Email, or Phone') }}</label
-          >
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi-person"></i></span>
-            <input
-              type="text"
-              class="form-control"
-              id="identifier"
-              name="identifier"
-              required
-              placeholder="{{ _('Enter your identifier') }}"
-            />
-          </div>
-          <div class="invalid-feedback">
-            {{ _('Please enter your username, email, or phone.') }}
-          </div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+      <div class="text-center mb-4 reveal">
+        <div
+          class="feature-card-icon mx-auto mb-3"
+          style="
+            width: 56px;
+            height: 56px;
+            font-size: 1.6rem;
+            border-radius: 16px;
+          "
+        >
+          <i class="bi bi-box-arrow-in-right"></i>
         </div>
+        <h2 class="fw-bold">{{ _('Welcome Back') }}</h2>
+        <p class="text-muted">
+          {{ _('Please enter your credentials to log in') }}
+        </p>
+      </div>
 
-        <!-- Password Field -->
-        <div class="mb-3">
-          <label for="password" class="form-label">{{ _('Password') }}</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi-lock"></i></span>
-            <input
-              type="password"
-              class="form-control"
-              id="password"
-              name="password"
-              required
-              placeholder="{{ _('Enter your password') }}"
-            />
-            <button
-              class="btn btn-outline-secondary"
-              type="button"
-              onclick="togglePassword('password')"
+      <div class="dashboard-stat-card reveal">
+        <form method="post" class="needs-validation login-form" novalidate>
+          <div class="mb-3">
+            <label for="identifier" class="form-label fw-semibold"
+              >{{ _('Username, Email, or Phone') }}</label
             >
-              <i class="bi-eye"></i>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input
+                type="text"
+                class="form-control"
+                id="identifier"
+                name="identifier"
+                required
+                placeholder="{{ _('Enter your identifier') }}"
+                autofocus
+              />
+              <div class="invalid-feedback">
+                {{ _('Please enter your username, email, or phone.') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="password" class="form-label fw-semibold"
+              >{{ _('Password') }}</label
+            >
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                required
+                placeholder="{{ _('Enter your password') }}"
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                onclick="togglePassword('password')"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+              <div class="invalid-feedback">
+                {{ _('Please enter your password.') }}
+              </div>
+            </div>
+            <div class="text-end mt-1">
+              <a href="{{ url_for('forgot') }}" class="small"
+                >{{ _('Forgot your password?') }}</a
+              >
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary shimmer">
+              <i class="bi bi-box-arrow-in-right me-2"></i>{{ _('Log In') }}
             </button>
-          </div>
-          <div class="invalid-feedback">
-            {{ _('Please enter your password.') }}
-          </div>
-        </div>
-        <!-- Login Button -->
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary btn-sm">
-            <i class="bi-box-arrow-in-right me-1"></i>{{ _('Log In') }}
-          </button>
-
-          <!-- Passkey Login -->
-          <button
-            type="button"
-            class="btn btn-secondary btn-sm"
-            id="login-passkey"
-          >
-            <i class="bi-shield-lock me-1"></i>{{ _('Login with Passkey') }}
-          </button>
-
-          <!-- Google Login -->
-          <a href="{{ url_for('google.login') }}" class="btn btn-outline-danger btn-sm">
-            <i class="bi-google me-2"></i>{{ _('Sign in with Google') }}
-          </a>
-        </div>
-
-        <hr class="my-4" />
-
-        <div class="text-center">
-          <p class="mb-2">
-            {{ _("Don't have an account?") }}
-            <a href="{{ url_for('register') }}">{{ _('Register here') }}</a>
-          </p>
-          <p class="mb-0">
-            <a href="{{ url_for('forgot') }}"
-              >{{ _('Forgot your password?') }}</a
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              id="login-passkey"
             >
-          </p>
-        </div>
-      </form>
+              <i class="bi bi-shield-lock me-2"></i>{{ _('Login with Passkey')
+              }}
+            </button>
+            <div class="oauth-section pt-1">
+              <p class="text-center text-muted small mb-2">
+                {{ _('Or sign in with') }}
+              </p>
+              <div class="oauth-provider-grid">
+                <a
+                  href="{{ url_for('google.login') }}"
+                  class="btn btn-outline-danger oauth-provider-btn"
+                  title="Google"
+                >
+                  <i class="bi bi-google"></i><span>Google</span>
+                </a>
+                <a
+                  href="{{ url_for('login_microsoft') }}"
+                  class="btn btn-outline-primary oauth-provider-btn"
+                  title="Microsoft"
+                >
+                  <i class="bi bi-microsoft"></i><span>Microsoft</span>
+                </a>
+                <a
+                  href="{{ url_for('login_apple') }}"
+                  class="btn btn-outline-dark oauth-provider-btn"
+                  title="Apple"
+                >
+                  <i class="bi bi-apple"></i><span>Apple</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <hr class="gradient-divider" />
+        <p class="text-center mb-0 small">
+          {{ _("Don't have an account?") }}
+          <a href="{{ url_for('register') }}" class="fw-semibold"
+            >{{ _('Register here') }}</a
+          >
+        </p>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
   function togglePassword(id) {
-    const input = document.getElementById(id);
-    const type = input.type === "password" ? "text" : "password";
-    input.type = type;
-    const icon = event.currentTarget.querySelector("i");
-    icon.className = type === "password" ? "bi-eye" : "bi-eye-slash";
+    var input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+    var icon = event.currentTarget.querySelector("i");
+    icon.className =
+      input.type === "password" ? "bi bi-eye" : "bi bi-eye-slash";
   }
-
-  // Form validation
   (function () {
-    "use strict";
-    const forms = document.querySelectorAll(".needs-validation");
-    Array.from(forms).forEach((form) => {
+    var forms = document.querySelectorAll(".needs-validation");
+    forms.forEach(function (form) {
       form.addEventListener(
         "submit",
-        (event) => {
+        function (e) {
           if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
           }
           form.classList.add("was-validated");
         },
-        false
+        false,
       );
     });
   })();
 
-  // Passkey login
   document.getElementById("login-passkey").onclick = async function () {
-    const identifier = document.getElementById("identifier").value;
+    var identifier = document.getElementById("identifier").value;
     if (!identifier) {
       alert("{{ _('Please enter your username, email, or phone first.') }}");
       return;
     }
-
     try {
-      const resp = await fetch("/passkey/login/begin", {
+      var resp = await fetch("/passkey/login/begin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier }),
       });
-
-      if (!resp.ok) {
+      if (!resp.ok)
         throw new Error("{{ _('No passkey registered for this user.') }}");
-      }
-
-      const options = await resp.arrayBuffer();
-      const cred = await navigator.credentials.get({
+      var options = await resp.arrayBuffer();
+      var cred = await navigator.credentials.get({
         publicKey: CBOR.decode(options),
       });
-
-      const complete = await fetch("/passkey/login/complete", {
+      var complete = await fetch("/passkey/login/complete", {
         method: "POST",
         body: CBOR.encode({
           credentialId: cred.rawId,
@@ -154,7 +183,6 @@ block main %}
           signature: cred.response.signature,
         }),
       });
-
       if (complete.ok) {
         window.location = "/";
       } else {

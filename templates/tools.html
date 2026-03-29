@@ -1,36 +1,75 @@
-{% extends "layout.html" %}
-{% block title %}Tools{% endblock %}
+﻿{% extends "layout.html" %}
+{% block title %}{{ _('Tools') }}{% endblock %}
 {% block main %}
-<div class="container mt-1">
-  <h1>Tools</h1>
-  <p class="text-muted">Explore our collection of tools to enhance your experience.</p>
-    <div class="mb-3">
-    <div class="d-flex" id="categoryTabs">
-      {% for cat in tool_categories %}
-        <button class="btn btn-outline-primary category-tab" data-category="{{ cat.key }}">{{ cat.name }}</button>
-      {% endfor %}
+<div class="container py-4">
+
+  <div class="text-center mb-4 reveal">
+    <h1 class="fw-bold gradient-text">{{ _('Tools') }}</h1>
+    <p class="text-muted">{{ _('Explore our collection of tools to enhance your experience.') }}</p>
+  </div>
+
+  <div class="dashboard-stat-card reveal mb-4">
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="input-group input-group-lg">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" id="toolSearch" class="form-control form-control-lg" placeholder="{{ _('Search tools…') }}" />
+          <button class="btn btn-outline-secondary" type="button" id="filterToggle" title="{{ _('Filter options') }}" style="display:flex;align-items:center;gap:0.5rem">
+            <i class="bi bi-funnel"></i> <span class="d-none d-sm-inline">{{ _('Filters') }}</span>
+          </button>
+        </div>
+        <div id="filterPanel" class="mt-2 p-3 bg-light rounded" style="display:none;border:1px solid #ddd">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="caseMatch" />
+            <label class="form-check-label" for="caseMatch" title="{{ _('Match exact case') }}">
+              <i class="bi bi-fonts"></i> {{ _('Case Match') }}
+            </label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="strictSearch" />
+            <label class="form-check-label" for="strictSearch" title="{{ _('Exact word match') }}">
+              <i class="bi bi-quote"></i> {{ _('Strict Search') }}
+            </label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="favoritesOnly" />
+            <label class="form-check-label" for="favoritesOnly" title="{{ _('Show favorites only') }}">
+              <i class="bi bi-heart-fill"></i> {{ _('Favorites') }}
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="tools-category-wrap">
+          <div class="d-flex flex-wrap gap-2" id="categoryTabs">
+            {% for cat in tool_categories %}
+              <button class="btn btn-outline-primary category-tab" data-category="{{ cat.key }}">{{ cat.name }}</button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="mb-4">
-    <input type="text" id="toolSearch" class="form-control" placeholder="Search tools..." style="max-width:300px;display:inline-block;">
-  </div>
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="toolsGrid">
+
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 reveal" id="toolsGrid">
     {% for tool in tools %}
     <div class="col tool-card fade-in page-transition" data-name="{{ tool.name|lower }}" data-category="{{ tool.category }}">
       {% if not tool.login_required or logged_in %}
       <a href="tools/{{ tool.url }}" class="text-decoration-none">
       {% else %}
-      <a href="/login" class="text-decoration-none" title="Login required">
+      <a href="/login" class="text-decoration-none" title="{{ _('Login required') }}">
       {% endif %}
         <div class="card h-100 text-center shadow-sm glow-on-hover {% if tool.login_required and not logged_in %}opacity-50{% endif %}">
           <div class="card-body">
-            <i class="bi {{ tool.icon }} interactive-icon" style="font-size:2rem;"></i>
-            <h5 class="card-title mt-2">{{ tool.name }}</h5>
+            <div class="feature-card-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.4rem;border-radius:12px">
+              <i class="bi {{ tool.icon }}"></i>
+            </div>
+            <h5 class="card-title mb-1">{{ tool.name }}</h5>
             {% if tool.description %}
-              <div class="small text-muted mb-2">{{ tool.description }}</div>
+              <div class="small text-muted">{{ tool.description }}</div>
             {% endif %}
             {% if tool.login_required and not logged_in %}
-              <div class="small text-muted"><i class="bi bi-lock-fill"></i> Login required</div>
+              <div class="small text-muted mt-1"><i class="bi bi-lock-fill"></i> {{ _('Login required') }}</div>
             {% endif %}
           </div>
         </div>
@@ -38,57 +77,109 @@
     </div>
     {% endfor %}
   </div>
+
   {% if wip_tools %}
-    <h2 class="mt-5">WIP Tools <span class="pulse-loader"></span></h2>
-    <p class="text-muted">These tools are currently under development and may not be fully functional. Press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd> to unlock.</p>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="wip-tools" data-wip-locked="1">
-      {% for tool in wip_tools %}
-      <div class="col">
-        <div class="card h-100 text-center shadow-sm wip-locked shimmer glow-on-hover" data-tool-url="/tools/{{ tool.url if tool.url else '#' }}">
-          <div class="card-body">
-            <i class="bi {{ tool.icon }} interactive-icon" style="font-size:2rem; color: #888;"></i>
-            <h5 class="card-title mt-2">{{ tool.name }}</h5>
-            <div class="small text-muted">{{ tool.description }}</div>
-            <div class="mt-2"><i class="bi bi-lock-fill"></i> Locked</div>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+  <hr class="gradient-divider mt-5">
+  <div class="d-flex align-items-center gap-2 mb-2 reveal">
+    <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0">
+      <i class="bi bi-wrench-adjustable"></i>
     </div>
-  {% endif %}
-  {% if upcoming_tools %}
-  <h2 class="mt-5">Upcoming Tools <i class="bi bi-clock-history float-animation"></i></h2>
-  <p class="text-muted">These tools are currently planned for future release.</p>
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-    {% for tool in upcoming_tools %}
+    <h2 class="fw-bold mb-0">{{ _('WIP Tools') }} <span class="pulse-loader ms-1"></span></h2>
+  </div>
+  <p class="text-muted reveal">{{ _('These tools are under development. Press') }} <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd> {{ _('to unlock.') }}</p>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 reveal" id="wip-tools" data-wip-locked="1">
+    {% for tool in wip_tools %}
     <div class="col">
-      <div class="card h-100 text-center shadow-sm opacity-50 neo-card" style="pointer-events: none; cursor: not-allowed;">
+      <div class="card h-100 text-center shadow-sm wip-locked shimmer glow-on-hover" data-tool-url="/tools/{{ tool.url if tool.url else '#' }}">
         <div class="card-body">
-          <i class="bi {{ tool.icon }}" style="font-size:2rem; color: #888;"></i>
+          <div class="feature-card-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.4rem;border-radius:12px;opacity:.6">
+            <i class="bi {{ tool.icon }}"></i>
+          </div>
           <h5 class="card-title mt-2">{{ tool.name }}</h5>
-          <div class="small text-muted">{{ tool.soon }}</div>
-          <div class="mt-2"><span class="badge bg-secondary">Coming Soon</span></div>
+          <div class="small text-muted">{{ tool.description }}</div>
+          <div class="mt-2 small"><i class="bi bi-lock-fill"></i> {{ _('Locked') }}</div>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
   {% endif %}
+
+  {% if upcoming_tools %}
+  <hr class="gradient-divider mt-5">
+  <div class="d-flex align-items-center gap-2 mb-2 reveal">
+    <div class="feature-card-icon" style="width:36px;height:36px;font-size:1rem;border-radius:10px;flex-shrink:0">
+      <i class="bi bi-clock-history"></i>
+    </div>
+    <h2 class="fw-bold mb-0">{{ _('Upcoming Tools') }}</h2>
+  </div>
+  <p class="text-muted reveal">{{ _('These tools are planned for a future release.') }}</p>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 reveal">
+    {% for tool in upcoming_tools %}
+    <div class="col">
+      <div class="card h-100 text-center shadow-sm opacity-50 neo-card" style="pointer-events:none;cursor:not-allowed;">
+        <div class="card-body">
+          <div class="feature-card-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.4rem;border-radius:12px;opacity:.5">
+            <i class="bi {{ tool.icon }}"></i>
+          </div>
+          <h5 class="card-title mt-2">{{ tool.name }}</h5>
+          <div class="small text-muted">{{ tool.soon }}</div>
+          <div class="mt-2"><span class="badge bg-secondary">{{ _('Coming Soon') }}</span></div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
 </div>
 <script>
 const toolCards = document.querySelectorAll('.tool-card');
 const searchInput = document.getElementById('toolSearch');
 const categoryTabs = document.querySelectorAll('.category-tab');
+const filterToggle = document.getElementById('filterToggle');
+const filterPanel = document.getElementById('filterPanel');
+const caseMatchCheck = document.getElementById('caseMatch');
+const strictSearchCheck = document.getElementById('strictSearch');
+const favoritesOnlyCheck = document.getElementById('favoritesOnly');
+
 let activeCategory = "all";
+let favorites = JSON.parse(localStorage.getItem('toolFavorites') || '[]');
+
+// Toggle filter panel
+filterToggle.addEventListener('click', function() {
+  filterPanel.style.display = filterPanel.style.display === 'none' ? 'block' : 'none';
+});
 
 function filterTools() {
-  const search = searchInput.value.toLowerCase();
+  const search = searchInput.value;
+  const searchLower = search.toLowerCase();
+  const useStrictSearch = strictSearchCheck.checked;
+  const useCaseMatch = caseMatchCheck.checked;
+  const showFavoritesOnly = favoritesOnlyCheck.checked;
+  
   toolCards.forEach(card => {
     const name = card.getAttribute('data-name');
     const category = card.getAttribute('data-category');
+    const isFavorite = favorites.includes(name);
+    
     const matchesCategory = (activeCategory === "all" || category === activeCategory);
-    const matchesSearch = (!search || name.includes(search));
-    card.style.display = (matchesCategory && matchesSearch) ? "" : "none";
+    
+    let matchesSearch = true;
+    if (search) {
+      if (useStrictSearch) {
+        // Exact word match
+        const searchTerms = useCaseMatch ? search.split(/\s+/) : searchLower.split(/\s+/);
+        const toolName = useCaseMatch ? name : name.toLowerCase();
+        matchesSearch = searchTerms.some(term => toolName.includes(term));
+      } else {
+        // Partial match
+        matchesSearch = useCaseMatch ? name.includes(search) : name.includes(searchLower);
+      }
+    }
+    
+    const matchesFavorites = !showFavoritesOnly || isFavorite;
+    card.style.display = (matchesCategory && matchesSearch && matchesFavorites) ? "" : "none";
   });
 }
 
@@ -100,10 +191,48 @@ categoryTabs.forEach(tab => {
     filterTools();
   });
 });
-searchInput.addEventListener('input', filterTools);
 
-// Set "All" as active by default
+searchInput.addEventListener('input', filterTools);
+caseMatchCheck.addEventListener('change', filterTools);
+strictSearchCheck.addEventListener('change', filterTools);
+favoritesOnlyCheck.addEventListener('change', filterTools);
 categoryTabs[0].classList.add('active');
+
+// Add favorite button to cards
+document.addEventListener('DOMContentLoaded', function() {
+  toolCards.forEach(card => {
+    const toolName = card.getAttribute('data-name');
+    const cardDiv = card.querySelector('.card');
+    
+    if (cardDiv && !cardDiv.querySelector('.fav-btn')) {
+      const favBtn = document.createElement('button');
+      favBtn.className = 'btn btn-sm fav-btn position-absolute top-0 end-0 m-2';
+      favBtn.style.zIndex = '10';
+      favBtn.style.background = 'none';
+      favBtn.style.border = 'none';
+      favBtn.title = 'Add to favorites';
+      const hasLove = favorites.includes(toolName);
+      favBtn.innerHTML = hasLove ? '<i class="bi bi-heart-fill text-danger" style="font-size:1.2rem"></i>' : '<i class="bi bi-heart" style="font-size:1.2rem"></i>';
+      
+      favBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = favorites.indexOf(toolName);
+        if (idx > -1) {
+          favorites.splice(idx, 1);
+          favBtn.innerHTML = '<i class="bi bi-heart" style="font-size:1.2rem"></i>';
+        } else {
+          favorites.push(toolName);
+          favBtn.innerHTML = '<i class="bi bi-heart-fill text-danger" style="font-size:1.2rem"></i>';
+        }
+        localStorage.setItem('toolFavorites', JSON.stringify(favorites));
+      });
+      
+      cardDiv.style.position = 'relative';
+      cardDiv.appendChild(favBtn);
+    }
+  });
+});
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -115,21 +244,14 @@ document.addEventListener("DOMContentLoaded", function() {
     flashDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
     flashDiv.style.zIndex = 2000;
     flashDiv.role = "alert";
-    flashDiv.innerHTML = `
-      ${message}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
+    flashDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
     document.body.appendChild(flashDiv);
-    setTimeout(() => {
-      flashDiv.classList.remove("show");
-      setTimeout(() => flashDiv.remove(), 500);
-    }, 3500);
+    setTimeout(() => { flashDiv.classList.remove("show"); setTimeout(() => flashDiv.remove(), 500); }, 3500);
   }
 
-  // Secret: Alt+Shift+W
   document.addEventListener("keydown", function(e) {
     if (e.altKey && e.shiftKey && e.key.toLowerCase() === "w" && !unlocked) {
-      const entered = prompt("Enter the secret key to unlock WIP tools:");
+      const entered = prompt("{{ _('Enter the secret key to unlock WIP tools:') }}");
       if (entered === SECRET_KEY) {
         unlocked = true;
         document.getElementById("wip-tools").setAttribute("data-wip-locked", "0");
@@ -138,14 +260,13 @@ document.addEventListener("DOMContentLoaded", function() {
           card.classList.add("wip-unlocked");
           card.style.pointerEvents = "auto";
         });
-        showFlash("WIP tools unlocked!", "success");
+        showFlash("{{ _('WIP tools unlocked!') }}", "success");
       } else if (entered !== null) {
-        showFlash("Incorrect key. WIP tools remain locked.", "danger");
+        showFlash("{{ _('Incorrect key. WIP tools remain locked.') }}", "danger");
       }
     }
   });
 
-  // Make WIP tool cards clickable only if unlocked
   document.querySelectorAll("#wip-tools .card").forEach(card => {
     card.addEventListener("click", function() {
       if (unlocked) {
